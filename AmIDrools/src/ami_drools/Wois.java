@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-
+//test
 
 public class Wois implements Serializable {
 
