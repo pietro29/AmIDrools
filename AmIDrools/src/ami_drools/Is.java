@@ -12,7 +12,6 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 
-
 class IsRemote extends UnicastRemoteObject implements IsIntf 
 {
 	/** Version ID used by deserialization in J2SE >= 1.5.0. */
@@ -38,11 +37,20 @@ public class Is {
      * subscribed to are ignored.
      */
     private Vector woises;
-
+    /** Remote object, used for communication between ISs */
+    private IsRemote remoteObject;
+    
 	public Is() throws RemoteException
 	{
-		
+		woises = new Vector();
+		remoteObject = new IsRemote( this );
 	}
+	
+	public IsIntf getRemoteProxy()
+    {
+        return remoteObject;
+    }
+	
 	//Meccanismo di registrazione di un Is, ricordarsi di aggiungere un controllo per evitare di duplicare le registrazioni
 	public void register( Wois wois, String name ) throws RemoteException
 	{

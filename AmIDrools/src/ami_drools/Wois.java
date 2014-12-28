@@ -52,7 +52,7 @@ public class Wois implements Serializable {
      */
     void register( Is inf, WoisRegistration rWois ) throws RemoteException
     {
-      
+      woisManager.addMember(inf.getRemoteProxy(), rWois.name);
     }
     
     /**

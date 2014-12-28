@@ -19,6 +19,6 @@ public interface WoisManager extends Remote {
      * @see DjReteIntf for a discussion on asynchronous registration
      */
 	//Per ora non ritorna nulla perchè bisogna decidere cosa ritornare (fatti, template, ...)
-    void addMember( IsIntf dr, String name ) throws RemoteException;
+    void addMember( IsIntf inf, String name ) throws RemoteException;
 	
 }
