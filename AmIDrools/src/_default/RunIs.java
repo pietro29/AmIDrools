@@ -33,6 +33,8 @@ public class RunIs {
                     woises.add( wois );
                     i = j + 1;
                 }
+            //Il sistema inferenziale è stato registrato, ora può iniziare a lavorare
+            //while (true) {}
         } catch (Exception e) {
             //ERRORE
         } finally {
