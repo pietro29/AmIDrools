@@ -110,7 +110,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
-        System.out.print( "Manager started. Press <enter> to see a list of members.\n\n" );
+        System.out.print( "Manager of " + args[0] + " started. Press <enter> to see a list of members.\n\n" );
 
         while (true) {
             bf.readLine();
