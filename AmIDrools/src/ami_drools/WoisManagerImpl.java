@@ -49,9 +49,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     /** All the templates shared in this WoIS. It contains objects of type {@link SharedTemplate}. */
     private Vector templates;
     
-    /** All the facts shared in this WoIS. It contains objects of type {@link GhostFact}. */
-    //private HashSet ghosts;
-    
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -67,7 +64,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         templates = new Vector();
         //templates.add( new SharedTemplate( woisName + "::" + SharedRuleProxy.templateName, null, SharedRuleProxy.class.getName(), SharedRuleProxy.defaultValues ) );
         //templates.add( new SharedTemplate( woisName + "::" + WoisMemberProxy.templateName, null, WoisMemberProxy.class.getName(), WoisMemberProxy.defaultValues ) );
-        //ghosts = new HashSet();
         boolean done = false;
         try {
             Naming.rebind( name, this ); // FIXME: must be bind, not rebind
@@ -114,6 +110,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 
         while (true) {
             bf.readLine();
+            System.out.println( "\n Members:" );
             /*
             DjReteIntf[] parts = mw.getMemberList();
             if (parts.length > 0) {
