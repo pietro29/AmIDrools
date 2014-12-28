@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+
 //test
 
 public class Wois implements Serializable {
@@ -34,6 +35,24 @@ public class Wois implements Serializable {
         } catch (ClassCastException e) {
             throw new RemoteException( "RMI registry corrupted", e );
         }
+    }
+    
+    /**
+     * Registers the given <code>Is</code> object in this WoIS. Also adds templates and facts
+     * shared in the WoIS to <code>inf</code> and adds a <code>wois-member</code> fact for the
+     * new member.
+     * 
+     * @param inf a <code>Is</code> object to register
+     * @param rWois info about this Wois registration. The {@link WoisRegistration#membershipFact}
+     *            field is filled by this method; the other fields should be already initialized.
+     * @throws RemoteException if there are network problems
+     * @throws AlreadyRegisteredException if the name is already in use by another IS or if
+     *             <code>dr</code> was already registered with another name
+     * @throws JessException
+     */
+    void register( Is inf, WoisRegistration rWois ) throws RemoteException
+    {
+      
     }
     
     /**

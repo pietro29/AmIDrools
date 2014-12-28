@@ -16,8 +16,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
-
-
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
 	/**
@@ -98,6 +96,51 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
     /**
+     * Insert a new engine in the member of this WoIS.
+     * @param dr the engine.
+     * @param name the name of the engine in this WoIS.
+     * @throws AlreadyRegisteredException if the name is already in use by another IS or if
+     *             <code>dr</code> was already registered with another name.
+     */
+    protected void insertMember( IsIntf inf, String name )
+    {
+        synchronized (members) {
+            Object v1 = members.get( name );
+            if (v1 != null && ! v1.equals( inf ) ){
+            	//throw new AlreadyRegisteredException( name + " is already in use" );
+            }
+            Object v2 = mNames.get( inf ); 
+            if (v2 != null && ! v2.equals( name )){
+                //throw new AlreadyRegisteredException( inf + " is already subscriped with another name" );
+            }
+            Object old = members.put( name, inf );
+            if (old != null) {
+                // assert v1 == dr;
+            }
+            mNames.put( inf, name );
+        }
+    }
+    public void addMember( IsIntf inf, String name ) throws RemoteException
+    {
+        // IMPORTANT: update members before getting templates and facts */
+        insertMember( inf, name );
+        //SharedMemoryImage ret = getMemoryImage();
+        //DebugIO.fprintlnDebug( "Returning " + ret );
+        //return ret;
+    }
+    public IsIntf[] getMemberList() throws RemoteException
+    {
+        IsIntf[] ret;
+        synchronized (members) {
+            Enumeration en = members.elements();
+            ret = new IsIntf[ members.size() ];
+            for (int i = 0; en.hasMoreElements(); ++i) {
+                ret[i] = (IsIntf)en.nextElement();
+            }
+        }
+        return ret;
+    }
+    /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS
      */
@@ -110,16 +153,15 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 
         while (true) {
             bf.readLine();
-            System.out.println( "\n Members:" );
-            /*
-            DjReteIntf[] parts = mw.getMemberList();
+            
+            IsIntf[] parts = mw.getMemberList();
             if (parts.length > 0) {
                 System.out.println( "\nMembers:" );
                 for (int i = 0; i < parts.length; ++i)
                     System.out.println( (i+1) + ". " + mw.mNames.get( parts[i] ) + "  " + parts[i] );
             } else
                 System.out.println( "\nMember list is empty");
-            */
+            
         }
         // nothing else to do
     }
