@@ -1,0 +1,61 @@
+//created on: Jan 4, 2015
+package rules
+
+//declare any global variables here
+declare Lampadina
+  codice	: String
+  accesa	: Boolean
+  spenta	: Boolean
+end
+
+declare Fatto
+  messagge	: String
+  value		: Boolean
+  status	: int
+end
+
+rule "test"
+     when
+        eval(true)
+    then
+        System.out.println( "funge" );
+end
+
+rule "Lampadina Accesa"
+     when
+        $f:Lampadina(accesa==true)
+    then
+        System.out.println( "Lampadina accesa" );
+end
+
+rule "Lampadina Spenta"
+    when
+        $f:Lampadina(accesa==false)
+    then
+        System.out.println( "Lampadina spenta" );
+end
+
+rule "Verify True"
+    when
+        f:Fatto(value==true)
+    then
+        System.out.println( "Conferma verità" );
+end
+
+rule "Verify False"
+    when
+        f:Fatto(value==false)
+    then
+        System.out.println( "Conferma falsità" );
+end
+
+
+
+rule "Your Second Rule"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+    then
+        //actions
+
+end
