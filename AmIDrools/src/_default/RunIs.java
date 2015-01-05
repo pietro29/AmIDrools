@@ -34,18 +34,6 @@ public class RunIs {
                     Wois wois = new Wois( args[1].substring( i, j ) );
                     inf.register(wois, args[0]);
                     woises.add( wois );
-                    
-                    
-                  //Importo le regole relative a quella determinata wois
-                    String name = "//" + args[1].substring( i, j ) + "/FileServer";
-                    File file = new File(args[1].substring( i, j ));
-                    byte[] filedata = wois.downloadFile(name);
-                    BufferedOutputStream output = new
-                            BufferedOutputStream(new FileOutputStream(file.getName()));
-                          output.write(filedata,0,filedata.length);
-                          output.flush();
-                          output.close();
-                    //
                           
                     i = j + 1;
                 }

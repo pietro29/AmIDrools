@@ -22,9 +22,6 @@ public interface WoisManager extends Remote {
 	//Per ora non ritorna nulla perchè bisogna decidere cosa ritornare (fatti, template, ...)
     void addMember( IsIntf inf, String name ) throws RemoteException;
 	
-    //Metodo con cui un Is scarica il file delle regole condivise per la rete a cui è collegato
-    byte[] downloadFile(String fileName) throws RemoteException;
-    
     //Metodo per il passaggio dei fatti condivisi
     Vector <Object> getSharedFacts() throws RemoteException;
 }

@@ -57,10 +57,6 @@ public class Wois implements Serializable {
     }
     
     
-    public byte[] downloadFile(String fileName) throws RemoteException{
-    	return woisManager.downloadFile(fileName);
-    }
-    
     public Vector <Object> getSharedFacts() throws RemoteException{
     	return woisManager.getSharedFacts();
     }
