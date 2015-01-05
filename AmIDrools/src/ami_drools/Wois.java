@@ -55,6 +55,11 @@ public class Wois implements Serializable {
       woisManager.addMember(inf.getRemoteProxy(), rWois.name);
     }
     
+    
+    public byte[] downloadFile(String fileName) throws RemoteException{
+    	return woisManager.downloadFile(fileName);
+    }
+    
     /**
      * Extracts the name of a resource from an RMI URL.
      * @param url a URL as in //host:port/name or just a name.

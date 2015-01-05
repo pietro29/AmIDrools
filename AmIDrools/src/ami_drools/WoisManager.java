@@ -7,7 +7,7 @@ import java.rmi.RemoteException;
 public interface WoisManager extends Remote {
 
 	/**
-     * Adds a {@link DjRete DjRete} to this WoIS. Current shared facts and templates are returned.
+     * Adds a {@link Is Is} to this WoIS. Current shared facts and templates are returned.
      * 
      * @param dr a <code>DjRete</code> object to add to this WoIS
      * @param name name of the object in this WoIS
@@ -21,4 +21,6 @@ public interface WoisManager extends Remote {
 	//Per ora non ritorna nulla perchè bisogna decidere cosa ritornare (fatti, template, ...)
     void addMember( IsIntf inf, String name ) throws RemoteException;
 	
+    //Metodo con cui un Is scarica il file delle regole condivise per la rete a cui è collegato
+    byte[] downloadFile(String fileName) throws RemoteException;
 }

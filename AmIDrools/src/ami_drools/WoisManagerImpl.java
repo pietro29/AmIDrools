@@ -1,6 +1,9 @@
 package ami_drools;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -140,6 +143,24 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
         return ret;
     }
+    
+    //Implementazione del metodo per scaricare le regole condivise della WoIs
+    public byte[] downloadFile(String fileName){
+        try {
+           File file = new File(fileName);
+           byte buffer[] = new byte[(int)file.length()];
+           BufferedInputStream input = new
+        BufferedInputStream(new FileInputStream(fileName));
+           input.read(buffer,0,buffer.length);
+           input.close();
+           return(buffer);
+        } catch(Exception e){
+           System.out.println("FileImpl: "+e.getMessage());
+           e.printStackTrace();
+           return(null);
+        }
+     }
+    
     /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS
