@@ -49,6 +49,7 @@ public class RunIs {
                           
                     i = j + 1;
                 }
+            
             //Il sistema inferenziale è stato registrato, ora può iniziare a lavorare
             //while (true) {}
         } catch (Exception e) {

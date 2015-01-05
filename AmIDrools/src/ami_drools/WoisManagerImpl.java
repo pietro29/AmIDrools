@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+import sharedFacts.Lampadina;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
@@ -51,6 +52,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private Vector templates;
     
     /**
+     * Vettore dei fatti condivisi
+     */
+    private Vector sharedFacts;
+    /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
      * @throws RemoteException
@@ -63,6 +68,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         woisName = Wois.stripHost( name );
         bindingUrl = name;
         templates = new Vector();
+        sharedFacts = new Vector();
         //templates.add( new SharedTemplate( woisName + "::" + SharedRuleProxy.templateName, null, SharedRuleProxy.class.getName(), SharedRuleProxy.defaultValues ) );
         //templates.add( new SharedTemplate( woisName + "::" + WoisMemberProxy.templateName, null, WoisMemberProxy.class.getName(), WoisMemberProxy.defaultValues ) );
         boolean done = false;
@@ -77,6 +83,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
+        Lampadina lampadina = new Lampadina("lampadina1",true,true);
+        sharedFacts.add(lampadina);
     }
     
     /**
@@ -160,7 +168,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
            return(null);
         }
      }
-    
+    public Vector <Object> getSharedFacts(){
+    	return sharedFacts;
+    }
     /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Vector;
 
 
 //test
@@ -60,6 +61,9 @@ public class Wois implements Serializable {
     	return woisManager.downloadFile(fileName);
     }
     
+    public Vector <Object> getSharedFacts() throws RemoteException{
+    	return woisManager.getSharedFacts();
+    }
     /**
      * Extracts the name of a resource from an RMI URL.
      * @param url a URL as in //host:port/name or just a name.

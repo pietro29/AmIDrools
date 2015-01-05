@@ -2,6 +2,7 @@ package ami_drools;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Vector;
 
 
 public interface WoisManager extends Remote {
@@ -23,4 +24,7 @@ public interface WoisManager extends Remote {
 	
     //Metodo con cui un Is scarica il file delle regole condivise per la rete a cui è collegato
     byte[] downloadFile(String fileName) throws RemoteException;
+    
+    //Metodo per il passaggio dei fatti condivisi
+    Vector <Object> getSharedFacts() throws RemoteException;
 }
