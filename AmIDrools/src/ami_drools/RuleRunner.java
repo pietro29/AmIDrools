@@ -128,9 +128,7 @@ public class RuleRunner
     //Chiedi i fatti al manager, spara le regole, aggiorna fatti sul manager
     public void matchResolveAct() throws RemoteException{
     	sharedFacts = wois.getSharedFacts();
-    	
     	Object fact = sharedFacts.get(0);
-        
         
         //devo inserire il fatto che ho ricevuto
         this.addFact(fact);

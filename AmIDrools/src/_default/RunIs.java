@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.swing.JFrame;
+
 import ami_drools.Is;
 import ami_drools.Wois;
 
@@ -25,6 +27,11 @@ public class RunIs {
     {
         try {
         	inf = new Is();
+        	inf.setTitle("Is");
+        	inf.setSize(500, 500);
+        	inf.setVisible(true);
+        	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        	
             BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
 
             if (args.length >= 2)
