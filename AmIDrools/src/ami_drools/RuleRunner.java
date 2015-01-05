@@ -101,7 +101,11 @@ public class RuleRunner
     private String getRule() {
        String s = "" +
        "package PrivateRules \n" +
-       "import Manager.Lampadina \n" +
+       "declare Lampadina \n" +
+       "codice	: String \n" +
+       "accesa	: Boolean \n" +
+       "spenta	: Boolean \n" +
+       "end \n"+
        "rule \"rule 1\" when \n" +
        "    $f:Lampadina(accesa==true) \n" +
        "then \n" +
