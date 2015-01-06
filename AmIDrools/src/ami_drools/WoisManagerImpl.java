@@ -115,16 +115,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * @throws AlreadyRegisteredException if the name is already in use by another IS or if
      *             <code>dr</code> was already registered with another name.
      */
-    protected void insertMember( IsIntf inf, String name )
+    protected void insertMember( IsIntf inf, String name ) throws AlreadyRegisteredException
     {
         synchronized (members) {
             Object v1 = members.get( name );
             if (v1 != null && ! v1.equals( inf ) ){
-            	//throw new AlreadyRegisteredException( name + " is already in use" );
+            	throw new AlreadyRegisteredException( name + " is already in use" );
             }
             Object v2 = mNames.get( inf ); 
             if (v2 != null && ! v2.equals( name )){
-                //throw new AlreadyRegisteredException( inf + " is already subscriped with another name" );
+                throw new AlreadyRegisteredException( inf + " is already subscriped with another name" );
             }
             Object old = members.put( name, inf );
             if (old != null) {
@@ -136,7 +136,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public void addMember( IsIntf inf, String name ) throws RemoteException
     {
         // IMPORTANT: update members before getting templates and facts */
-        insertMember( inf, name );
+        try {
+			insertMember( inf, name );
+		} catch (AlreadyRegisteredException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     public IsIntf[] getMemberList() throws RemoteException
     {
