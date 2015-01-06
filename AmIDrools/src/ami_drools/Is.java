@@ -38,9 +38,7 @@ public class Is extends JFrame implements ActionListener{
 	 /**
      * WoISs this object belongs to (if any). Elements are of type {@link WoisRegistration}. This
      * field is very important, as this collection contains the information about which WoISs are
-     * considered subscribed to. External notifications (through
-     * {@link #addGhostFact(GhostFact, boolean) addGhostFact} and so on) regarding any WoIS not
-     * subscribed to are ignored.
+     * considered subscribed to.
      */
 	private static final long serialVersionUID = 1L;
     private Vector woises;
@@ -48,7 +46,7 @@ public class Is extends JFrame implements ActionListener{
     /** Remote object, used for communication between ISs */
     private IsRemote remoteObject;
     
-    //Papu
+    //Elementi grafici
     JPanel p;
 	JButton b;
 	JLabel lInfo;

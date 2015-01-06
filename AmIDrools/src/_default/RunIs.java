@@ -27,7 +27,7 @@ public class RunIs {
     {
         try {
         	inf = new Is();
-        	inf.setTitle("Is");
+        	inf.setTitle("Is " + args[0].toString());
         	inf.setSize(500, 500);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 
-//test
-
 public class Wois implements Serializable {
 
 	/**

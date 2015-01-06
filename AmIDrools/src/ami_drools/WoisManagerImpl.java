@@ -28,12 +28,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private static final long serialVersionUID = 1;
 
     /**
-     * Table containing all the members of this WoIS. It maps names ({@link String}s) to engines ({@link DjReteIntf}s).
+     * Table containing all the members of this WoIS. It maps names ({@link String}s) to engines ({@link IsIntf}s).
      */
     private Hashtable members = new Hashtable();
     
     /**
-     * Map from engines ({@link DjReteIntf}s) to their names ({@link String}s). For data consistency,
+     * Map from engines ({@link IsIntf}s) to their names ({@link String}s). For data consistency,
      * access should be synchronized on {@link #members}.
      */
     private Map mNames = new HashMap(); 
@@ -83,7 +83,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
+        //Inizializzo gli oggetti relativi ai dispositivi collegati alla rete
         Lampadina lampadina = new Lampadina("lampadina1",true,true);
+        //Aggiungo gli oggetti al vettore dei fatti condivisi
         sharedFacts.add(lampadina);
     }
     
@@ -135,9 +137,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     {
         // IMPORTANT: update members before getting templates and facts */
         insertMember( inf, name );
-        //SharedMemoryImage ret = getMemoryImage();
-        //DebugIO.fprintlnDebug( "Returning " + ret );
-        //return ret;
     }
     public IsIntf[] getMemberList() throws RemoteException
     {

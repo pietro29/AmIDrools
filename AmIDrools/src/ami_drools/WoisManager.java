@@ -10,7 +10,7 @@ public interface WoisManager extends Remote {
 	/**
      * Adds a {@link Is Is} to this WoIS. Current shared facts and templates are returned.
      * 
-     * @param dr a <code>DjRete</code> object to add to this WoIS
+     * @param inf a <code>Is</code> object to add to this WoIS
      * @param name name of the object in this WoIS
      * @return the state of the shared working memory of this WoIS.
      * @throws RemoteException
