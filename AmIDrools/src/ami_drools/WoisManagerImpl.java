@@ -90,6 +90,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         fatto.insertAttributeValue("codice", "String", "lampadina1");
         fatto.insertAttributeValue("accesa", "Boolean", "true");
         fatto.insertAttributeValue("spenta", "Boolean", "true");
+        
         //Aggiungo gli oggetti al vettore dei fatti condivisi
         sharedFacts.add(fatto);
     }
@@ -162,7 +163,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
  
-    public Vector <Object> getSharedFacts(){
+    public Vector <Fact> getSharedFacts(){
     	return sharedFacts;
     }
     /**

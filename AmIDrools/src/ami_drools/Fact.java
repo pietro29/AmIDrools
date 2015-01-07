@@ -41,4 +41,9 @@ public class Fact {
 			}
 		}
 	}
+	public String printFact(){
+		String print = "";
+		print += id + " - " + factType + " - " + values.get(0); 
+		return print;
+	}
 }
