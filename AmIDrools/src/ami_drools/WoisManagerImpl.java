@@ -83,11 +83,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
-        //Inizializzo l'oggetto Fact
         Fact fatto = new Fact("1","Lampadina");
         fatto.insertAttributeValue("codice", "String", "lampadina1");
         fatto.insertAttributeValue("accesa", "Boolean", "true");
         fatto.insertAttributeValue("spenta", "Boolean", "true");
+        
         //Aggiungo gli oggetti al vettore dei fatti condivisi
         sharedFacts.add(fatto);
     }
