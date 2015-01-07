@@ -2,7 +2,7 @@
 package rules
 
 //declare any global variables here
-declare Lampadina
+declare l
   codice	: String
   accesa	: Boolean
   spenta	: Boolean
@@ -23,14 +23,14 @@ end
 
 rule "Lampadina Accesa"
      when
-        $f:Lampadina(accesa==true)
+        $f:l(accesa==true)
     then
         System.out.println( "Lampadina accesa" );
 end
 
 rule "Lampadina Spenta"
     when
-        $f:Lampadina(accesa==false)
+        $f:l(accesa==false)
     then
         System.out.println( "Lampadina spenta" );
 end
