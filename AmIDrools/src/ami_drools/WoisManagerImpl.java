@@ -162,7 +162,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
  
-    public Vector <Object> getSharedFacts(){
+    public Vector <Fact> getSharedFacts(){
     	return sharedFacts;
     }
     /**

@@ -23,5 +23,5 @@ public interface WoisManager extends Remote {
     void addMember( IsIntf inf, String name ) throws RemoteException;
 	
     //Metodo per il passaggio dei fatti condivisi
-    Vector <Object> getSharedFacts() throws RemoteException;
+    Vector <Fact> getSharedFacts() throws RemoteException;
 }

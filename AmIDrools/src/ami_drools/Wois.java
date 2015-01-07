@@ -55,7 +55,7 @@ public class Wois implements Serializable {
     }
     
     
-    public Vector <Object> getSharedFacts() throws RemoteException{
+    public Vector <Fact> getSharedFacts() throws RemoteException{
     	return woisManager.getSharedFacts();
     }
     /**
