@@ -9,10 +9,13 @@ import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.KieRepository;
 import org.kie.api.builder.Message.Level;
+import org.kie.api.definition.type.FactType;
 import org.kie.api.io.KieResources;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.QueryResults;
+import org.kie.api.runtime.rule.QueryResultsRow;
  
 public class RuleRunner
 {
@@ -54,12 +57,10 @@ public class RuleRunner
            
         }*/
         
+        kieFileSystem.write("src/main/resources/rules/wois.drl", getRule());
         
-        
-        kieFileSystem.write("src/main/resources/PrivateRules/PrivateRules.drl", getRule());
         kb = kieServices.newKieBuilder(kieFileSystem);
         kb.buildAll();
-  
         if (kb.getResults().hasMessages(Level.ERROR))
         {
             throw new RuntimeException("Build Errors:\n" + kb.getResults().toString());
@@ -80,9 +81,15 @@ public class RuleRunner
 	    	Object f=fact;
 	    	//System.out.println(f.getClass().toString());
 	    	System.out.println(f.toString());
-	    	//FactType personType = kbase.getFactType( "org.drools.examples","Person" );
+	    	//importo la tipologia data dal declare
+	    	
+	    	FactType factType = kContainer.getKieBase().getFactType("rules", "Lampadina" );
+	    	Object nc = factType.newInstance();
+	    	factType.set( nc, "codice", "AL262ZZ" );
+	    	factType.set( nc, "accesa", true );
+	    	factType.set( nc, "spenta", false );
 
- 	    	kSession.insert(f);
+ 	    	kSession.insert(nc);
 	        //kSession.fireAllRules();
 	     } catch (Throwable t) {
 	        t.printStackTrace();
@@ -100,12 +107,13 @@ public class RuleRunner
     //prova a importare un DRL da stringa
     private String getRule() {
        String s = "" +
-       "package PrivateRules \n" +
+       "package rules \n" +
        "declare Lampadina \n" +
        "codice	: String \n" +
        "accesa	: Boolean \n" +
        "spenta	: Boolean \n" +
        "end \n"+
+       //"import prova.Lampadina \n" +
        "rule \"rule 1\" when \n" +
        "    $f:Lampadina(accesa==true) \n" +
        "then \n" +

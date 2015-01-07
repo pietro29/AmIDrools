@@ -116,7 +116,7 @@ public class Is extends JFrame implements ActionListener{
         	runner = new RuleRunner(wois);
         	String DRL = new String("PrivateRule.drl");
         	rules[0] = DRL;
-            runner.runRules(rules,facts);
+        	runner.runRules(rules,facts);
         	
         } catch (Throwable t) {
             t.printStackTrace();
