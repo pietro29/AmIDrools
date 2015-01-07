@@ -85,8 +85,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
         //Inizializzo gli oggetti relativi ai dispositivi collegati alla rete
         Lampadina lampadina = new Lampadina("lampadina1",true,true);
+        //Inizializzo l'oggetto Fact
+        Fact fatto = new Fact("1","Lampadina");
+        fatto.insertAttributeValue("codice", "String", "lampadina1");
+        fatto.insertAttributeValue("accesa", "Boolean", "true");
+        fatto.insertAttributeValue("spenta", "Boolean", "true");
         //Aggiungo gli oggetti al vettore dei fatti condivisi
-        sharedFacts.add(lampadina);
+        sharedFacts.add(fatto);
     }
     
     /**
