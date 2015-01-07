@@ -54,7 +54,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     /**
      * Vettore dei fatti condivisi
      */
-    private Vector sharedFacts;
+    private Vector<Fact> sharedFacts;
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -68,7 +68,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         woisName = Wois.stripHost( name );
         bindingUrl = name;
         templates = new Vector();
-        sharedFacts = new Vector();
+        sharedFacts = new Vector<Fact>();
         //templates.add( new SharedTemplate( woisName + "::" + SharedRuleProxy.templateName, null, SharedRuleProxy.class.getName(), SharedRuleProxy.defaultValues ) );
         //templates.add( new SharedTemplate( woisName + "::" + WoisMemberProxy.templateName, null, WoisMemberProxy.class.getName(), WoisMemberProxy.defaultValues ) );
         boolean done = false;
@@ -83,8 +83,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
-        //Inizializzo gli oggetti relativi ai dispositivi collegati alla rete
-        Lampadina lampadina = new Lampadina("lampadina1",true,true);
         //Inizializzo l'oggetto Fact
         Fact fatto = new Fact("1","Lampadina");
         fatto.insertAttributeValue("codice", "String", "lampadina1");

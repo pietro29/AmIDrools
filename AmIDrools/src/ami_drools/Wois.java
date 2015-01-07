@@ -10,6 +10,11 @@ import java.util.Vector;
 public class Wois implements Serializable {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The manager of this WoIS.  This field is a remote reference and cannot be <code>null</code>.
      */
     private WoisManager woisManager;
