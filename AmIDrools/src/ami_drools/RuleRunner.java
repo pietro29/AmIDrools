@@ -30,12 +30,12 @@ public class RuleRunner
 	KieContainer kContainer;
 	
 	Wois wois;
-	Vector sharedFacts;
+	Vector<Fact> sharedFacts;
 	
     public RuleRunner(Wois wois)
     {
     	this.wois=wois;
-    	sharedFacts = new Vector();
+    	sharedFacts = new Vector<Fact>();
     }
  
     public void runRules(String[] rules, Object[] facts)
@@ -145,7 +145,7 @@ public class RuleRunner
         {//devo inserire il fatto che ho ricevuto
         	 this.addFact(ogg);
         }
-         
+        
         //eseguo tutte le regole
     	fireAllRules();
     	
