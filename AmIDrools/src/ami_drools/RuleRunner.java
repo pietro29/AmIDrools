@@ -145,7 +145,7 @@ public class RuleRunner
         {//devo inserire il fatto che ho ricevuto
         	 this.addFact(ogg);
         }
-        
+         
         //eseguo tutte le regole
     	fireAllRules();
     	
