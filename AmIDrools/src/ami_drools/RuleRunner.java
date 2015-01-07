@@ -1,5 +1,6 @@
 package ami_drools;
 
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Vector;
@@ -57,7 +58,7 @@ public class RuleRunner
            
         }*/
         
-        kieFileSystem.write("src/main/resources/rules/wois.drl", getRule());
+        kieFileSystem.write("src/main/resources/rules/p.drl", getRule());
         
         kb = kieServices.newKieBuilder(kieFileSystem);
         kb.buildAll();
@@ -78,18 +79,18 @@ public class RuleRunner
     
     public void addFact(Object fact){
 	    try{
-	    	Object f=fact;
-	    	//System.out.println(f.getClass().toString());
-	    	System.out.println(f.toString());
-	    	//importo la tipologia data dal declare
-	    	
 	    	FactType factType = kContainer.getKieBase().getFactType("rules", "Lampadina" );
-	    	Object nc = factType.newInstance();
-	    	factType.set( nc, "codice", "AL262ZZ" );
-	    	factType.set( nc, "accesa", true );
-	    	factType.set( nc, "spenta", false );
-
- 	    	kSession.insert(nc);
+	    	Object NewFactType = factType.newInstance();
+	    	
+	    	Object f=fact;
+	    	Field [] attributes =  f.getClass().getDeclaredFields();
+            for (Field field : attributes) {
+            	field.setAccessible(true);
+                // Dynamically read Attribute Name
+                System.out.println("ATTRIBUTE NAME: " + field.getName() + "; VALUE: " + field.get(f).toString());
+                factType.set( NewFactType, field.getName(), field.get(f).toString() );
+            }
+	    	kSession.insert(NewFactType);
 	        //kSession.fireAllRules();
 	     } catch (Throwable t) {
 	        t.printStackTrace();
@@ -118,6 +119,7 @@ public class RuleRunner
        "    $f:Lampadina(accesa==true) \n" +
        "then \n" +
         "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n" +
+        "   $f.setAccesa(false); \n" +
        "end \n" + 
        "rule \"rule 2\" when \n" +
        "    $f:Lampadina(spenta==true) \n" +
@@ -134,20 +136,31 @@ public class RuleRunner
       return s;
     }
     //Chiedi i fatti al manager, spara le regole, aggiorna fatti sul manager
-    public void matchResolveAct() throws RemoteException{
+    public void matchResolveAct() throws RemoteException, IllegalArgumentException, IllegalAccessException{
     	sharedFacts = wois.getSharedFacts();
-    	Object fact = sharedFacts.get(0);
+    	
+    	 System.out.println("inserisco i fatti");
+        //devo iterare e inserire tutti i fatti condivisi
+    	for (Object ogg : sharedFacts)
+        {//devo inserire il fatto che ho ricevuto
+        	 this.addFact(ogg);
+        }
         
-        //devo inserire il fatto che ho ricevuto
-        this.addFact(fact);
-        
-        fireAllRules();
-        
+        //eseguo tutte le regole
+    	fireAllRules();
+    	
+    	System.out.println("recupero i fatti");
+        //devo recuperare tutti i fatti per inviarli
         Collection<? extends Object> oggettiDaWM = this.getFacts();
         for (Object ogg : oggettiDaWM)
         {
-        	System.out.println(ogg.getClass().toString());
-	    	System.out.println(ogg.toString());
+        	System.out.println(ogg.toString());
+        	Field [] attributes =  ogg.getClass().getDeclaredFields();
+            for (Field field : attributes) {
+            	field.setAccessible(true);
+                // Dynamically read Attribute Name
+                System.out.println("ATTRIBUTE NAME: " + field.getName() + "; VALUE: " + field.get(ogg).toString());
+            }
         }
     }
     public void fireAllRules(){
