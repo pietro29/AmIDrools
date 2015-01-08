@@ -39,6 +39,20 @@ public class Fact implements Serializable {
 		return values;
 	}
 	/**
+	 * 
+	 * @return id of a Fact
+	 */
+	public String getId(){
+		return id;
+	}
+	/**
+	 * 
+	 * @return Fact type
+	 */
+	public String getFactType(){
+		return factType;
+	}
+	/**
 	 * Insert a new element in the attribute array.
 	 * @param attribute
 	 * @param attributeType

@@ -63,6 +63,9 @@ public class Wois implements Serializable {
     public Vector <Fact> getSharedFacts() throws RemoteException{
     	return woisManager.getSharedFacts();
     }
+    public void setSharedFacts(Vector <Fact> sharedFactsUpdate) throws RemoteException, ClassNotFoundException{
+    	woisManager.setSharedFacts(sharedFactsUpdate);
+    }
     /**
      * Extracts the name of a resource from an RMI URL.
      * @param url a URL as in //host:port/name or just a name.
