@@ -24,17 +24,36 @@ public class Fact implements Serializable {
 		values = new Vector <String>();
 		attributesType = new Vector <String>();
 	}
+	/**
+	 * Get attributes array
+	 * @return attributes array
+	 */
 	public Vector <String> getAttributes () {
 		return attributes;
 	}
+	/**
+	 * Get values array
+	 * @return values array
+	 */
 	public Vector <String> getValues () {
 		return values;
 	}
+	/**
+	 * Insert a new element in the attribute array.
+	 * @param attribute
+	 * @param attributeType
+	 * @param value
+	 */
 	public void insertAttributeValue(String attribute, String attributeType, String value){
 		attributes.addElement(attribute);
 		attributesType.addElement(attributeType);
 		values.addElement(value);
 	}
+	/**
+	 * Update the value of the attribute passed as parameter with a new value
+	 * @param attribute
+	 * @param value
+	 */
 	public void updateAttributeValue(String attribute,String value){
 		for (int i = 0 ; i<attributes.size(); i++)
 		{

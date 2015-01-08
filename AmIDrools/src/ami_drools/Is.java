@@ -92,7 +92,12 @@ public class Is extends JFrame implements ActionListener{
         return remoteObject;
     }
 	
-	//Meccanismo di registrazione di un Is, ricordarsi di aggiungere un controllo per evitare di duplicare le registrazioni
+	/**
+	 * Register to a given wois
+	 * @param wois
+	 * @param name
+	 * @throws RemoteException
+	 */
 	public void register( Wois wois, String name ) throws RemoteException
 	{
 		// Create a module, if needed
