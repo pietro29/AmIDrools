@@ -19,9 +19,25 @@ public interface WoisManager extends Remote {
      * @throws JessException
      * @see DjReteIntf for a discussion on asynchronous registration
      */
-	//Per ora non ritorna nulla perchè bisogna decidere cosa ritornare (fatti, template, ...)
+	/**
+	 * Add an IS to a WoIS
+	 * @param inf
+	 * @param name
+	 * @throws RemoteException
+	 */
     void addMember( IsIntf inf, String name ) throws RemoteException;
 	
-    //Metodo per il passaggio dei fatti condivisi
+    /**
+     * Shared Facts of the WoIs.
+     * @return
+     * @throws RemoteException
+     */
     Vector <Fact> getSharedFacts() throws RemoteException;
+    
+    /**
+     * Update shared facts of the WoIS
+     * @param sharedFacts
+     * @throws RemoteException
+     */
+    void setSharedFacts(Vector <Fact> sharedFactsUpdate) throws RemoteException, ClassNotFoundException;
 }

@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+
 import sharedFacts.Lampadina;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
@@ -38,6 +39,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     private Map mNames = new HashMap(); 
     
+    private Map mFacts = new HashMap();
+    
+    private Map mDevices = new HashMap();
     /**
      * Name of the controlled WoIS
      */
@@ -83,6 +87,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
+        Lampadina lampadina = new Lampadina("1","lampadina1",true,true);
+        mDevices.put(lampadina.getId(), lampadina);
+        
         Fact fatto = new Fact("1","Lampadina");
         fatto.insertAttributeValue("codice", "String", "lampadina1");
         fatto.insertAttributeValue("accesa", "Boolean", "true");
@@ -90,6 +97,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         
         //Aggiungo gli oggetti al vettore dei fatti condivisi
         sharedFacts.add(fatto);
+        mFacts.put(fatto.getId(), fatto);
     }
     
     /**
@@ -159,9 +167,38 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         return ret;
     }
     
- 
+    /**
+     * return the vector of the shared facts of the WoIS
+     */
     public Vector <Fact> getSharedFacts(){
     	return sharedFacts;
+    }
+    /**
+     * @throws ClassNotFoundException 
+     * 
+     */
+    public void setSharedFacts(Vector <Fact> sharedFactUpdate) throws ClassNotFoundException{
+    	Vector <String> tempAttr;
+    	Vector <String> tempVal;
+    	String tempId;
+    	String tempFactType;
+    	Fact factToUpdate;
+    	Object tempO;
+    	for (Fact fact : sharedFactUpdate){
+    		tempAttr = fact.getAttributes();
+    		tempVal = fact.getValues();
+    		tempFactType = fact.getFactType();
+    		factToUpdate = (Fact) mFacts.get(fact.getId());
+    		for (int i=0;i<tempAttr.size();i++){
+    			factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
+    			switch(tempFactType){
+    			case "Lampadina" : Class cls = Class.forName(tempFactType);
+    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+    								l.updateField(tempAttr.get(i), tempVal.get(i));
+    								break;
+    			}
+    		}
+    	}
     }
     /**
      * Main function
