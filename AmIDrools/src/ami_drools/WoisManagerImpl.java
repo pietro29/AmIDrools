@@ -184,13 +184,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	String tempFactType;
     	Fact factToUpdate;
     	Object tempO;
-    	System.out.println("3333333");
     	for (Fact fact : sharedFactUpdate){
     		tempAttr = fact.getAttributes();
     		tempVal = fact.getValues();
     		tempFactType = fact.getFactType();
     		factToUpdate = (Fact) mFacts.get(fact.getId());
     		for (int i=0;i<tempAttr.size();i++){
+    			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
     			factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
     			switch(tempFactType){
     			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
