@@ -79,7 +79,7 @@ public class Fact implements Serializable {
 	public void updateAttributeValue(String attribute,String value){
 		for (int i = 0 ; i<attributes.size(); i++)
 		{
-			if (attributes.get(i)==attribute)
+			if (attributes.get(i).toString().equals(attribute))
 			{
 				values.set(i, value);
 			}

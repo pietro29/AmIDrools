@@ -96,6 +96,7 @@ public class RuleRunner {
 		Vector<String> attributes = fact.getAttributes();
 		Vector<String> values = fact.getValues();
 		Vector<String> attributesType = fact.getAttributesType();
+		System.out.println("PRIMA--------------------");
 		for (int i = 0; i < attributes.size(); i++) {
 			try {
 				System.out.println(attributes.get(i) + ", " + values.get(i));
@@ -121,7 +122,6 @@ public class RuleRunner {
 			}
 		}
 		String id = new String(fact.getId());
-		System.out.println(id);
 		// insert data outside the attributes, like the id
 		try {
 			factType.set(NewFactType, "id", id);
@@ -196,7 +196,6 @@ public class RuleRunner {
 		sharedFacts = new Vector<Fact>();
 		sharedFacts = wois.getSharedFacts();
 
-		System.out.println("inserisco i fatti");
 		// iterate all the shared fact
 		for (Fact ogg : sharedFacts) {
 			try {// insert the fact
@@ -208,7 +207,7 @@ public class RuleRunner {
 		}
 
 		fireAllRules();
-
+		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
 		sharedFactsSend = new Vector<Fact>();
@@ -234,12 +233,10 @@ public class RuleRunner {
 			// TODO if index<0 then error message
 			Fact factToSend = sharedFacts.get(index);
 			
-			sharedFactsSend.add(factToSend);
 			for (Field field : attributes) {
 				field.setAccessible(true);
 				// Dynamically read Attribute Name
-				System.out.println("ATTRIBUTE NAME: " + field.getName()
-						+ "; VALUE: " + field.get(ogg).toString());
+				System.out.println(field.getName() + ", " + field.get(ogg).toString());
 				factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
 			}
 			sharedFactsSend.add(factToSend);
