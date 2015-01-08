@@ -87,6 +87,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
+        //DEVICE 1
         Lampadina lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
         
@@ -95,9 +96,21 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         fatto.insertAttributeValue("accesa", "Boolean", "true");
         fatto.insertAttributeValue("spenta", "Boolean", "true");
         
-        //Aggiungo gli oggetti al vettore dei fatti condivisi
+      //Aggiungo gli oggetti al vettore dei fatti condivisi
         sharedFacts.add(fatto);
         mFacts.put(fatto.getId(), fatto);
+        
+        //DEVICE 2
+        Lampadina lampadina2 = new Lampadina("2","lampadina2",true,true);
+        mDevices.put(lampadina2.getId(), lampadina2);
+        
+        Fact fatto2 = new Fact("2","Lampadina");
+        fatto2.insertAttributeValue("codice", "String", "lampadina2");
+        fatto2.insertAttributeValue("accesa", "Boolean", "true");
+        fatto2.insertAttributeValue("spenta", "Boolean", "true");
+        
+        sharedFacts.add(fatto2);
+        mFacts.put(fatto2.getId(), fatto2);
     }
     
     /**
@@ -183,7 +196,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	String tempId;
     	String tempFactType;
     	Fact factToUpdate;
-    	Object tempO;
     	for (Fact fact : sharedFactUpdate){
     		tempAttr = fact.getAttributes();
     		tempVal = fact.getValues();
