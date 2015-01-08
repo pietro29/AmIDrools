@@ -192,7 +192,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		for (int i=0;i<tempAttr.size();i++){
     			factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
     			switch(tempFactType){
-    			case "Lampadina" : Class cls = Class.forName(tempFactType);
+    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
     								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
     								l.updateField(tempAttr.get(i), tempVal.get(i));
     								break;

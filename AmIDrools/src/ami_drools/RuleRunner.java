@@ -31,6 +31,7 @@ public class RuleRunner {
 
 	Wois wois;
 	Vector<Fact> sharedFacts;
+	Vector<Fact> sharedFactsSend;
 
 	/**
 	 * Constructor
@@ -57,7 +58,8 @@ public class RuleRunner {
 		kieResources = kieServices.getResources();
 		kieFileSystem = kieServices.newKieFileSystem();
 		kieRepository = kieServices.getRepository();
-		// create a temporary file .drl for support the KB, is important that the path begins with src/main/resources
+		// create a temporary file .drl for support the KB, 
+		//is important that the path begins with src/main/resources
 		kieFileSystem.write("src/main/resources/rules/p.drl", getRule());
 
 		kb = kieServices.newKieBuilder(kieFileSystem);
@@ -71,7 +73,7 @@ public class RuleRunner {
 				.getDefaultReleaseId());
 		// create the session
 		kSession = kContainer.newKieSession();
-		for (Object fact : facts) {
+		for (Object fact : facts) { // TODO use typeFact to import the fact object
 			// insert the fact
 			kSession.insert(fact);
 		}
@@ -86,21 +88,40 @@ public class RuleRunner {
 	 * @see Fact
 	 */
 	public void addFact(Fact fact) throws Throwable {
-		String ft = new String("");// fact.getFactType
+		String ft = new String(fact.getFactType());// fact.getFactType
 		FactType factType = kContainer.getKieBase().getFactType("rules", ft);
 		Object NewFactType = factType.newInstance();
 		// extract attributes from the array and put the value in the
 		// newFactType
-		Vector<String> attributes = null;
-		Vector<String> values = null;
+		Vector<String> attributes = fact.getAttributes();
+		Vector<String> values = fact.getValues();
+		Vector<String> attributesType = fact.getAttributesType();
 		for (int i = 0; i < attributes.size(); i++) {
 			try {
-				factType.set(NewFactType, attributes.get(i), values.get(i));
+				System.out.println(attributes.get(i) + ", " + values.get(i));
+				//extract the type of attribute and transform it into a Class object for casting
+				Class<?> theClass = Class.forName("java.lang." + attributesType.get(i));
+				//System.out.println(theClass.toString());
+				if (attributesType.get(i).toLowerCase().equals("boolean"))
+				{//if the type is boolean the cast is done observing the single string and putting the true/false value
+					if (values.get(i).toLowerCase().equals("true"))
+					{
+						factType.set(NewFactType, attributes.get(i),true);
+					}else{
+						factType.set(NewFactType, attributes.get(i), false);
+					}
+				}
+				else
+				{//in other case we can use the dynamic cast
+					factType.set(NewFactType, attributes.get(i), theClass.cast(values.get(i)));
+				}
+				
 			} catch (Throwable t) {
 				t.printStackTrace();
 			}
 		}
-		String id = new String("");
+		String id = new String(fact.getId());
+		System.out.println(id);
 		// insert data outside the attributes, like the id
 		try {
 			factType.set(NewFactType, "id", id);
@@ -172,12 +193,13 @@ public class RuleRunner {
 	 */
 	public void matchResolveAct() throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
+		sharedFacts = new Vector<Fact>();
 		sharedFacts = wois.getSharedFacts();
 
 		System.out.println("inserisco i fatti");
 		// iterate all the shared fact
-		for (Fact ogg : sharedFacts) {// insert the fact
-			try {
+		for (Fact ogg : sharedFacts) {
+			try {// insert the fact
 				this.addFact(ogg);
 			} catch (Throwable e) {
 				// TODO Auto-generated catch block
@@ -187,20 +209,49 @@ public class RuleRunner {
 
 		fireAllRules();
 
-		System.out.println("recupero i fatti");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
+		sharedFactsSend = new Vector<Fact>();
 		for (Object ogg : oggettiDaWM) {
 			System.out.println(ogg.toString());
 			Field[] attributes = ogg.getClass().getDeclaredFields();
+			int index=-1;
+			//search the index of the fact in the vector of the shared facts
+			for (Field field : attributes) {
+				field.setAccessible(true);
+				if(field.getName().toLowerCase().equals("id"))
+				{
+					for(int j=0;j<sharedFacts.size() && index<0;j++)
+					{//if the id is found in the shared fact save the index j
+						if(sharedFacts.get(j).getId().equals(field.get(ogg).toString()))
+						{
+							index=j;
+						}
+					}
+				}
+				if (index>0) break;
+			}
+			// TODO if index<0 then error message
+			Fact factToSend = sharedFacts.get(index);
+			
+			sharedFactsSend.add(factToSend);
 			for (Field field : attributes) {
 				field.setAccessible(true);
 				// Dynamically read Attribute Name
 				System.out.println("ATTRIBUTE NAME: " + field.getName()
 						+ "; VALUE: " + field.get(ogg).toString());
+				factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
 			}
+			sharedFactsSend.add(factToSend);
+			System.out.println(factToSend.printFact());
 		}
-
+		//send here
+		try {
+			wois.setSharedFacts(sharedFactsSend);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// clean the session
 		cleanSession();
 		// create new session

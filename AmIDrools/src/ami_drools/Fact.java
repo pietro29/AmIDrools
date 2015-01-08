@@ -53,6 +53,14 @@ public class Fact implements Serializable {
 		return factType;
 	}
 	/**
+	 *Get attributes type array
+	 * @return attributes type array
+	 */
+	public Vector <String> getAttributesType(){
+		return attributesType;
+	}
+	
+	/**
 	 * Insert a new element in the attribute array.
 	 * @param attribute
 	 * @param attributeType
@@ -79,7 +87,12 @@ public class Fact implements Serializable {
 	}
 	public String printFact(){
 		String print = "";
-		print += id + " - " + factType + " - " + values.get(0); 
+		try {
+			print += id + " - " + factType + " - " + values.get(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		return print;
 	}
 }
