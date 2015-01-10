@@ -16,6 +16,8 @@ import org.kie.api.io.KieResources;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.AgendaFilter;
+import org.kie.api.runtime.rule.Match;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 
@@ -73,7 +75,7 @@ public class RuleRunner {
 				.getDefaultReleaseId());
 		// create the session
 		kSession = kContainer.newKieSession();
-		for (Object fact : facts) { // TODO use typeFact to import the fact object
+		for (Object fact : facts) { // TODO use typeFact to import the private fact
 			// insert the fact
 			kSession.insert(fact);
 		}
@@ -163,22 +165,39 @@ public class RuleRunner {
 				+ "	accesa	: Boolean \n"
 				+ "	spenta	: Boolean \n"
 				+ "end \n"
-				+
-				// "import prova.Lampadina \n" +
-				"rule \"rule 1\" when \n"
+				//funzione per controllare se il manager ha messo un lock sul fatto
+				+ "function void newFunction(){ \n"
+				+ "System.out.println( \"dentro alla funzione!\" );"
+				+ "if(true) \n"
+				+ "		System.out.println( \"Lampadina sia accesa che spenta!\" ); \n"
+				+ "else \n"
+				+ "		System.out.println( \"merda!\" );}\n"
+				
+				+ "rule \"rule f\" when \n"
+				+ "    eval(true) \n"
+				+ "then \n"
+				+ "   newFunction(); \n"
+				+ "end \n"
+		
+				+ "rule \"rule 1\" when \n"
 				+ "    $f:Lampadina(accesa==true) \n"
 				+ "then \n"
 				+ "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n"
-				+ "   $f.setAccesa(false); \n"
+				+ "   modify($f) {setAccesa(false)}; \n"
 				+ "end \n"
+				
 				+ "rule \"rule 2\" when \n"
 				+ "    $f:Lampadina(spenta==true) \n"
 				+ "then \n"
 				+ "   System.out.println( \"Lampadina spenta da nuovo drl!\" ); \n"
-				+ "end \n" + "rule \"rule 3\" when \n" + "    eval(true) \n"
+				+ "end \n" 
+				
+				+ "rule \"rule 3\" when \n" 
+				+ "    eval(true) \n"
 				+ "then \n"
 				+ "   System.out.println( \"funge da nuovo drl!\" ); \n"
 				+ "end \n";
+				
 
 		System.out.println(s);
 		return s;
@@ -206,7 +225,41 @@ public class RuleRunner {
 			}
 		}
 
-		fireAllRules();
+		//block the rule that have some facts locked in the WM
+		
+		
+		kSession.fireAllRules(new AgendaFilter()
+		{//define the condition to fire the rule
+			public boolean accept(Match match)
+			{
+				String rulename = match.getRule().getName();
+				Collection<Object> oggettiDaWM = match.getObjects();
+				for (Object ogg : oggettiDaWM) {
+				Field[] attributes = ogg.getClass().getDeclaredFields();
+				for (Field field : attributes) {
+					// TODO check if the id is in the lock table
+					//System.out.println(field.toString());
+					field.setAccessible(true);
+					if(field.getName().toLowerCase().equals("codice"))
+					{
+						try {
+							if(field.get(ogg).toString().equals("lampadina2"))
+							{
+								return false;
+							}
+						} catch (IllegalArgumentException
+								| IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				}
+				return true;
+			}
+		});
+		
+		
 		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
