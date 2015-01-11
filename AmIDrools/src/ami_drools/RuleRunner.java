@@ -12,6 +12,19 @@ import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.KieRepository;
 import org.kie.api.builder.Message.Level;
 import org.kie.api.definition.type.FactType;
+import org.kie.api.event.rule.AfterMatchFiredEvent;
+import org.kie.api.event.rule.AgendaEventListener;
+import org.kie.api.event.rule.AgendaGroupPoppedEvent;
+import org.kie.api.event.rule.AgendaGroupPushedEvent;
+import org.kie.api.event.rule.BeforeMatchFiredEvent;
+import org.kie.api.event.rule.MatchCancelledEvent;
+import org.kie.api.event.rule.MatchCreatedEvent;
+import org.kie.api.event.rule.ObjectDeletedEvent;
+import org.kie.api.event.rule.ObjectInsertedEvent;
+import org.kie.api.event.rule.ObjectUpdatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupActivatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupDeactivatedEvent;
+import org.kie.api.event.rule.RuleRuntimeEventListener;
 import org.kie.api.io.KieResources;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
@@ -130,7 +143,8 @@ public class RuleRunner {
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-
+		factType.set(NewFactType,"modificati", new java.util.ArrayList());
+		System.out.println(factType.toString());
 		kSession.insert(NewFactType);
 		// kSession.fireAllRules();
 
@@ -164,26 +178,37 @@ public class RuleRunner {
 				+ "	codice	: String \n"
 				+ "	accesa	: Boolean \n"
 				+ "	spenta	: Boolean \n"
+				+ "	modificati	: java.util.List \n"
 				+ "end \n"
+				//declare an object to notify the update
+				+ "declare Notifica \n"
+				+ "	id		: String \n"
+				+ "end \n"
+
 				//funzione per controllare se il manager ha messo un lock sul fatto
+				/*
 				+ "function void newFunction(){ \n"
 				+ "System.out.println( \"dentro alla funzione!\" );"
 				+ "if(true) \n"
 				+ "		System.out.println( \"Lampadina sia accesa che spenta!\" ); \n"
 				+ "else \n"
 				+ "		System.out.println( \"merda!\" );}\n"
-				
+				*/
+				/*
 				+ "rule \"rule f\" when \n"
 				+ "    eval(true) \n"
 				+ "then \n"
 				+ "   newFunction(); \n"
 				+ "end \n"
-		
+				 */
 				+ "rule \"rule 1\" when \n"
 				+ "    $f:Lampadina(accesa==true) \n"
 				+ "then \n"
+				+ " $insert( new Notifica($f.getId()) ) \n"
 				+ "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n"
 				+ "   modify($f) {setAccesa(false)}; \n"
+				//+ "   $f.setModificati(new java.util.ArrayList()); \n"
+				+ "   $f.getModificati().add(new String(\"accesa\")); \n"
 				+ "end \n"
 				
 				+ "rule \"rule 2\" when \n"
@@ -210,7 +235,7 @@ public class RuleRunner {
 	 * object that represent the fact to the manager
 	 *
 	 */
-	public void matchResolveAct() throws RemoteException,
+	public void matchResolveAct(String ISname) throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
 		sharedFacts = new Vector<Fact>();
 		sharedFacts = wois.getSharedFacts();
@@ -227,6 +252,26 @@ public class RuleRunner {
 
 		//block the rule that have some facts locked in the WM
 		
+		kSession.addEventListener(new RuleRuntimeEventListener() {
+			@Override
+			public void objectUpdated(ObjectUpdatedEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void objectInserted(ObjectInsertedEvent arg0) {
+				// TODO Auto-generated method stub
+				System.out.println("Devo controllare se fa il lock");
+				
+			}
+			
+			@Override
+			public void objectDeleted(ObjectDeletedEvent arg0) {
+				// TODO Auto-generated method stub
+				System.out.println("Devo rilasciare il lock");
+			}
+		});
 		
 		kSession.fireAllRules(new AgendaFilter()
 		{//define the condition to fire the rule
@@ -290,10 +335,16 @@ public class RuleRunner {
 				field.setAccessible(true);
 				// Dynamically read Attribute Name
 				System.out.println(field.getName() + ", " + field.get(ogg).toString());
-				factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+				if (field.getName().equals("modificati"))
+				{
+					factToSend.updateAttributeValue(field.getName(), "new java.util.ArrayList()" );
+				}
+				else
+				{
+					factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+				}
 			}
 			sharedFactsSend.add(factToSend);
-			System.out.println(factToSend.printFact());
 		}
 		//send here
 		try {
