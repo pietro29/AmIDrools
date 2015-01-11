@@ -48,6 +48,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     private Map mDevices = new HashMap();
     /**
+     * Map of the registered users
+     */
+    private Map mUsers = new HashMap();
+    /**
+     * Map of the priorities
+     */
+    private Map mPriorities = new HashMap();
+    /**
      * Name of the controlled WoIS
      */
     private final String woisName;
@@ -61,9 +69,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private Vector templates;
     
     /**
-     * Vettore dei fatti condivisi
+     * Shared facts vector
      */
     private Vector<Fact> sharedFacts;
+    
+    /**
+     * Assertion object vector
+     */
+    private Vector<Assertion> assertions;
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -78,6 +91,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         bindingUrl = name;
         templates = new Vector();
         sharedFacts = new Vector<Fact>();
+        assertions = new Vector<Assertion>();
+        
         //templates.add( new SharedTemplate( woisName + "::" + SharedRuleProxy.templateName, null, SharedRuleProxy.class.getName(), SharedRuleProxy.defaultValues ) );
         //templates.add( new SharedTemplate( woisName + "::" + WoisMemberProxy.templateName, null, WoisMemberProxy.class.getName(), WoisMemberProxy.defaultValues ) );
         boolean done = false;
@@ -116,6 +131,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         
         sharedFacts.add(fatto2);
         mFacts.put(fatto2.getId(), fatto2);
+        
+        //Read priority config. file
+        mPriorities.put("mattia", 1);
+        mPriorities.put("pippo", 2);
     }
     
     /**
@@ -139,7 +158,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
     /**
      * Insert a new engine in the member of this WoIS.
-     * @param dr the engine.
+     * @param inf the engine.
      * @param name the name of the engine in this WoIS.
      * @throws AlreadyRegisteredException if the name is already in use by another IS or if
      *             <code>dr</code> was already registered with another name.
@@ -160,6 +179,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 // assert v1 == dr;
             }
             mNames.put( inf, name );
+            
+            User user = new User(name,name, getUserPriority(name) );
+            mUsers.put(name, user);
         }
     }
     public void addMember( IsIntf inf, String name ) throws RemoteException
@@ -171,6 +193,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    }
+    public int getUserPriority(String infName){
+    	return (int) mPriorities.get(infName);
     }
     public IsIntf[] getMemberList() throws RemoteException
     {
@@ -198,7 +223,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * @throws ClassNotFoundException 
      * 
      */
-    public void setSharedFacts(Vector <Fact> sharedFactUpdate) throws ClassNotFoundException{
+    public void setSharedFacts(Vector <Fact> sharedFactUpdate, String isName) throws ClassNotFoundException{
     	Vector <String> tempAttr;
     	Vector <String> tempVal;
     	List tempModified;
@@ -215,6 +240,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
     			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
     			if (tempModified.contains(tempAttr.get(i))){
+    				
     				factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
 	    			switch(tempFactType){
 	    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);

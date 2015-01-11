@@ -45,6 +45,8 @@ public class Is extends JFrame implements ActionListener{
     private Vector runners;
     /** Remote object, used for communication between ISs */
     private IsRemote remoteObject;
+    /** Name of the Is */
+    private String name;
     
     //Elementi grafici
     JPanel p;
@@ -65,11 +67,12 @@ public class Is extends JFrame implements ActionListener{
     //
     
     
-	public Is() throws RemoteException
+	public Is(String name) throws RemoteException
 	{
 		woises = new Vector();
 		runners = new Vector();
 		remoteObject = new IsRemote( this );
+		this.name=name;
 		
 		p=new JPanel();
     	lInfo=new JLabel();
@@ -154,7 +157,7 @@ public class Is extends JFrame implements ActionListener{
             try {
             	lInfo.setText("dentro");
               
-            	runner.matchResolveAct();
+            	runner.matchResolveAct(this.name);
                 
                 //gli oggetti sono caricati correttamente
             } catch (Exception e) {

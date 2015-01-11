@@ -39,5 +39,5 @@ public interface WoisManager extends Remote {
      * @param sharedFacts
      * @throws RemoteException
      */
-    void setSharedFacts(Vector <Fact> sharedFactsUpdate) throws RemoteException, ClassNotFoundException;
+    void setSharedFacts(Vector <Fact> sharedFactsUpdate, String isName) throws RemoteException, ClassNotFoundException;
 }

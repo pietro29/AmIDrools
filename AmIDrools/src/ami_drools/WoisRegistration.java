@@ -1,9 +1,5 @@
 package ami_drools;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-
-
 public class WoisRegistration {
 	
 	/** The registered WoIS */
@@ -36,8 +32,7 @@ public class WoisRegistration {
         this.wois = wois;
         this.defmodule = defmodule;
         this.name = name;
-        //myGhosts = new HashSet();
-        //modificationQueue = new LinkedList();
+        
     }
 
     boolean isRegistered()

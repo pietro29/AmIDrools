@@ -26,7 +26,7 @@ public class RunIs {
     public static void main( String args[] ) throws RemoteException, IOException
     {
         try {
-        	inf = new Is();
+        	inf = new Is(args[0].toString());
         	inf.setTitle("Is " + args[0].toString());
         	inf.setSize(500, 500);
         	inf.setVisible(true);
