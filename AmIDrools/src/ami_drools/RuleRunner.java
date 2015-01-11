@@ -130,7 +130,8 @@ public class RuleRunner {
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
-
+		factType.set(NewFactType,"modificati", new java.util.ArrayList());
+		System.out.println(factType.toString());
 		kSession.insert(NewFactType);
 		// kSession.fireAllRules();
 
@@ -164,26 +165,31 @@ public class RuleRunner {
 				+ "	codice	: String \n"
 				+ "	accesa	: Boolean \n"
 				+ "	spenta	: Boolean \n"
+				+ "	modificati	: java.util.List \n"
 				+ "end \n"
 				//funzione per controllare se il manager ha messo un lock sul fatto
+				/*
 				+ "function void newFunction(){ \n"
 				+ "System.out.println( \"dentro alla funzione!\" );"
 				+ "if(true) \n"
 				+ "		System.out.println( \"Lampadina sia accesa che spenta!\" ); \n"
 				+ "else \n"
 				+ "		System.out.println( \"merda!\" );}\n"
-				
+				*/
+				/*
 				+ "rule \"rule f\" when \n"
 				+ "    eval(true) \n"
 				+ "then \n"
 				+ "   newFunction(); \n"
 				+ "end \n"
-		
+				 */
 				+ "rule \"rule 1\" when \n"
 				+ "    $f:Lampadina(accesa==true) \n"
 				+ "then \n"
 				+ "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n"
 				+ "   modify($f) {setAccesa(false)}; \n"
+				//+ "   $f.setModificati(new java.util.ArrayList()); \n"
+				+ "   $f.getModificati().add(new String(\"accesa\")); \n"
 				+ "end \n"
 				
 				+ "rule \"rule 2\" when \n"
@@ -290,10 +296,16 @@ public class RuleRunner {
 				field.setAccessible(true);
 				// Dynamically read Attribute Name
 				System.out.println(field.getName() + ", " + field.get(ogg).toString());
-				factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+				if (field.getName().equals("modificati"))
+				{
+					factToSend.updateAttributeValue(field.getName(), "new java.util.ArrayList()" );
+				}
+				else
+				{
+					factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+				}
 			}
 			sharedFactsSend.add(factToSend);
-			System.out.println(factToSend.printFact());
 		}
 		//send here
 		try {
