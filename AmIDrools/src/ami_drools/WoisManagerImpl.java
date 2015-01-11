@@ -230,26 +230,92 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	String tempId;
     	String tempFactType;
     	Fact factToUpdate;
-    	for (Fact fact : sharedFactUpdate){
-    		tempAttr = fact.getAttributes();
-    		tempVal = fact.getValues();
-    		tempModified = fact.getModified();
-    		tempFactType = fact.getFactType();
-    		factToUpdate = (Fact) mFacts.get(fact.getId());
-    		for (int i=0;i<tempAttr.size();i++){
-    			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
-    			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
-    			if (tempModified.contains(tempAttr.get(i))){
-    				
-    				factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
-	    			switch(tempFactType){
-	    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
-	    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
-	    								l.updateField(tempAttr.get(i), tempVal.get(i));
-	    								break;
+    	Boolean update = true;
+    	User tempUsr;
+    	synchronized (assertions) {
+	    	for (Fact fact : sharedFactUpdate){
+	    		tempAttr = fact.getAttributes();
+	    		tempVal = fact.getValues();
+	    		tempModified = fact.getModified();
+	    		tempFactType = fact.getFactType();
+	    		factToUpdate = (Fact) mFacts.get(fact.getId());
+	    		tempUsr =(User) mUsers.get(isName);
+	    		for (int i=0;i<tempAttr.size();i++){
+	    			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
+	    			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
+	    			if (tempModified.contains(tempAttr.get(i))){
+	    				
+	    				//se trovo un asserzione precedente devo controllare la priorità dell'utente che tenta di modificare il valore dell'attributo
+	    				update = checkAssertionPriority( fact.getId(), tempAttr.get(i),tempUsr.getPriority());
+	    				
+	    				if (update){
+	    					//aggiorno il valore dell'attributo
+		    				factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
+		    				//gestisco la tabella delle asserzioni
+		    				updateAssertionTable(tempAttr.get(i),tempUsr,fact);
+		    				//aggiorno i device specifici
+			    			switch(tempFactType){
+			    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
+			    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+			    								l.updateField(tempAttr.get(i), tempVal.get(i));
+			    								break;
+			    			}
+	    				}	
 	    			}
+	    		}
+	    	}
+    	}
+    }
+    /**
+     * Check if the Is can update an attribute value
+     * @param idDevice 
+     * @param attribute
+     * @param priority
+     * @return
+     */
+    public boolean checkAssertionPriority(String idDevice, String attribute, int priority){
+    	boolean check = true;
+    	for (int i=0;i<assertions.size();i++){
+    		Assertion asrt = assertions.get(i);
+    		Fact asserctionFact = asrt.getFact();
+    		User asserctionUser = asrt.getUser();
+    		String asserctionAttribute = asrt.getAttribute();
+    		if (asserctionFact.getId()==idDevice  && asserctionAttribute == attribute && asserctionUser.getPriority()>priority){
+    			check=false;
+    		}
+    	}
+    	return check;
+    }
+    /**
+     * Manage the assertions vector. Delete lower priority assertion, insert new assertion.
+     * @param attribute
+     * @param user
+     * @param fact
+     */
+    public void updateAssertionTable( String attribute, User user, Fact fact){
+    	boolean insert = true;
+    	
+    	for (int i=0;i<assertions.size();i++){
+    		Assertion asrt = assertions.get(i);
+    		Fact asserctionFact = asrt.getFact();
+    		User asserctionUser = asrt.getUser();
+    		String asserctionAttribute = asrt.getAttribute();
+    		
+    		if (asserctionFact.getId()==fact.getId()  && asserctionAttribute == attribute){
+    			if (asserctionUser.getPriority()<user.getPriority()){
+    				assertions.remove(i);
+    			}
+    			if (asserctionUser.getPriority()==user.getPriority()){
+    				if(asserctionUser.getId()==user.getId()){
+    					insert=false;
+    				}
     			}
     		}
+    		
+    	}
+    	if(insert){
+    		Assertion newAsrt = new Assertion(user, fact, attribute);
+    		assertions.add(newAsrt);
     	}
     }
     /**
