@@ -1,6 +1,8 @@
 package ami_drools;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 public class Fact implements Serializable {
@@ -17,12 +19,15 @@ public class Fact implements Serializable {
 	
 	private Vector <String> attributesType;
 	
+	private List modified;
+	
 	public Fact (String id, String factType){
 		this.id= id;
 		this.factType=factType;
 		attributes = new Vector <String>();
 		values = new Vector <String>();
 		attributesType = new Vector <String>();
+		modified = new ArrayList<String>();
 	}
 	/**
 	 * Get attributes array
@@ -59,7 +64,26 @@ public class Fact implements Serializable {
 	public Vector <String> getAttributesType(){
 		return attributesType;
 	}
-	
+	/**
+	 * 
+	 * @return List of modified attributes of the fact
+	 */
+	public List getModified(){
+		return modified;
+	}
+	/**
+	 * Insert a new modified attribute in the list
+	 * @param modifiedAttr
+	 */
+	public void insertModifiedAttributed(String modifiedAttr){
+		modified.add(modifiedAttr);
+	}
+	/**
+	 * Remove all elements of the list
+	 */
+	public void removeAllModifiedAttributed(){
+		modified.clear();
+	}
 	/**
 	 * Insert a new element in the attribute array.
 	 * @param attribute

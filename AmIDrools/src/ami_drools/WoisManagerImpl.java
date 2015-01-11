@@ -38,9 +38,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * access should be synchronized on {@link #members}.
      */
     private Map mNames = new HashMap(); 
-    
+    /**
+     * Map of the fact and their ID
+     */
     private Map mFacts = new HashMap();
-    
+    /**
+     * Map of the device and their ID
+     */
     private Map mDevices = new HashMap();
     /**
      * Name of the controlled WoIS
@@ -184,6 +188,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * return the vector of the shared facts of the WoIS
      */
     public Vector <Fact> getSharedFacts(){
+    	for (Fact fact: sharedFacts){
+    		fact.removeAllModifiedAttributed();
+    	}
     	return sharedFacts;
     }
     /**
