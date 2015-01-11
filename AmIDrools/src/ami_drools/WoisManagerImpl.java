@@ -16,6 +16,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -200,22 +201,27 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public void setSharedFacts(Vector <Fact> sharedFactUpdate) throws ClassNotFoundException{
     	Vector <String> tempAttr;
     	Vector <String> tempVal;
+    	List tempModified;
     	String tempId;
     	String tempFactType;
     	Fact factToUpdate;
     	for (Fact fact : sharedFactUpdate){
     		tempAttr = fact.getAttributes();
     		tempVal = fact.getValues();
+    		tempModified = fact.getModified();
     		tempFactType = fact.getFactType();
     		factToUpdate = (Fact) mFacts.get(fact.getId());
     		for (int i=0;i<tempAttr.size();i++){
     			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
-    			factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
-    			switch(tempFactType){
-    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
-    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
-    								l.updateField(tempAttr.get(i), tempVal.get(i));
-    								break;
+    			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
+    			if (tempModified.contains(tempAttr.get(i))){
+    				factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
+	    			switch(tempFactType){
+	    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
+	    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+	    								l.updateField(tempAttr.get(i), tempVal.get(i));
+	    								break;
+	    			}
     			}
     		}
     	}
