@@ -93,8 +93,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         sharedFacts = new Vector<Fact>();
         assertions = new Vector<Assertion>();
         
-        //templates.add( new SharedTemplate( woisName + "::" + SharedRuleProxy.templateName, null, SharedRuleProxy.class.getName(), SharedRuleProxy.defaultValues ) );
-        //templates.add( new SharedTemplate( woisName + "::" + WoisMemberProxy.templateName, null, WoisMemberProxy.class.getName(), WoisMemberProxy.defaultValues ) );
         boolean done = false;
         try {
             Naming.rebind( name, this ); // FIXME: must be bind, not rebind
