@@ -175,76 +175,24 @@ public class RuleRunner {
 	 * @return the string of the knowledge base
 	 */
 	private String getRule() {
-		String s = "" //TODO da cancellare
-				+ "package rules \n"
-				+ "declare Lampadina \n"
-				+ "	id		: String \n"
-				+ "	codice	: String \n"
-				+ "	accesa	: Boolean \n"
-				+ "	spenta	: Boolean \n"
-				+ "	modificati	: java.util.List \n"
-				+ "end \n"
-				//declare an object to notify the update
-				+ "declare Notifica \n"
-				+ "	id		: String \n"
-				+ "end \n"
-
-				//funzione per controllare se il manager ha messo un lock sul fatto
-				/*
-				+ "function void newFunction(){ \n"
-				+ "System.out.println( \"dentro alla funzione!\" );"
-				+ "if(true) \n"
-				+ "		System.out.println( \"Lampadina sia accesa che spenta!\" ); \n"
-				+ "else \n"
-				+ "		System.out.println( \"merda!\" );}\n"
-				*/
-				/*
-				+ "rule \"rule f\" when \n"
-				+ "    eval(true) \n"
-				+ "then \n"
-				+ "   newFunction(); \n"
-				+ "end \n"
-				 */
-				+ "rule \"rule 1\" \n when \n"
-				+ "    $f:Lampadina(accesa==true) \n"
-				+ "	   $damodificare: Lampadina(id==$f.getId())\n"
-				+ "then \n"
-				+ " \n"
-				+ "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n"
-				+ "   modify($f) {setAccesa(false)}; \n"
-				//+ "   $f.setModificati(new java.util.ArrayList()); \n"
-				+ "   $f.getModificati().add(new String(\"accesa\")); \n"
-				+ "end \n"
-				
-				+ "rule \"rule 2\" when \n"
-				+ "    $f:Lampadina(spenta==true) \n"
-				+ "then \n"
-				+ "   System.out.println( \"Lampadina spenta da nuovo drl!\" ); \n"
-				+ "end \n" 
-				
-				+ "rule \"rule 3\" when \n" 
-				+ "    eval(true) \n"
-				+ "then \n"
-				+ "   System.out.println( \"funge da nuovo drl!\" ); \n"
-				+ "end \n";
-		s="";
-			try {//1
-				BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/drl.txt"));
-				StringBuilder sb = new StringBuilder();
-		        String line = br.readLine();
-		        while (line != null) {
-		            sb.append(line);
-		            sb.append(System.lineSeparator());
+		String s = "" ;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/drl.txt"));
+			StringBuilder sb = new StringBuilder();
+		    String line = br.readLine();
+		    while (line != null) {
+		         sb.append(line);
+		         sb.append(System.lineSeparator());
 		            line = br.readLine();
-		        }
-		        s = sb.toString();
-		        br.close();
+		    }
+		    s = sb.toString();
+		    br.close();
 		    } catch (Throwable t) {
 		    	System.err.println(t.toString());
 		    	s="";
 		    }
-			System.out.println(s);
-			return s;
+		System.out.println(s);
+		return s;
 	}
 
 	/**
