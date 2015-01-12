@@ -98,9 +98,7 @@ public class RuleRunner {
 			// insert the fact
 			kSession.insert(fact);
 		}
-		handleWois = kSession.insert(wois);
-		kSession.fireAllRules();
-		kSession.delete(handleWois);
+		fireAllRules();
 	}
 
 	/**
@@ -298,58 +296,27 @@ public class RuleRunner {
 		{//define the condition to fire the rule
 			public boolean accept(Match match)
 			{
-				String rulename = match.getRule().getName();
-				
-				//check if there's a lock for the ID inside the metadata
-				/*Map<String, Object> metaData = match.getRule().getMetaData();
-				if (metaData.containsKey("LampToLock")) {
-				      System.out.println("id da verificare : " + metaData.get("LampToLock"));
-				    }*/
-				
-				Collection<? extends FactHandle> oggettiDaWM = match.getFactHandles();
-				//search for the obj which name is damodificare
-				for (FactHandle ogg : oggettiDaWM) {
-					//System.err.println(ogg);
+				//String rulename = match.getRule().getName();
+				Collection<Object> oggettiDaWM = match.getObjects();
+				for (Object ogg : oggettiDaWM) {
 					Field[] attributes = ogg.getClass().getDeclaredFields();
 					for (Field field : attributes) {
-						// TODO check if the id is in the lock table
-						//System.out.println(field.toString());
 						field.setAccessible(true);
-						if(field.getName().toLowerCase().equals("codice"))
+						if(field.getName().toLowerCase().equals("id"))
 						{
 							try {
-								if(field.get(ogg).toString().equals("lampadina2"))
-								{
+								if(wois.getLock(field.get(ogg).toString()))
+								{// the object is locked
 									return false;
 								}
 							} catch (IllegalArgumentException
-									| IllegalAccessException e) {
+									| IllegalAccessException | RemoteException e) {
 								// TODO Auto-generated catch block
-								e.printStackTrace();//11
-							}
-						}
-					}
-					}
-				for (Object ogg : oggettiDaWM) {
-				Field[] attributes = ogg.getClass().getDeclaredFields();
-				for (Field field : attributes) {
-					// TODO check if the id is in the lock table
-					//System.out.println(field.toString());
-					field.setAccessible(true);
-					if(field.getName().toLowerCase().equals("codice"))
-					{
-						try {
-							if(field.get(ogg).toString().equals("lampadina2"))
-							{
+								e.printStackTrace();
 								return false;
 							}
-						} catch (IllegalArgumentException
-								| IllegalAccessException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
 					}
-				}
 				}
 				return true;
 			}
@@ -388,7 +355,7 @@ public class RuleRunner {
 				System.out.println(field.getName() + ", " + field.get(ogg).toString());
 				if (field.getName().equals("modificati"))
 				{
-					factToSend.insertModifiedAttributed("accesa");
+					factToSend.insertModifiedAttribute(field.get(ogg).toString());
 				}
 				else
 				{
@@ -411,11 +378,14 @@ public class RuleRunner {
 	}
 
 	/**
-	 * fire all the rules inside the knowledge base that satisfy the condition
+	 * fire all the rules inside the knowledge base that satisfy the condition and
+	 * add the Wois object for the lock's control
 	 * 
 	 */
 	public void fireAllRules() {
+		handleWois = kSession.insert(wois);
 		kSession.fireAllRules();
+		kSession.delete(handleWois);
 	}
 
 	/**
