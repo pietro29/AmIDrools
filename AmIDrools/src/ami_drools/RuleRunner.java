@@ -228,7 +228,6 @@ public class RuleRunner {
 				+ "end \n";
 		s="";
 			try {
-				//BufferedReader br = new BufferedReader(new FileReader("C:/Users/MattiaEvent/workspace/AmIDrools/drl.txt"));
 				BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/drl.txt"));
 				StringBuilder sb = new StringBuilder();
 		        String line = br.readLine();
