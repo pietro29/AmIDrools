@@ -227,7 +227,7 @@ public class RuleRunner {
 				+ "   System.out.println( \"funge da nuovo drl!\" ); \n"
 				+ "end \n";
 		s="";
-			try {
+			try {//1
 				BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/drl.txt"));
 				StringBuilder sb = new StringBuilder();
 		        String line = br.readLine();

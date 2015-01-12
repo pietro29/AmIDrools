@@ -15,7 +15,7 @@ declare Notifica
 end
 
 function boolean newFunction(String s){
-	System.out.println( "dentro alla funzione!");
+	System.out.println( "deeeeentro alla funzione!");
 	System.out.println( s );
 	if(true){
 		System.out.println( "Lampadina sia accesa che spenta!" );
