@@ -230,8 +230,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	Fact factToUpdate;
     	Boolean update = true;
     	User tempUsr;
+    	
     	synchronized (assertions) {
+    		
 	    	for (Fact fact : sharedFactUpdate){
+	    		
 	    		tempAttr = fact.getAttributes();
 	    		tempVal = fact.getValues();
 	    		tempModified = fact.getModified();
@@ -239,7 +242,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	    		factToUpdate = (Fact) mFacts.get(fact.getId());
 	    		tempUsr =(User) mUsers.get(isName);
 	    		for (int i=0;i<tempAttr.size();i++){
-	    			//System.out.println(tempAttr.get(i) + " - " + tempVal.get(i));
+	    			System.out.println(tempModified.size());
 	    			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
 	    			if (tempModified.contains(tempAttr.get(i))){
 	    				
@@ -247,6 +250,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	    				update = checkAssertionPriority( fact.getId(), tempAttr.get(i),tempUsr.getPriority());
 	    				
 	    				if (update){
+	    					
 	    					//aggiorno il valore dell'attributo
 		    				factToUpdate.updateAttributeValue(tempAttr.get(i), tempVal.get(i));
 		    				//gestisco la tabella delle asserzioni
@@ -318,10 +322,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
     public boolean getLock(String idFact){
-    	if(idFact=="1")
+    	if(idFact.equals("1"))
     		return true;
     	else
-		return false;
+    		return false;
     	
     }
     
