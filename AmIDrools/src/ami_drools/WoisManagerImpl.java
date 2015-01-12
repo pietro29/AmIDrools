@@ -316,6 +316,15 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		assertions.add(newAsrt);
     	}
     }
+    
+    public boolean getLock(String idFact){
+    	if(idFact=="1")
+    		return true;
+    	else
+		return false;
+    	
+    }
+    
     /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS

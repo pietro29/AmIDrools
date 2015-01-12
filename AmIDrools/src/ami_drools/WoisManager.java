@@ -40,4 +40,11 @@ public interface WoisManager extends Remote {
      * @throws RemoteException
      */
     void setSharedFacts(Vector <Fact> sharedFactsUpdate, String isName) throws RemoteException, ClassNotFoundException;
+    /**
+     * Return true if lock is active
+     * @param idFact
+     * @return
+     * @throws RemoteException
+     */
+    boolean getLock(String idFact) throws RemoteException;
 }
