@@ -1,0 +1,52 @@
+package rules
+//lo uso per controllare i lock
+global ami_drools.Wois wois;
+
+declare Lampadina
+	id	: String
+	codice	: String
+	accesa	: Boolean
+	spenta	: Boolean
+	modificati	: java.util.List
+end
+
+declare Notifica
+	id	: String
+end
+
+function boolean newFunction(String s){
+	System.out.println( "dentro alla funzione!");
+	System.out.println( s );
+	if(true){
+		System.out.println( "Lampadina sia accesa che spenta!" );
+		return true;
+	}else{
+		System.out.println( "merda!" );}
+	return false;
+}
+
+rule "rule 1"
+when
+	$f:Lampadina(accesa==true)
+then
+	if(newFunction($f.getId()))
+	{
+		System.out.println( "Lampadina accesa da nuovo drl!" );
+		modify($f) {setAccesa(false)};
+		$f.getModificati().add(new String("accesa"));
+	}
+end
+				
+rule "rule 2"
+when
+	$f:Lampadina(spenta==true)
+then
+	System.out.println( "Lampadina spenta da nuovo drl!" );
+end
+				
+rule "rule 3"
+when
+	eval(true)
+then
+	System.out.println( "funge da nuovo drl!" );
+end
