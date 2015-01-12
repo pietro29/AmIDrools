@@ -1,0 +1,36 @@
+package rules
+declare Lampadina
+	id	: String
+	codice	: String
+	accesa	: Boolean
+	spenta	: Boolean
+	modificati	: java.util.List
+end
+declare Notifica
+	id	: String
+end
+
+rule "rule 1"
+when
+	$f:Lampadina(accesa==true)
+	$damodificare: Lampadina(id==$f.getId())
+then
+	System.out.println( "Lampadina accesa da nuovo drl!" );
+	modify($f) {setAccesa(false)};
+	$f.getModificati().add(new String("accesa"));
+end
+				
+rule "rule 2"
+when
+	$f:Lampadina(spenta==true)
+then
+	System.out.println( "Lampadina spenta da nuovo drl!" );
+end
+				
+rule "rule 3"
+when
+	eval(true)
+then
+	System.out.println( "funge da nuovo drl!" );
+end
+jjjjjjjjjjjjj

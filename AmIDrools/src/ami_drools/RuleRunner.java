@@ -1,9 +1,12 @@
 package ami_drools;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Vector;
 
 import org.kie.api.KieServices;
@@ -30,6 +33,7 @@ import org.kie.api.io.Resource;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.AgendaFilter;
+import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.runtime.rule.Match;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
@@ -144,7 +148,6 @@ public class RuleRunner {
 			t.printStackTrace();
 		}
 		factType.set(NewFactType,"modificati", new java.util.ArrayList());
-		System.out.println(factType.toString());
 		kSession.insert(NewFactType);
 		// kSession.fireAllRules();
 
@@ -171,7 +174,7 @@ public class RuleRunner {
 	 * @return the string of the knowledge base
 	 */
 	private String getRule() {
-		String s = ""
+		String s = "" //TODO da cancellare
 				+ "package rules \n"
 				+ "declare Lampadina \n"
 				+ "	id		: String \n"
@@ -201,10 +204,11 @@ public class RuleRunner {
 				+ "   newFunction(); \n"
 				+ "end \n"
 				 */
-				+ "rule \"rule 1\" when \n"
+				+ "rule \"rule 1\" \n when \n"
 				+ "    $f:Lampadina(accesa==true) \n"
+				+ "	   $damodificare: Lampadina(id==$f.getId())\n"
 				+ "then \n"
-				+ " $insert( new Notifica($f.getId()) ) \n"
+				+ " \n"
 				+ "   System.out.println( \"Lampadina accesa da nuovo drl!\" ); \n"
 				+ "   modify($f) {setAccesa(false)}; \n"
 				//+ "   $f.setModificati(new java.util.ArrayList()); \n"
@@ -222,10 +226,24 @@ public class RuleRunner {
 				+ "then \n"
 				+ "   System.out.println( \"funge da nuovo drl!\" ); \n"
 				+ "end \n";
-				
-
-		System.out.println(s);
-		return s;
+		s="";
+			try {
+				BufferedReader br = new BufferedReader(new FileReader("C:/Users/MattiaEvent/workspace/AmIDrools/drl.txt"));
+		        StringBuilder sb = new StringBuilder();
+		        String line = br.readLine();
+		        while (line != null) {
+		            sb.append(line);
+		            sb.append(System.lineSeparator());
+		            line = br.readLine();
+		        }
+		        s = sb.toString();
+		        br.close();
+		    } catch (Throwable t) {
+		    	System.err.println(t.toString());
+		    	s="";
+		    }
+			System.out.println(s);
+			return s;
 	}
 
 	/**
@@ -249,7 +267,7 @@ public class RuleRunner {
 				e.printStackTrace();
 			}
 		}
-
+		kSession.setGlobal("wois", wois);
 		//block the rule that have some facts locked in the WM
 		
 		kSession.addEventListener(new RuleRuntimeEventListener() {
@@ -262,14 +280,13 @@ public class RuleRunner {
 			@Override
 			public void objectInserted(ObjectInsertedEvent arg0) {
 				// TODO Auto-generated method stub
-				System.out.println("Devo controllare se fa il lock");
+				//wois.toString();
 				
 			}
 			
 			@Override
 			public void objectDeleted(ObjectDeletedEvent arg0) {
 				// TODO Auto-generated method stub
-				System.out.println("Devo rilasciare il lock");
 			}
 		});
 		
@@ -278,7 +295,38 @@ public class RuleRunner {
 			public boolean accept(Match match)
 			{
 				String rulename = match.getRule().getName();
-				Collection<Object> oggettiDaWM = match.getObjects();
+				
+				//check if there's a lock for the ID inside the metadata
+				/*Map<String, Object> metaData = match.getRule().getMetaData();
+				if (metaData.containsKey("LampToLock")) {
+				      System.out.println("id da verificare : " + metaData.get("LampToLock"));
+				    }*/
+				
+				Collection<? extends FactHandle> oggettiDaWM = match.getFactHandles();
+				//search for the obj which name is damodificare
+				for (FactHandle ogg : oggettiDaWM) {
+					//System.err.println(ogg);
+					Field[] attributes = ogg.getClass().getDeclaredFields();
+					for (Field field : attributes) {
+						// TODO check if the id is in the lock table
+						//System.out.println(field.toString());
+						field.setAccessible(true);
+						if(field.getName().toLowerCase().equals("codice"))
+						{
+							try {
+								if(field.get(ogg).toString().equals("lampadina2"))
+								{
+									return false;
+								}
+							} catch (IllegalArgumentException
+									| IllegalAccessException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+					}
+				
 				for (Object ogg : oggettiDaWM) {
 				Field[] attributes = ogg.getClass().getDeclaredFields();
 				for (Field field : attributes) {
@@ -348,7 +396,7 @@ public class RuleRunner {
 		}
 		//send here
 		try {
-			wois.setSharedFacts(sharedFactsSend);
+			wois.setSharedFacts(sharedFactsSend, ISname);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
