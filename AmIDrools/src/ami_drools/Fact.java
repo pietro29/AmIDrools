@@ -75,8 +75,13 @@ public class Fact implements Serializable {
 	 * Insert a new modified attribute in the list
 	 * @param modifiedAttr
 	 */
-	public void insertModifiedAttributed(String modifiedAttr){
+	public void insertModifiedAttribute(String modifiedAttr){
 		modified.add(modifiedAttr);
+	}
+	public void insertModifiedAttribute(Vector<String> modifiedAttr){
+		for (String str:modifiedAttr){
+			modified.add(modifiedAttr);
+		}
 	}
 	/**
 	 * Remove all elements of the list
