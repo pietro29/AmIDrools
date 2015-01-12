@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.lang.reflect.Field;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Vector;
@@ -47,7 +48,8 @@ public class RuleRunner {
 	KieRepository kieRepository;
 	KieBuilder kb;
 	KieContainer kContainer;
-
+	FactHandle handleWois;
+	
 	Wois wois;
 	Vector<Fact> sharedFacts;
 	Vector<Fact> sharedFactsSend;
@@ -96,8 +98,9 @@ public class RuleRunner {
 			// insert the fact
 			kSession.insert(fact);
 		}
-
+		handleWois = kSession.insert(wois);
 		kSession.fireAllRules();
+		kSession.delete(handleWois);
 	}
 
 	/**
@@ -267,8 +270,9 @@ public class RuleRunner {
 				e.printStackTrace();
 			}
 		}
-		kSession.setGlobal("wois", wois);
 		//block the rule that have some facts locked in the WM
+		
+		handleWois = kSession.insert(wois);
 		
 		kSession.addEventListener(new RuleRuntimeEventListener() {
 			@Override
@@ -326,7 +330,6 @@ public class RuleRunner {
 						}
 					}
 					}
-				
 				for (Object ogg : oggettiDaWM) {
 				Field[] attributes = ogg.getClass().getDeclaredFields();
 				for (Field field : attributes) {
@@ -352,7 +355,7 @@ public class RuleRunner {
 			}
 		});
 		
-		
+		kSession.delete(handleWois);
 		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
@@ -385,7 +388,7 @@ public class RuleRunner {
 				System.out.println(field.getName() + ", " + field.get(ogg).toString());
 				if (field.getName().equals("modificati"))
 				{
-					factToSend.updateAttributeValue(field.getName(), "new java.util.ArrayList()" );
+					factToSend.insertModifiedAttributed("accesa");
 				}
 				else
 				{
