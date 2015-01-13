@@ -35,6 +35,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private Hashtable members = new Hashtable();
     
     /**
+     * Table containing all the lock of the facts in this WoIS
+     */
+    private Hashtable<String, Boolean> locks = new Hashtable<String, Boolean>();
+    
+    /**
      * Map from engines ({@link IsIntf}s) to their names ({@link String}s). For data consistency,
      * access should be synchronized on {@link #members}.
      */
@@ -118,6 +123,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         sharedFacts.add(fatto);
         mFacts.put(fatto.getId(), fatto);
         
+        locks.put(fatto.getId(),false );
+        
         //DEVICE 2
         Lampadina lampadina2 = new Lampadina("2","lampadina2",true,true);
         mDevices.put(lampadina2.getId(), lampadina2);
@@ -129,6 +136,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         
         sharedFacts.add(fatto2);
         mFacts.put(fatto2.getId(), fatto2);
+        
+        locks.put(fatto2.getId(),false );
         
         //Read priority config. file
         mPriorities.put("mattia", 1);
@@ -211,7 +220,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     /**
      * return the vector of the shared facts of the WoIS
      */
-    public Vector <Fact> getSharedFacts(){
+    public synchronized Vector <Fact> getSharedFacts(){
     	for (Fact fact: sharedFacts){
     		fact.removeAllModifiedAttributed();
     	}
@@ -261,6 +270,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			    								l.updateField(tempAttr.get(i), tempVal.get(i));
 			    								break;
 			    			}
+			    			//Set lock to false
+			    			locks.put(fact.getId(), false);
 	    				}	
 	    			}
 	    		}
@@ -321,13 +332,20 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
     public boolean getLock(String idFact){
-    	if(idFact.equals("1"))
-    		return true;
-    	else
-    		return false;
+    	synchronized (locks) {
+    		return locks.get(idFact);
+    	}
+    }
+    public boolean setLock(String idFact){
+    	synchronized (locks) {
+    		if (getLock(idFact)){
+        		locks.put(idFact, true);
+        		return true;
+        	} else 
+        		return false;
+		}
     	
     }
-    
     /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS

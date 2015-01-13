@@ -62,6 +62,9 @@ public class Wois implements Serializable {
     public boolean getLock(String idFact) throws RemoteException{
     	return woisManager.getLock(idFact);
     }
+    public boolean setLock(String idFact) throws RemoteException{
+    	return woisManager.getLock(idFact);
+    }
     
     public Vector <Fact> getSharedFacts() throws RemoteException{
     	return woisManager.getSharedFacts();

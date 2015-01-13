@@ -47,4 +47,11 @@ public interface WoisManager extends Remote {
      * @throws RemoteException
      */
     boolean getLock(String idFact) throws RemoteException;
+    /**
+     * Return true if the method success
+     * @param idFact
+     * @return
+     * @throws RemoteException
+     */
+    boolean setLock(String idFact) throws RemoteException;
 }
