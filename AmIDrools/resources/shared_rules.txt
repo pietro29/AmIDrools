@@ -1,0 +1,20 @@
+rule "rule 1"
+when
+	$f:Lampadina(accesa==true)
+	$wi: Wois()
+then
+	if(!getLock($f.getId(),$wi))
+	{
+		System.out.println( "Lights ON!" );
+		modify($f) {setAccesa(false)};
+		$f.getModificati().add(new String("accesa"));
+	}
+	//must release the lock after the update
+end
+				
+rule "rule 2"
+when
+	$f:Lampadina(spenta==true)
+then
+	System.out.println( "Lampadina spenta da nuovo drl!" );
+end

@@ -1,0 +1,11 @@
+//function that check if the fact is locked
+function boolean getLock(String s, Wois wois){
+	//System.out.println(wois.getName());
+	System.out.println( s );
+	if(wois.getLock(s)==true){
+		System.out.println( "Lamp LOCK!" );
+		return true;
+	}else{
+		System.out.println( "Lamp UNLOCK" );}
+	return false;
+}

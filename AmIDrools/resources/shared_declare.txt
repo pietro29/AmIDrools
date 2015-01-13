@@ -1,0 +1,7 @@
+declare Lampadina
+	id	: String
+	codice	: String
+	accesa	: Boolean
+	spenta	: Boolean
+	modificati	: java.util.List
+end

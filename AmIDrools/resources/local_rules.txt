@@ -1,0 +1,6 @@
+rule "rule 3"
+when
+	eval(true)
+then
+	System.out.println( "funge da nuovo drl!" );
+end

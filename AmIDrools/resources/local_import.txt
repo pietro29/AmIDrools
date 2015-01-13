@@ -1,0 +1,3 @@
+package rules
+//lo uso per controllare i lock
+import ami_drools.Wois;
