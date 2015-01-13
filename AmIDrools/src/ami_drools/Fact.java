@@ -78,11 +78,13 @@ public class Fact implements Serializable {
 	public void insertModifiedAttribute(String modifiedAttr){
 		modifiedAttr = modifiedAttr.replace("[", "");
 		modifiedAttr = modifiedAttr.replace("]", "");
+		modifiedAttr=modifiedAttr.trim();
+		
 		String[] attrToinsert = modifiedAttr.split(",");
 		for (int i=0;i<attrToinsert.length;i++){
-			modified.add(attrToinsert[i]);
+				modified.add(attrToinsert[i]);
 		}
-		
+			
 	}
 	public void insertModifiedAttribute(Vector<String> modifiedAttr){
 		for (String str:modifiedAttr){

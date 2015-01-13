@@ -242,7 +242,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	    		factToUpdate = (Fact) mFacts.get(fact.getId());
 	    		tempUsr =(User) mUsers.get(isName);
 	    		for (int i=0;i<tempAttr.size();i++){
-	    			System.out.println(tempModified.size());
 	    			//If the array of the modified attribute, check the priority table and then (if check returns true) update the object (and the priority table)
 	    			if (tempModified.contains(tempAttr.get(i))){
 	    				
