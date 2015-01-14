@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -140,8 +141,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         locks.put(fatto2.getId(),false );
         
         //Read priority config. file
-        mPriorities.put("mattia", 1);
-        mPriorities.put("pippo", 2);
+        getPrioritiesTable();
     }
     
     /**
@@ -344,6 +344,50 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         	} else 
         		return false;
 		}
+    	
+    }
+    public String getSharedFactsTemplates(){
+    	String s = "" ;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/shared_declare.txt"));
+			StringBuilder sb = new StringBuilder();
+		    String line = br.readLine();
+		    while (line != null) {
+		         sb.append(line);
+		         sb.append(System.lineSeparator());
+		            line = br.readLine();
+		    }
+		    s = sb.toString();
+		    br.close();
+		    } catch (Throwable t) {
+		    	System.err.println(t.toString());
+		    	s="";
+		    }
+		//System.out.println(s);
+		return s;
+    }
+    private void getPrioritiesTable(){
+    	String s="";
+    	try {
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/wois_priorities.txt"));
+			StringBuilder sb = new StringBuilder();
+		    String line = br.readLine();
+		    String[] parts;
+		    while (line != null) {
+		         sb.append(line);
+		         sb.append(System.lineSeparator());
+		         
+		         parts = line.split(":");
+		         mPriorities.put(parts[0], parts[1]);
+		            line = br.readLine();
+		    }
+		    s = sb.toString();
+		    br.close();
+		    } catch (Throwable t) {
+		    	System.err.println(t.toString());
+		    	s="";
+		    }
+		//System.out.println(mPriorities.get("pippo"));
     	
     }
     /**

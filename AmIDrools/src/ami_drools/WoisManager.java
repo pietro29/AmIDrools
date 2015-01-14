@@ -54,4 +54,10 @@ public interface WoisManager extends Remote {
      * @throws RemoteException
      */
     boolean setLock(String idFact) throws RemoteException;
+    /**
+     * 
+     * @return a String containing the list of shared facts templates
+     * @throws RemoteException
+     */
+    String getSharedFactsTemplates() throws RemoteException;
 }
