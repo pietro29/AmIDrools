@@ -20,7 +20,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
 import sharedFacts.Lampadina;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
@@ -217,6 +216,19 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         return ret;
     }
     
+    public void removeMember( IsIntf inf ) throws RemoteException, NotRegisteredException
+    {
+        synchronized (members) {
+            Object name = mNames.remove( inf );
+            if (name == null)
+                throw new NotRegisteredException( "IS not found: " + inf );
+            Object old = members.remove( name );
+            if (old == null) {
+                throw new RuntimeException( "Internal error: incosistent maps while removing " + name + " " + inf );
+            }
+        }
+    }
+    
     /**
      * return the vector of the shared facts of the WoIS
      */
@@ -230,7 +242,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * @throws ClassNotFoundException 
      * 
      */
-    public void setSharedFacts(Vector <Fact> sharedFactUpdate, String isName) throws ClassNotFoundException{
+    public synchronized void setSharedFacts(Vector <Fact> sharedFactUpdate, String isName) throws ClassNotFoundException{
     	Vector <String> tempAttr;
     	Vector <String> tempVal;
     	List tempModified;
@@ -240,7 +252,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	Boolean update = true;
     	User tempUsr;
     	
-    	synchronized (assertions) {
+    	//synchronized (assertions) {
     		
 	    	for (Fact fact : sharedFactUpdate){
 	    		
@@ -276,7 +288,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	    			}
 	    		}
 	    	}
-    	}
+    	//}
     }
     /**
      * Check if the Is can update an attribute value
