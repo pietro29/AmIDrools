@@ -37,7 +37,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     /**
      * Table containing all the lock of the facts in this WoIS
      */
-    private Hashtable<String, Boolean> locks = new Hashtable<String, Boolean>();
+    private Hashtable<String, Lock> locks = new Hashtable<String, Lock>();
     
     /**
      * Map from engines ({@link IsIntf}s) to their names ({@link String}s). For data consistency,
@@ -123,7 +123,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         sharedFacts.add(fatto);
         mFacts.put(fatto.getId(), fatto);
         
-        locks.put(fatto.getId(),false );
+        locks.put(fatto.getId(),new Lock(fatto.getId()) );
         
         //DEVICE 2
         Lampadina lampadina2 = new Lampadina("2","lampadina2",true,true);
@@ -137,7 +137,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         sharedFacts.add(fatto2);
         mFacts.put(fatto2.getId(), fatto2);
         
-        locks.put(fatto2.getId(),false );
+        locks.put(fatto2.getId(),new Lock(fatto2.getId()) );
         
         //Read priority config. file
         getPrioritiesTable();
@@ -283,7 +283,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			    								break;
 			    			}
 			    			//Set lock to false
-			    			locks.put(fact.getId(), false);
+			    			locks.get(fact.getId()).unLock();
 	    				}	
 	    			}
 	    		}
@@ -345,13 +345,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
     public boolean getLock(String idFact){
     	synchronized (locks) {
-    		return locks.get(idFact);
+    		return locks.get(idFact).getLock();
     	}
     }
     public boolean setLock(String idFact){
     	synchronized (locks) {
     		if (getLock(idFact)){
-        		locks.put(idFact, true);
+        		locks.get(idFact).setLock();
         		return true;
         	} else 
         		return false;
