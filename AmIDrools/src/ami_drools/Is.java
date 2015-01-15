@@ -14,11 +14,11 @@ import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
-
 import javax.swing.*;
-
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+
+
 
 class IsRemote extends UnicastRemoteObject implements IsIntf 
 {
@@ -144,6 +144,52 @@ public class Is extends JFrame implements ActionListener{
         wois.register( this, rw );
         runner.setWois(wois);
 	}
+	
+	public void unregister( Wois wois, boolean keepFacts ) throws RemoteException, NotRegisteredException
+    {
+       
+        WoisRegistration rw = null;
+        try {
+            synchronized (woises) {
+                rw = findRegWois( wois );
+                if (rw == null || ! rw.isRegistered()) throw new NotRegisteredException( wois.getName() );
+                rw.state = WoisRegistration.EXITING;
+            }
+            try {
+                try {
+                	
+                } finally {
+                    wois.unregister( this );
+                }
+            } finally {
+                
+            }
+        } finally {
+            synchronized (woises) {
+                if (rw != null && rw.state == WoisRegistration.EXITING)
+                    rw.state = WoisRegistration.OUT;
+            }
+        }
+    }
+	/**
+     * Returns the WoIS registration associated to a given <code>WoIS</code>.
+     * Returns <code>null</code> if there is no such registration.
+     * @param wois a WoIS.
+     * @return the WoIS registration or <code>null</code>.
+     */
+    private WoisRegistration findRegWois( Wois wois )
+    {
+        synchronized (woises) {
+            Iterator i = woises.iterator();
+            while (i.hasNext()) {
+                WoisRegistration rw = (WoisRegistration)i.next();
+                if (rw.wois.getName().equals( wois.getName() ))
+                    return rw;
+            }
+        }
+        return null;
+    }
+
 	/**
      * Returns the WoIS registration associated with the WoIS with the given name. Returns
      * <code>null</code> if there is no such WoIS.

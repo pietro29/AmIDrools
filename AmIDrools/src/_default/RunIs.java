@@ -30,8 +30,6 @@ public class RunIs {
         	inf.setSize(500, 500);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            //Il sistema inferenziale è stato registrato, ora può iniziare a lavorare
-            //while (true) {}
         } catch (Exception e) {
             //ERRORE
         } finally {
