@@ -186,7 +186,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 // assert v1 == dr;
             }
             mNames.put( inf, name );
-            
+            System.err.println(name);
             User user = new User(name,name, getUserPriority(name) );
             mUsers.put(name, user);
         }
@@ -332,6 +332,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
     public boolean getLock(String idFact){
+    	System.err.println(idFact);
     	synchronized (locks) {
     		return locks.get(idFact);
     	}

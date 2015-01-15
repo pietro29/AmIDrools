@@ -8,11 +8,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.Collection;
+
 import org.drools.core.rule.FactType;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+
 import javax.swing.*;
 
 import java.rmi.registry.LocateRegistry;
@@ -41,53 +43,75 @@ public class Is extends JFrame implements ActionListener{
      * considered subscribed to.
      */
 	private static final long serialVersionUID = 1L;
-    private Vector woises;
-    private Vector runners;
+    private Vector<WoisRegistration> woises; 
+    private Vector<RuleRunner> runners;
     /** Remote object, used for communication between ISs */
     private IsRemote remoteObject;
     /** Name of the Is */
     private String name;
-    
-    //Elementi grafici
+    /** Private fact */
+    private Position pos;
+    /**
+     * Shared facts vector
+     */
+    private Vector<Fact> privateFacts;
+    /**Graphic elements*/
     JPanel p;
-	JButton b;
+	JButton bManager;
+	JButton bLocal;
 	JLabel lInfo;
 	JLabel lError;
 	JTextArea txtServer;
-	
+	/**Rule engine elements*/
 	KieServices ks ;
     KieContainer kContainer ;
 	KieSession kSession ;
 	
 	RuleRunner runner;
-	//specifico il drl
-	String[] rules=new String[1];
-	//specifico i fatti
-	Object[] facts=new Object[5];
+
     //
     
     
 	public Is(String name) throws RemoteException
-	{
-		woises = new Vector();
-		runners = new Vector();
+	{	
+		woises = new Vector<WoisRegistration>();
+		runners = new Vector<RuleRunner>();
+		privateFacts=new Vector<Fact>();
 		remoteObject = new IsRemote( this );
 		this.name=name;
+		pos = new Position("id1",1,"Soggiorno");
 		
 		p=new JPanel();
     	lInfo=new JLabel();
     	lError=new JLabel();
-    	b=new JButton("Chiedi");
+    	bManager=new JButton("Connect To Manager");
+    	bLocal=new JButton("Run Engine");
     	txtServer=new JTextArea();
-    	b.addActionListener((ActionListener) this);
+    	bManager.addActionListener((ActionListener) this);
+    	bLocal.addActionListener((ActionListener) this);
     	p.add(lInfo);
-    	p.add(b);
+    	p.add(bManager);
+    	p.add(bLocal);
     	p.add(lError);
     	//p.add(txtServer);
     	this.add(p);
+    	pos=new Position("1p", 1, "soggiorno");
+    	runners.add(createEngine());
     	
-    	
-		
+	}
+	/**
+	 * add the private fact to the WM and run the engine
+	 */
+	private RuleRunner createEngine()
+	{
+		runner = new RuleRunner();
+		Fact privateFact = new Fact("1p","Posizione");
+		privateFact.insertAttributeValue("location", "int", "1");
+		privateFact.insertAttributeValue("codice", "String", "soggiorno");
+		privateFact.insertAttributeValue("_privateVisibility", "Boolean", "true");
+		privateFacts.add(privateFact);
+    	runner.runRules(privateFacts);
+    	return runner;
 	}
 	
 	public IsIntf getRemoteProxy()
@@ -118,17 +142,7 @@ public class Is extends JFrame implements ActionListener{
             rw.state = WoisRegistration.ENTERING;
         }
         wois.register( this, rw );
-        //Istanzio un runner per la rete a cui mi registro
-        try {
-        	//gestisce la KB e le regole, ora non è usato
-        	runner = new RuleRunner(wois);
-        	String DRL = new String("PrivateRule.drl");
-        	rules[0] = DRL;
-        	runner.runRules(rules,facts);
-        	
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        runner.setWois(wois);
 	}
 	/**
      * Returns the WoIS registration associated with the WoIS with the given name. Returns
@@ -140,7 +154,7 @@ public class Is extends JFrame implements ActionListener{
     WoisRegistration findRegWoISName( String name )
     {
         synchronized (woises) {
-            Iterator i = woises.iterator();
+            Iterator<WoisRegistration> i = woises.iterator();
             while (i.hasNext()) {
                 WoisRegistration rw = (WoisRegistration)i.next();
                 if (name.equals( rw.defmodule ))
@@ -151,7 +165,7 @@ public class Is extends JFrame implements ActionListener{
     }
     @Override
     public void actionPerformed(ActionEvent event){
-    	if (event.getSource()==b)
+    	if (event.getSource()==bLocal)
 	    {
             //String host = (args.length < 1) ? null : args[0];
             try {
@@ -160,6 +174,18 @@ public class Is extends JFrame implements ActionListener{
             	runner.matchResolveAct(this.name);
                 
                 //gli oggetti sono caricati correttamente
+            } catch (Exception e) {
+                System.err.println("Client exception: " + e.toString());
+                e.printStackTrace();}
+	    	
+    	}
+    	//manage the connection and the registration of the wois
+    	if (event.getSource()==bManager)
+	    {
+            try {
+            	Wois wois = new Wois("prova");
+            	register(wois, name);
+                //woises.add( wois );
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();}
