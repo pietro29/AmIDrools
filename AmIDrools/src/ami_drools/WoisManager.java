@@ -60,4 +60,11 @@ public interface WoisManager extends Remote {
      * @throws RemoteException
      */
     String getSharedFactsTemplates() throws RemoteException;
+    /**
+     * 
+     * @param inf
+     * @throws RemoteException
+     * @throws NotRegisteredException
+     */
+    void removeMember( IsIntf inf ) throws RemoteException, NotRegisteredException;
 }

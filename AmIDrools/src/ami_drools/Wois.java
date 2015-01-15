@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 
+
 public class Wois implements Serializable {
 
 	/**
@@ -42,21 +43,20 @@ public class Wois implements Serializable {
     }
     
     /**
-     * Registers the given <code>Is</code> object in this WoIS. Also adds templates and facts
-     * shared in the WoIS to <code>inf</code> and adds a <code>wois-member</code> fact for the
-     * new member.
-     * 
+     * Registers the given <code>Is</code> object in this WoIS. 
      * @param inf a <code>Is</code> object to register
      * @param rWois info about this Wois registration. The {@link WoisRegistration#membershipFact}
      *            field is filled by this method; the other fields should be already initialized.
      * @throws RemoteException if there are network problems
      * @throws AlreadyRegisteredException if the name is already in use by another IS or if
-     *             <code>dr</code> was already registered with another name
-     * @throws JessException
+     *             <code>inf</code> was already registered with another name
      */
     void register( Is inf, WoisRegistration rWois ) throws RemoteException
     {
       woisManager.addMember(inf.getRemoteProxy(), rWois.name);
+    }
+    void unregister(Is inf) throws RemoteException,NotRegisteredException{
+    	woisManager.removeMember(inf.getRemoteProxy());
     }
     
     public boolean getLock(String idFact) throws RemoteException{
