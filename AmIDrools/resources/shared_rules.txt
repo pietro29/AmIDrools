@@ -5,9 +5,12 @@ when
 then
 	if(!getLock($f.getId(),$wi))
 	{
-		System.out.println( "Lights ON!" );
-		modify($f) {setAccesa(false)};
-		$f.getModificati().add(new String("accesa"));
+		if(setLock($f.getId(),$wi))
+		{
+			System.out.println( "Lights ON!" );
+			modify($f) {setAccesa(false)};
+			$f.getModificati().add(new String("accesa"));
+		}
 	}
 	//must release the lock after the update
 end
@@ -17,4 +20,12 @@ when
 	$f:Lampadina(spenta==true)
 then
 	System.out.println( "Lampadina spenta da nuovo drl!" );
+end
+
+rule "rule teleport"
+when
+	$p:Posizione(location==1)
+	$l:Lampadina(spenta==true)
+then
+	System.out.println( "Sei in " + $p.getCodice() + " al buio, attento al Pech!" );
 end

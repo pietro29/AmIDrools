@@ -21,7 +21,6 @@ import ami_drools.Wois;
 public class RunIs {
 
 	static Is inf = null;
-    static Vector woises = new Vector();
 	
     public static void main( String args[] ) throws RemoteException, IOException
     {
@@ -31,20 +30,6 @@ public class RunIs {
         	inf.setSize(500, 500);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        	
-            BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
-
-            if (args.length >= 2)
-                for (int i = 0; i < args[1].length(); ) {
-                    int j = args[1].indexOf( ',', i );
-                    if (j < 0) j = args[1].length();
-                    Wois wois = new Wois( args[1].substring( i, j ) );
-                    inf.register(wois, args[0]);
-                    woises.add( wois );
-                          
-                    i = j + 1;
-                }
-            
             //Il sistema inferenziale è stato registrato, ora può iniziare a lavorare
             //while (true) {}
         } catch (Exception e) {

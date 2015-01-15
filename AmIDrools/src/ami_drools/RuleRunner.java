@@ -40,7 +40,6 @@ import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 
 public class RuleRunner {
-	String DRLPath = new String("src/main/resources/PrivateRules/");
 	KieSession kSession;
 	KieServices kieServices;
 	KieResources kieResources;
@@ -52,6 +51,7 @@ public class RuleRunner {
 	
 	Wois wois;
 	Vector<Fact> sharedFacts;
+	Vector<Fact> privateFacts;
 	Vector<Fact> sharedFactsSend;
 
 	/**
@@ -60,11 +60,16 @@ public class RuleRunner {
 	 * @param wois the Wois which is connected to the session of the rule engine
 	 * @see Wois
 	 */
-	public RuleRunner(Wois wois) {
-		this.wois = wois;
+	public RuleRunner() {
 		sharedFacts = new Vector<Fact>();
+		privateFacts = new Vector<Fact>();
 	}
-
+	
+	public void setWois(Wois wois)
+	{
+		this.wois = wois;
+	}
+	
 	/**
 	 * Create the knowledge base from the String and add the fact that are
 	 * already inside the client. Then start the rule engine and create the
@@ -73,32 +78,41 @@ public class RuleRunner {
 	 * @param rules the string that create the knowledge base
 	 * @param facts the facts that are already inside the client
 	 */
-	public void runRules(String[] rules, Object[] facts) {
+	public void runRules(Vector<Fact> facts) {
+		try {
+			kieServices = KieServices.Factory.get();
+			kieResources = kieServices.getResources();
+			kieFileSystem = kieServices.newKieFileSystem();
+			kieRepository = kieServices.getRepository();
+			// create a temporary file .drl for support the KB, 
+			//is important that the path begins with src/main/resources
+			kieFileSystem.write("src/main/resources/rules/tempKB.drl", getRule());
 
-		kieServices = KieServices.Factory.get();
-		kieResources = kieServices.getResources();
-		kieFileSystem = kieServices.newKieFileSystem();
-		kieRepository = kieServices.getRepository();
-		// create a temporary file .drl for support the KB, 
-		//is important that the path begins with src/main/resources
-		kieFileSystem.write("src/main/resources/rules/p.drl", getRule());
-
-		kb = kieServices.newKieBuilder(kieFileSystem);
-		// compile the KB
-		kb.buildAll();
-		if (kb.getResults().hasMessages(Level.ERROR)) {
-			throw new RuntimeException("Build Errors:\n"
-					+ kb.getResults().toString());
+			kb = kieServices.newKieBuilder(kieFileSystem);
+			// compile the KB
+			kb.buildAll();
+			if (kb.getResults().hasMessages(Level.ERROR)) {
+				throw new RuntimeException("Build Errors:\n"
+						+ kb.getResults().toString());
+			}
+			kContainer = kieServices.newKieContainer(kieRepository
+					.getDefaultReleaseId());
+			// create the session
+			kSession = kContainer.newKieSession();
+			for (Fact fact : facts) { // TODO use typeFact to import the private fact
+				// insert the fact
+				kSession.insert(fact);
+				privateFacts.add(fact);
+			}
+			fireAllRules();
+			cleanSession();
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.println(e.getMessage());
+			cleanSession();
 		}
-		kContainer = kieServices.newKieContainer(kieRepository
-				.getDefaultReleaseId());
-		// create the session
-		kSession = kContainer.newKieSession();
-		for (Object fact : facts) { // TODO use typeFact to import the private fact
-			// insert the fact
-			kSession.insert(fact);
-		}
-		fireAllRules();
+		
 	}
 
 	/**
@@ -107,6 +121,7 @@ public class RuleRunner {
 	 * @param fact the fact that as to be insert into the knowledge base
 	 * @see Fact
 	 */
+	@SuppressWarnings("rawtypes")
 	public void addFact(Fact fact) throws Throwable {
 		String ft = new String(fact.getFactType());// fact.getFactType
 		FactType factType = kContainer.getKieBase().getFactType("rules", ft);
@@ -121,7 +136,21 @@ public class RuleRunner {
 			try {
 				System.out.println(attributes.get(i) + ", " + values.get(i));
 				//extract the type of attribute and transform it into a Class object for casting
-				Class<?> theClass = Class.forName("java.lang." + attributesType.get(i));
+				Class<?> theClass=null;
+				try {
+					theClass = Class.forName("java.lang." + attributesType.get(i));
+				} catch (Exception  e) {
+					// TODO: handle exception
+				}
+				if (theClass==null)
+				{
+					try {
+						theClass = Class.forName(attributesType.get(i));
+					} catch (Exception e) {
+		
+					}
+				}
+				
 				//System.out.println(theClass.toString());
 				if (attributesType.get(i).toLowerCase().equals("boolean"))
 				{//if the type is boolean the cast is done observing the single string and putting the true/false value
@@ -133,8 +162,16 @@ public class RuleRunner {
 					}
 				}
 				else
-				{//in other case we can use the dynamic cast
-					factType.set(NewFactType, attributes.get(i), theClass.cast(values.get(i)));
+				{
+					if (attributesType.get(i).toLowerCase().equals("int"))
+					{
+						factType.set(NewFactType, attributes.get(i), Integer.parseInt(values.get(i)));
+					}
+					else
+					{
+						//in other case we can use the dynamic cast
+						factType.set(NewFactType, attributes.get(i), theClass.cast(values.get(i)));
+					}
 				}
 				
 			} catch (Throwable t) {
@@ -150,7 +187,6 @@ public class RuleRunner {
 		}
 		factType.set(NewFactType,"modificati", new java.util.ArrayList());
 		kSession.insert(NewFactType);
-		// kSession.fireAllRules();
 
 	}
 
@@ -176,8 +212,31 @@ public class RuleRunner {
 	 */
 	private String getRule() {
 		String s = "" ;
+		s+=getStringFromFile("/resources/local_import.txt");//import the local class and the package
+		s+="\n";
+		//TODO from server
+		s+=getStringFromFile("/resources/shared_declare.txt");//import the template/declare of the shared fact
+		s+="\n";
+		//TODO from server
+		s+=getStringFromFile("/resources/shared_function.txt");//import the shared function
+		s+="\n";
+		s+=getStringFromFile("/resources/local_rules.txt");//import the rules that use local variable (no declare needed)
+		s+="\n";
+		//TODO from server
+		s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
+		System.out.println(s);
+		return s;
+	}
+
+	/**
+	 * Returns the string that represent a the content of a specific file
+	 * 
+	 * @return the string of the file
+	 */
+	private String getStringFromFile(String fileName) {
+		String s = "" ;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/drl.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    while (line != null) {
@@ -191,10 +250,9 @@ public class RuleRunner {
 		    	System.err.println(t.toString());
 		    	s="";
 		    }
-		System.out.println(s);
 		return s;
 	}
-
+	
 	/**
 	 * Resolve one cycle for the client, where a cycle is composed of three
 	 * stages, then first import the fact from the manager, the second add the
@@ -204,41 +262,56 @@ public class RuleRunner {
 	 */
 	public void matchResolveAct(String ISname) throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
+		//insert the shared fact
 		sharedFacts = new Vector<Fact>();
-		sharedFacts = wois.getSharedFacts();
-
-		// iterate all the shared fact
-		for (Fact ogg : sharedFacts) {
+		// create new session
+		kSession = kContainer.newKieSession();
+		try {
+			sharedFacts = wois.getSharedFacts();
+	
+			// iterate all the shared fact
+			for (Fact ogg : sharedFacts) {
+				System.err.println(ogg.toString());
+				try {// insert the fact
+					this.addFact(ogg);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}
+		handleWois = kSession.insert(wois);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		//insert the private fact
+		for (Fact ogg : privateFacts) {
 			try {// insert the fact
+				System.err.println(ogg.getAttributes());
 				this.addFact(ogg);
 			} catch (Throwable e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		//block the rule that have some facts locked in the WM
-		
-		handleWois = kSession.insert(wois);
-		
+		/*
 		kSession.addEventListener(new RuleRuntimeEventListener() {
 			@Override
 			public void objectUpdated(ObjectUpdatedEvent arg0) {
-				// TODO Auto-generated method stub
+				// 
 				
 			}
 			
 			@Override
 			public void objectInserted(ObjectInsertedEvent arg0) {
-				// TODO Auto-generated method stub
+				// 
 				//wois.toString();
 				
 			}
 			
 			@Override
 			public void objectDeleted(ObjectDeletedEvent arg0) {
-				// TODO Auto-generated method stub
+				// 
 			}
-		});
+		});*/
 		
 		kSession.fireAllRules(new AgendaFilter()
 		{//define the condition to fire the rule
@@ -248,20 +321,40 @@ public class RuleRunner {
 				Collection<Object> oggettiDaWM = match.getObjects();
 				for (Object ogg : oggettiDaWM) {
 					Field[] attributes = ogg.getClass().getDeclaredFields();
+					//check if is private
+					boolean priv=false;
 					for (Field field : attributes) {
 						field.setAccessible(true);
-						if(field.getName().toLowerCase().equals("id"))
+						if(field.getName().toLowerCase().equals("_privateVisibility"))
 						{
 							try {
-								if(wois.getLock(field.get(ogg).toString()))
-								{// the object is locked
+									if(field.get(ogg).toString().equals("true"))
+									{// the object is locked
+										priv=true;
+										System.err.println(ogg.toString());
+									}
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					//check the id
+					for (Field field : attributes) {
+						field.setAccessible(true);
+						if(field.getName().toLowerCase().equals("id") && !priv)
+						{
+							if(wois!=null)
+							{
+								try {
+										if(wois.getLock(field.get(ogg).toString()))
+										{// the object is locked
+											return false;
+										}
+								} catch (IllegalArgumentException
+										| IllegalAccessException | RemoteException e) {
+									e.printStackTrace();
 									return false;
 								}
-							} catch (IllegalArgumentException
-									| IllegalAccessException | RemoteException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								return false;
 							}
 						}
 					}
@@ -269,8 +362,11 @@ public class RuleRunner {
 				return true;
 			}
 		});
-		
-		kSession.delete(handleWois);
+		try {
+			kSession.delete(handleWois);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
@@ -294,8 +390,16 @@ public class RuleRunner {
 				}
 				if (index>0) break;
 			}
-			// TODO if index<0 then error message
-			Fact factToSend = sharedFacts.get(index);
+			Fact factToSend=null;
+			if (index>=0)
+			{
+				factToSend = sharedFacts.get(index);
+			}else{
+				//System.err.println("id of the object not found inside the array of the fact");
+				//private fact
+				
+				continue;
+			}
 			
 			for (Field field : attributes) {
 				field.setAccessible(true);
@@ -314,15 +418,16 @@ public class RuleRunner {
 		}
 		//send here
 		try {
-			wois.setSharedFacts(sharedFactsSend, ISname);
+			if(wois!=null && sharedFactsSend!=null)
+			{
+				wois.setSharedFacts(sharedFactsSend, ISname);
+			}
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// clean the session
 		cleanSession();
-		// create new session
-		kSession = kContainer.newKieSession();
+		
 	}
 
 	/**
@@ -331,9 +436,24 @@ public class RuleRunner {
 	 * 
 	 */
 	public void fireAllRules() {
-		handleWois = kSession.insert(wois);
-		kSession.fireAllRules();
-		kSession.delete(handleWois);
+		try {
+			try {
+				handleWois = kSession.insert(wois);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			kSession.fireAllRules();
+			try {
+				if (handleWois!=null)kSession.delete(handleWois);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
 	}
 
 	/**

@@ -4,3 +4,10 @@ when
 then
 	System.out.println( "funge da nuovo drl!" );
 end
+
+rule "rule position"
+when
+	$f:Posizione(location==1)
+then
+	System.out.println( "Sei in " + $f.getCodice());
+end
