@@ -20,6 +20,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+
 import sharedFacts.Lampadina;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
@@ -391,7 +392,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		         sb.append(System.lineSeparator());
 		         
 		         parts = line.split(":");
-		         mPriorities.put(parts[0], parts[1]);
+		         mPriorities.put(parts[0], Integer.parseInt(parts[1]));
 		            line = br.readLine();
 		    }
 		    s = sb.toString();
