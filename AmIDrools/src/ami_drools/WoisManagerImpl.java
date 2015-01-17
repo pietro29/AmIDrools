@@ -361,13 +361,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		}
     	
     }
-    public String getSharedFactsTemplates(){
+    public String getSharedTemplates(){
     	return getStringFromFile("/shared_declare.txt");
     }
-    public String getSharedFactsFunctions(){
+    public String getSharedFunctions(){
     	return getStringFromFile("/shared_function.txt");
     }
-    public String getSharedFactsRules(){
+    public String getSharedRules(){
     	return getStringFromFile("/shared_rules.txt");
     }
     private String getStringFromFile(String fileName) {

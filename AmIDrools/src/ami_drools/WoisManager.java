@@ -59,11 +59,11 @@ public interface WoisManager extends Remote {
      * @return a String containing the list of shared facts templates
      * @throws RemoteException
      */
-    String getSharedFactsTemplates() throws RemoteException;
+    String getSharedTemplates() throws RemoteException;
     
-    String getSharedFactsFunctions() throws RemoteException;
+    String getSharedFunctions() throws RemoteException;
     
-    String getSharedFactsRules() throws RemoteException;
+    String getSharedRules() throws RemoteException;
     /**
      * 
      * @param inf

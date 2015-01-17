@@ -59,13 +59,13 @@ public class Wois implements Serializable {
     	woisManager.removeMember(inf.getRemoteProxy());
     }
     String getSharedFactsTemplates() throws RemoteException{
-    	return woisManager.getSharedFactsTemplates();
+    	return woisManager.getSharedTemplates();
     }
     String getSharedFactsRules() throws RemoteException{
-    	return woisManager.getSharedFactsRules();
+    	return woisManager.getSharedRules();
     }
     String getSharedFactsFunctions() throws RemoteException{
-    	return woisManager.getSharedFactsFunctions();
+    	return woisManager.getSharedFunctions();
     }
     public boolean getLock(String idFact, String isId) throws RemoteException{
     	return woisManager.getLock(idFact, isId);
