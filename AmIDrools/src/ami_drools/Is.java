@@ -252,6 +252,7 @@ public class Is extends JFrame implements ActionListener{
             		runner.runRules(privateFacts);
             		lInfo.setText("non connesso");
             		bManager.setText("Connect");
+            		lInfo.setText("gia' connesso");
             	}else{
             		Wois wois = new Wois("prova");
                 	register(wois, name);
