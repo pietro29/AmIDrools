@@ -60,6 +60,10 @@ public interface WoisManager extends Remote {
      * @throws RemoteException
      */
     String getSharedFactsTemplates() throws RemoteException;
+    
+    String getSharedFactsFunctions() throws RemoteException;
+    
+    String getSharedFactsRules() throws RemoteException;
     /**
      * 
      * @param inf

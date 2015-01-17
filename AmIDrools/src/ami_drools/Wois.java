@@ -61,6 +61,12 @@ public class Wois implements Serializable {
     String getSharedFactsTemplates() throws RemoteException{
     	return woisManager.getSharedFactsTemplates();
     }
+    String getSharedFactsRules() throws RemoteException{
+    	return woisManager.getSharedFactsRules();
+    }
+    String getSharedFactsFunctions() throws RemoteException{
+    	return woisManager.getSharedFactsFunctions();
+    }
     public boolean getLock(String idFact, String isId) throws RemoteException{
     	return woisManager.getLock(idFact, isId);
     }

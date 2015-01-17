@@ -362,9 +362,18 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	
     }
     public String getSharedFactsTemplates(){
-    	String s = "" ;
+    	return getStringFromFile("/shared_declare.txt");
+    }
+    public String getSharedFactsFunctions(){
+    	return getStringFromFile("/shared_function.txt");
+    }
+    public String getSharedFactsRules(){
+    	return getStringFromFile("/shared_rules.txt");
+    }
+    private String getStringFromFile(String fileName) {
+		String s = "" ;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/shared_declare.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    while (line != null) {
@@ -378,9 +387,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    	System.err.println(t.toString());
 		    	s="";
 		    }
-		//System.out.println(s);
 		return s;
-    }
+	}
     private void getPrioritiesTable(){
     	String s="";
     	try {
