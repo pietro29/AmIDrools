@@ -13,6 +13,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * Assertion object vector
      */
     private Vector<Assertion> assertions;
+    
+    private Thread checklockdate;
+    
+    private Thread checkIs;
+    
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -139,8 +145,85 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         
         //Read priority config. file
         getPrioritiesTable();
+        
+        
+        //Start lock thread
+        checklockdate=new Thread("Check lock"){
+        	public void run(){
+        		try {
+					checkLockProcess();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        };
+        checklockdate.start();
+        
+        //Start IS thread
+        checkIs = new Thread("Check IS"){
+        	public void run(){
+        		try {
+					checkIsProcess();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NotRegisteredException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        };
+        checkIs.start();
     }
     
+    private void checkLockProcess() throws InterruptedException{
+    	while(true){
+    		checkLockStatus();
+        	checklockdate.sleep(5000);
+    	}
+    	
+    }
+    private void checkLockStatus(){
+    	Iterator<Map.Entry<String, Lock>> it = locks.entrySet().iterator();
+    	Date dateToCompare=new Date();
+    	//System.out.println(dateToCompare.getTime());
+    	while (it.hasNext()) {
+    		Map.Entry<String, Lock> entry = it.next();
+    		if(entry.getValue().getLock()){
+    			//System.out.println(entry.getValue().getDateLocked().getTime());
+    			if(dateToCompare.getTime()-entry.getValue().getDateLocked().getTime()>5000){
+    				entry.getValue().unLock();
+    			}
+    		}
+    	}
+    }
+    private void checkIsProcess() throws InterruptedException, NotRegisteredException{
+    	while(true){
+    		checkISStatus();
+    		checkIs.sleep(600000);
+    	}
+    	
+    }
+    private void checkISStatus() {
+    	Iterator<Map.Entry<String, IsIntf>> it = members.entrySet().iterator();
+
+    	while (it.hasNext()) {
+    		Map.Entry<String, IsIntf> entry = it.next();
+    		try {
+				if(! entry.getValue().getIsName().equals(entry.getKey().toString())){
+					removeMember(entry.getValue());
+				} else {
+					System.out.println("Il dispositivo è connesso");
+				}
+			} catch (RemoteException e) {
+				//e.printStackTrace();
+				System.out.println("Il dispositivo non risponde");
+			} catch (NotRegisteredException e) {
+				System.out.println("Il dispositivo non è registrato");
+			}
+    	}
+    }
     /**
      * Destroys this WoIS.
      * @throws RemoteException
@@ -403,7 +486,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    	System.err.println(t.toString());
 		    	s="";
 		    }
-		System.out.println(s);
+		//System.out.println(s);
 		return s;
 	}
     private void getPrioritiesTable(){

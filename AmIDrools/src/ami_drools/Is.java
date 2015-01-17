@@ -38,7 +38,9 @@ class IsRemote extends UnicastRemoteObject implements IsIntf
     	super();
     	parent=parentIs;
     }
-    
+    public String getIsName(){
+    	return parent.getIsName();
+    }
 }
 
 public class Is extends JFrame implements ActionListener{
@@ -109,6 +111,9 @@ public class Is extends JFrame implements ActionListener{
     	mDevices.put(pos.getId(), pos);
     	runners.add(createEngine());
     	
+	}
+	public String getIsName(){
+		return this.name;
 	}
 	/**
 	 * add the private fact to the WM and run the engine

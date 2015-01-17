@@ -7,6 +7,6 @@ import java.rmi.RemoteException;
 
 public interface IsIntf extends Remote {
 
-	//void addSharedTemplate( String templName) throws RemoteException, ClassNotFoundException;
+	String getIsName() throws RemoteException;
 	
 }
