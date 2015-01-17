@@ -59,11 +59,11 @@ public class Wois implements Serializable {
     	woisManager.removeMember(inf.getRemoteProxy());
     }
     
-    public boolean getLock(String idFact) throws RemoteException{
-    	return woisManager.getLock(idFact);
+    public boolean getLock(String idFact, String isId) throws RemoteException{
+    	return woisManager.getLock(idFact, isId);
     }
-    public boolean setLock(String idFact) throws RemoteException{
-    	return woisManager.getLock(idFact);
+    public boolean setLock(String idFact, String isId) throws RemoteException{
+    	return woisManager.setLock(idFact, isId);
     }
     
     public Vector <Fact> getSharedFacts() throws RemoteException{

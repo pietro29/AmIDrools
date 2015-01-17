@@ -340,15 +340,22 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	}
     }
     
-    public boolean getLock(String idFact){
+    public boolean getLock(String idFact, String isId){
     	synchronized (locks) {
-    		return locks.get(idFact).getLock();
+    		if (!locks.get(idFact).getLock())
+    			return false;
+    		else{
+    			if (locks.get(idFact).getIsId().equals(isId))
+    				return false;
+    			else
+    				return true;
+    		}
     	}
     }
-    public boolean setLock(String idFact){
+    public boolean setLock(String idFact, String isId){
     	synchronized (locks) {
-    		if (getLock(idFact)){
-        		locks.get(idFact).setLock();
+    		if (!getLock(idFact, isId)){
+        		locks.get(idFact).setLock(isId);
         		return true;
         	} else 
         		return false;
