@@ -219,6 +219,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			} catch (RemoteException e) {
 				//e.printStackTrace();
 				System.out.println("Il dispositivo non risponde");
+				try {
+					removeMember(entry.getValue());
+				} catch (RemoteException | NotRegisteredException e1) {
+					e1.printStackTrace();
+				}
 			} catch (NotRegisteredException e) {
 				System.out.println("Il dispositivo non è registrato");
 			}
@@ -349,6 +354,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	Fact factToUpdate;
     	Boolean update = true;
     	User tempUsr;
+    	
+    	
     		
 	    	for (Fact fact : sharedFactUpdate){
 	    		
