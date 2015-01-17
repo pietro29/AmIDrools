@@ -94,7 +94,7 @@ public class Is extends JFrame implements ActionListener{
 		p=new JPanel();
     	lInfo=new JLabel();
     	lError=new JLabel();
-    	bManager=new JButton("Connect To Manager");
+    	bManager=new JButton("Connect");
     	bLocal=new JButton("Run Engine");
     	txtServer=new JTextArea();
     	bManager.addActionListener((ActionListener) this);
@@ -156,7 +156,7 @@ public class Is extends JFrame implements ActionListener{
         runner.setWois(wois);
 	}
 	
-	public void unregister( Wois wois, boolean keepFacts ) throws RemoteException, NotRegisteredException
+	public void unregister( Wois wois) throws RemoteException, NotRegisteredException
     {
        
         WoisRegistration rw = null;
@@ -245,20 +245,26 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==bManager)
 	    {
             try {
-            	//TODO se sono già connesso a quel manager salta
             	if (runner.wois!=null)
             	{
-            		lInfo.setText("già connesso");
+            		unregister(runner.wois);
+            		runner.wois=null;
+            		runner.runRules(privateFacts);
+            		lInfo.setText("non connesso");
+            		bManager.setText("Connect");
             	}else{
             		Wois wois = new Wois("prova");
                 	register(wois, name);
+                	runner.runRules(privateFacts);
                 	lInfo.setText("connesso");
+                	bManager.setText("Disconnect");
             	}
             	
                 //woises.add( wois );
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
-                e.printStackTrace();}
+                e.printStackTrace();
+                lInfo.setText("Errore Server");}
 	    	
     	}
     }

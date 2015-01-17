@@ -81,6 +81,7 @@ public class RuleRunner {
 	 */
 	public void runRules(Vector<Fact> facts) {
 		try {
+			privateFacts=new Vector<Fact>();
 			kieServices = KieServices.Factory.get();
 			kieResources = kieServices.getResources();
 			kieFileSystem = kieServices.newKieFileSystem();
@@ -100,9 +101,8 @@ public class RuleRunner {
 					.getDefaultReleaseId());
 			// create the session
 			//kSession = kContainer.newKieSession();
-			for (Fact fact : facts) { // TODO use typeFact to import the private fact
+			for (Fact fact : facts) {
 				// insert the fact
-				//kSession.insert(fact);
 				privateFacts.add(fact);
 			}
 			//fireAllRules();
@@ -115,6 +115,8 @@ public class RuleRunner {
 		}
 		
 	}
+	
+	
 
 	/**
 	 * Add a fact into the current session.
@@ -217,15 +219,18 @@ public class RuleRunner {
 		s+=getStringFromFile("/resources/local_import.txt");//import the local class and the package
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_declare.txt");
-		s+=wois.getSharedFactsTemplates();//import the template/declare of the shared fact
+		if (wois!=null)
+			s+=wois.getSharedFactsTemplates();//import the template/declare of the shared fact
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_function.txt");//import the shared function
-		s+=wois.getSharedFactsFunctions();
+		if (wois!=null) 
+			s+=wois.getSharedFactsFunctions();
 		s+="\n";
 		s+=getStringFromFile("/resources/local_rules.txt");//import the rules that use local variable (no declare needed)
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
-		s+=wois.getSharedFactsRules();
+		if (wois!=null)
+			s+=wois.getSharedFactsRules();
 		System.out.println(s);
 		return s;
 	}
