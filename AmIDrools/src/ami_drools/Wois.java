@@ -58,7 +58,9 @@ public class Wois implements Serializable {
     void unregister(Is inf) throws RemoteException,NotRegisteredException{
     	woisManager.removeMember(inf.getRemoteProxy());
     }
-    
+    String getSharedFactsTemplates() throws RemoteException{
+    	return woisManager.getSharedFactsTemplates();
+    }
     public boolean getLock(String idFact, String isId) throws RemoteException{
     	return woisManager.getLock(idFact, isId);
     }
