@@ -47,5 +47,24 @@ public class Position {
 	{
 		return this.id;
 	}
+	@Override
+	public String toString()
+	{
+		return "Position, Id: " + id + "; Codice: " + codice + "; Location: " + location; 
+	}
+	public void updateField(String field, String value){
+   	 	System.err.println(field);
+		switch (field){
+   	 		case "codice" : setCodice(value);
+   	 				break;
+   	 		case "location" : setLocation(Integer.parseInt(value));
+   	 				break;
+   	 /*case "spenta" : if (value=="true")
+				setSpenta(true);
+			else
+				setSpenta(false);
+			break;*/
+   	 }
+    }
 
 }

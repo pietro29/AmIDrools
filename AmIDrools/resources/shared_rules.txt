@@ -24,7 +24,7 @@ end
 
 rule "rule teleport"
 when
-	$p:Posizione(location==1)
+	$p:Position(location==1)
 	$l:Lampadina(spenta==true)
 then
 	System.out.println( "Sei in " + $p.getCodice() + " al buio, attento al Pech!" );
