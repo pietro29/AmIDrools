@@ -10,7 +10,9 @@ function boolean getLock(String s, Wois wois){
 
 function boolean setLock(String s, Wois wois){
 	if(wois.setLock(s)==true){
+		System.err.println( "set Lamp LOCK CONFIRM!" );
 		return true;
 	}
+	System.err.println( "set Lamp LOCK FAILED" );
 	return false;
 }

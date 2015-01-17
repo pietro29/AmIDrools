@@ -2,7 +2,7 @@ package rules
 //lo uso per controllare i lock
 import ami_drools.Wois;
 
-declare Posizione
+declare Position
 	id			: String
 	location	: int
 	codice		: String

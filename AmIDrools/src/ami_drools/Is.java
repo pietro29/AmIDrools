@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Collection;
 
@@ -14,7 +16,11 @@ import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+
+import sharedFacts.Lampadina;
+
 import javax.swing.*;
+
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -55,6 +61,10 @@ public class Is extends JFrame implements ActionListener{
      * Shared facts vector
      */
     private Vector<Fact> privateFacts;
+    /**
+     * Map of the device and their ID
+     */
+    private Map mDevices = new HashMap();
     /**Graphic elements*/
     JPanel p;
 	JButton bManager;
@@ -105,7 +115,7 @@ public class Is extends JFrame implements ActionListener{
 	private RuleRunner createEngine()
 	{
 		runner = new RuleRunner();
-		Fact privateFact = new Fact("1p","Posizione");
+		Fact privateFact = new Fact("1p","Position");
 		privateFact.insertAttributeValue("location", "int", "1");
 		privateFact.insertAttributeValue("codice", "String", "soggiorno");
 		privateFact.insertAttributeValue("_privateVisibility", "Boolean", "true");
@@ -215,11 +225,16 @@ public class Is extends JFrame implements ActionListener{
 	    {
             //String host = (args.length < 1) ? null : args[0];
             try {
-            	lInfo.setText("dentro");
+            	lInfo.setText("avvio motore");
               
-            	runner.matchResolveAct(this.name);
-                
-                //gli oggetti sono caricati correttamente
+            	runner.matchResolveAct(this.name, privateFacts);
+              
+                //get the value of the private fact
+            	privateFacts=runner.getPrivateFacts();
+            	for (Fact fact : privateFacts) {
+            		updatePrivateFact(fact);
+				}
+            	System.out.println(pos.toString());
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();}
@@ -229,13 +244,43 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==bManager)
 	    {
             try {
-            	Wois wois = new Wois("prova");
-            	register(wois, name);
+            	//TODO se sono già connesso a quel manager salta
+            	if (runner.wois!=null)
+            	{
+            		lInfo.setText("già connesso");
+            	}else{
+            		Wois wois = new Wois("prova");
+                	register(wois, name);
+                	lInfo.setText("connesso");
+            	}
+            	
                 //woises.add( wois );
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();}
 	    	
     	}
+    }
+    
+    public void updatePrivateFact(Fact fact)
+    {
+    	try {
+    		Vector <String> tempAttr = fact.getAttributes();
+    		Vector <String> tempVal = fact.getValues();
+    		String tempFactType = fact.getFactType();
+    		for (int i=0;i<tempAttr.size();i++){//update all the attribute, even if not modified
+    			switch(tempFactType){
+    			case "Position" :	Class cls = Class.forName("ami_drools." + tempFactType);
+    								Position l = (Position) cls.cast(mDevices.get(fact.getId()));
+    								System.err.println(l.toString());
+    								l.updateField(tempAttr.get(i), tempVal.get(i));
+    								break;
+    			}
+    		}
+		} catch (Exception e) {
+			// TODO: handle exception
+			 e.printStackTrace();
+		}
+    	
     }
 }

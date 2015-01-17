@@ -53,7 +53,7 @@ public class RuleRunner {
 	Vector<Fact> sharedFacts;
 	Vector<Fact> privateFacts;
 	Vector<Fact> sharedFactsSend;
-
+	Vector<Fact> privateFactsSend;
 	/**
 	 * Constructor
 	 * 
@@ -98,14 +98,14 @@ public class RuleRunner {
 			kContainer = kieServices.newKieContainer(kieRepository
 					.getDefaultReleaseId());
 			// create the session
-			kSession = kContainer.newKieSession();
+			//kSession = kContainer.newKieSession();
 			for (Fact fact : facts) { // TODO use typeFact to import the private fact
 				// insert the fact
-				kSession.insert(fact);
+				//kSession.insert(fact);
 				privateFacts.add(fact);
 			}
-			fireAllRules();
-			cleanSession();
+			//fireAllRules();
+			//cleanSession();
 			
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -260,9 +260,10 @@ public class RuleRunner {
 	 * object that represent the fact to the manager
 	 *
 	 */
-	public void matchResolveAct(String ISname) throws RemoteException,
+	public void matchResolveAct(String ISname, Vector<Fact> privateFactsReceived) throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
 		//insert the shared fact
+		
 		sharedFacts = new Vector<Fact>();
 		// create new session
 		kSession = kContainer.newKieSession();
@@ -271,7 +272,6 @@ public class RuleRunner {
 	
 			// iterate all the shared fact
 			for (Fact ogg : sharedFacts) {
-				System.err.println(ogg.toString());
 				try {// insert the fact
 					this.addFact(ogg);
 				} catch (Throwable e) {
@@ -282,11 +282,11 @@ public class RuleRunner {
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
+		privateFacts=new Vector<Fact>();
+		privateFacts=privateFactsReceived;
 		//insert the private fact
 		for (Fact ogg : privateFacts) {
 			try {// insert the fact
-				System.err.println(ogg.getAttributes());
 				this.addFact(ogg);
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -312,7 +312,8 @@ public class RuleRunner {
 				// 
 			}
 		});*/
-		
+		System.out.println("********************************");
+		System.out.println("********************************");
 		kSession.fireAllRules(new AgendaFilter()
 		{//define the condition to fire the rule
 			public boolean accept(Match match)
@@ -325,13 +326,12 @@ public class RuleRunner {
 					boolean priv=false;
 					for (Field field : attributes) {
 						field.setAccessible(true);
-						if(field.getName().toLowerCase().equals("_privateVisibility"))
+						if(field.getName().equals("_privateVisibility"))
 						{
 							try {
 									if(field.get(ogg).toString().equals("true"))
 									{// the object is locked
 										priv=true;
-										System.err.println(ogg.toString());
 									}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -367,10 +367,13 @@ public class RuleRunner {
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
+		System.out.println("********************************");
+		System.out.println("********************************");
 		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory
 		Collection<? extends Object> oggettiDaWM = this.getFacts();
 		sharedFactsSend = new Vector<Fact>();
+		privateFactsSend = new Vector<Fact>();
 		for (Object ogg : oggettiDaWM) {
 			System.out.println(ogg.toString());
 			Field[] attributes = ogg.getClass().getDeclaredFields();
@@ -397,7 +400,7 @@ public class RuleRunner {
 			}else{
 				//System.err.println("id of the object not found inside the array of the fact");
 				//private fact
-				
+				System.out.println("fatto privato, non verrà inviato");
 				continue;
 			}
 			
@@ -461,5 +464,10 @@ public class RuleRunner {
 	 */
 	public void cleanSession() {
 		kSession.dispose();
+	}
+	
+	public Vector<Fact> getPrivateFacts()
+	{
+		return privateFacts;
 	}
 }
