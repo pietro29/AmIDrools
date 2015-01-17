@@ -106,6 +106,7 @@ public class Is extends JFrame implements ActionListener{
     	//p.add(txtServer);
     	this.add(p);
     	pos=new Position("1p", 1, "soggiorno");
+    	mDevices.put(pos.getId(), pos);
     	runners.add(createEngine());
     	
 	}
@@ -272,7 +273,6 @@ public class Is extends JFrame implements ActionListener{
     			switch(tempFactType){
     			case "Position" :	Class cls = Class.forName("ami_drools." + tempFactType);
     								Position l = (Position) cls.cast(mDevices.get(fact.getId()));
-    								System.err.println(l.toString());
     								l.updateField(tempAttr.get(i), tempVal.get(i));
     								break;
     			}
