@@ -156,7 +156,7 @@ public class Is extends JFrame implements ActionListener{
         runner.setWois(wois);
 	}
 	
-	public void unregister( Wois wois, boolean keepFacts ) throws RemoteException, NotRegisteredException
+	public void unregister( Wois wois) throws RemoteException, NotRegisteredException
     {
        
         WoisRegistration rw = null;
@@ -245,10 +245,10 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==bManager)
 	    {
             try {
-            	//TODO se sono già connesso a quel manager salta
+            	//TODO se sono giï¿½ connesso a quel manager salta
             	if (runner.wois!=null)
             	{
-            		lInfo.setText("già connesso");
+            		lInfo.setText("giï¿½ connesso");
             	}else{
             		Wois wois = new Wois("prova");
                 	register(wois, name);

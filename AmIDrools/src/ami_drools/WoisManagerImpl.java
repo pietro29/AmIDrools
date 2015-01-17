@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -222,9 +223,27 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
             if (old == null) {
                 throw new RuntimeException( "Internal error: incosistent maps while removing " + name + " " + inf );
             }
+            removeIsData(name.toString());
         }
     }
-    
+    private void removeIsData(String isName){
+    	//Remove all IS assertions
+    	for(int i=0; i<assertions.size();i++){
+    		if(assertions.get(i).getUser().getName().equals(isName)){
+    			assertions.remove(i);
+    		}
+    	}
+    	//Remove from the registered user
+    	mUsers.remove(isName);
+    	//Remove all user lock
+    	Iterator<Map.Entry<String, Lock>> it = locks.entrySet().iterator();
+    	while (it.hasNext()) {
+    		Map.Entry<String, Lock> entry = it.next();
+    		if (entry.getValue().getIsId().equals(isName)){
+    			entry.getValue().unLock();
+    		}
+    	}
+    }
     /**
      * return the vector of the shared facts of the WoIS
      */
@@ -247,8 +266,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	Fact factToUpdate;
     	Boolean update = true;
     	User tempUsr;
-    	
-    	//synchronized (assertions) {
     		
 	    	for (Fact fact : sharedFactUpdate){
 	    		
@@ -284,7 +301,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	    			}
 	    		}
 	    	}
-    	//}
     }
     /**
      * Check if the Is can update an attribute value
@@ -387,6 +403,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    	System.err.println(t.toString());
 		    	s="";
 		    }
+		System.out.println(s);
 		return s;
 	}
     private void getPrioritiesTable(){
