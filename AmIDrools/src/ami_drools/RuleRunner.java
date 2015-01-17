@@ -210,21 +210,22 @@ public class RuleRunner {
 	 * temporary file .drl
 	 * 
 	 * @return the string of the knowledge base
+	 * @throws RemoteException 
 	 */
-	private String getRule() {
+	private String getRule() throws RemoteException {
 		String s = "" ;
 		s+=getStringFromFile("/resources/local_import.txt");//import the local class and the package
 		s+="\n";
-		//TODO from server
-		s+=getStringFromFile("/resources/shared_declare.txt");//import the template/declare of the shared fact
+		//s+=getStringFromFile("/resources/shared_declare.txt");
+		s+=wois.getSharedFactsTemplates();//import the template/declare of the shared fact
 		s+="\n";
-		//TODO from server
-		s+=getStringFromFile("/resources/shared_function.txt");//import the shared function
+		//s+=getStringFromFile("/resources/shared_function.txt");//import the shared function
+		s+=wois.getSharedFactsFunctions();
 		s+="\n";
 		s+=getStringFromFile("/resources/local_rules.txt");//import the rules that use local variable (no declare needed)
 		s+="\n";
-		//TODO from server
-		s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
+		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
+		s+=wois.getSharedFactsRules();
 		System.out.println(s);
 		return s;
 	}
