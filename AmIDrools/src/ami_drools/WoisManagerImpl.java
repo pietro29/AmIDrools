@@ -71,9 +71,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     private final String bindingUrl;
     
-    /** All the templates shared in this WoIS. It contains objects of type {@link SharedTemplate}. */
-    private Vector templates;
-    
     /**
      * Shared facts vector
      */
@@ -95,7 +92,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         super();
         woisName = Wois.stripHost( name );
         bindingUrl = name;
-        templates = new Vector();
         sharedFacts = new Vector<Fact>();
         assertions = new Vector<Assertion>();
         
@@ -345,7 +341,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
     public boolean getLock(String idFact){
-    	System.err.println(idFact);
     	synchronized (locks) {
     		return locks.get(idFact).getLock();
     	}
