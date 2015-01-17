@@ -48,7 +48,7 @@ public class RuleRunner {
 	KieBuilder kb;
 	KieContainer kContainer;
 	FactHandle handleWois;
-	
+	String ISName;
 	Wois wois;
 	Vector<Fact> sharedFacts;
 	Vector<Fact> privateFacts;
@@ -60,9 +60,10 @@ public class RuleRunner {
 	 * @param wois the Wois which is connected to the session of the rule engine
 	 * @see Wois
 	 */
-	public RuleRunner() {
+	public RuleRunner(String ISName) {
 		sharedFacts = new Vector<Fact>();
 		privateFacts = new Vector<Fact>();
+		this.ISName=ISName;
 	}
 	
 	public void setWois(Wois wois)
@@ -267,6 +268,8 @@ public class RuleRunner {
 		sharedFacts = new Vector<Fact>();
 		// create new session
 		kSession = kContainer.newKieSession();
+		//set global variable
+		kSession.setGlobal("ISName", ISName);
 		try {
 			sharedFacts = wois.getSharedFacts();
 	
@@ -346,7 +349,7 @@ public class RuleRunner {
 							if(wois!=null)
 							{
 								try {
-										if(wois.getLock(field.get(ogg).toString()))
+										if(wois.getLock(field.get(ogg).toString(),ISName))
 										{// the object is locked
 											return false;
 										}

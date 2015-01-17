@@ -1,6 +1,6 @@
 //function that check if the fact is locked
-function boolean getLock(String s, Wois wois){
-	if(wois.getLock(s)==true){
+function boolean getLock(String s, Wois wois, String IS){
+	if(wois.getLock(s, IS)==true){
 		System.out.println( "Lamp LOCK!" );
 		return true;
 	}else{
@@ -8,8 +8,8 @@ function boolean getLock(String s, Wois wois){
 	return false;
 }
 
-function boolean setLock(String s, Wois wois){
-	if(wois.setLock(s)==true){
+function boolean setLock(String s, Wois wois, String IS){
+	if(wois.setLock(s,IS)==true){
 		System.err.println( "set Lamp LOCK CONFIRM!" );
 		return true;
 	}

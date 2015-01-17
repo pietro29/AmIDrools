@@ -3,9 +3,9 @@ when
 	$f:Lampadina(accesa==true)
 	$wi: Wois()
 then
-	if(!getLock($f.getId(),$wi))
+	if(!getLock($f.getId(),$wi, ISName))
 	{
-		if(setLock($f.getId(),$wi))
+		if(setLock($f.getId(),$wi,ISName))
 		{
 			System.out.println( "Lights ON!" );
 			modify($f) {setAccesa(false)};

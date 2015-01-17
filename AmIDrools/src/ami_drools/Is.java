@@ -115,7 +115,7 @@ public class Is extends JFrame implements ActionListener{
 	 */
 	private RuleRunner createEngine()
 	{
-		runner = new RuleRunner();
+		runner = new RuleRunner(name);
 		Fact privateFact = new Fact("1p","Position");
 		privateFact.insertAttributeValue("location", "int", "1");
 		privateFact.insertAttributeValue("codice", "String", "soggiorno");
