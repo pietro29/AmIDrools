@@ -1,5 +1,6 @@
 package ami_drools;
 
+import java.awt.TextArea;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.reflect.Field;
@@ -49,6 +50,7 @@ public class RuleRunner {
 	KieContainer kContainer;
 	FactHandle handleWois;
 	String ISName;
+	TextArea txtArea;
 	Wois wois;
 	Vector<Fact> sharedFacts;
 	Vector<Fact> privateFacts;
@@ -60,10 +62,11 @@ public class RuleRunner {
 	 * @param wois the Wois which is connected to the session of the rule engine
 	 * @see Wois
 	 */
-	public RuleRunner(String ISName) {
+	public RuleRunner(String ISName, TextArea txtArea) {
 		sharedFacts = new Vector<Fact>();
 		privateFacts = new Vector<Fact>();
 		this.ISName=ISName;
+		this.txtArea=txtArea;
 	}
 	
 	public void setWois(Wois wois)
@@ -276,6 +279,7 @@ public class RuleRunner {
 		kSession = kContainer.newKieSession();
 		//set global variable
 		kSession.setGlobal("ISName", ISName);
+		kSession.setGlobal("txtArea", txtArea);
 		try {
 			sharedFacts = wois.getSharedFacts();
 	

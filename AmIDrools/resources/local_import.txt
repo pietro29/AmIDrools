@@ -4,6 +4,7 @@ import ami_drools.Wois;
 
 //global variable
 global String ISName;
+global java.awt.TextArea txtArea;
 
 declare Position
 	id			: String

@@ -2,12 +2,12 @@ rule "rule 3"
 when
 	eval(true)
 then
-	System.out.println( "funge da nuovo drl!" );
+	txtArea.append( "funge da nuovo drl!\n" );
 end
 
 rule "rule position"
 when
 	$f:Position(location==1)
 then
-	System.out.println( "Sei in " + $f.getCodice());
+	txtArea.append( "Sei in " + $f.getCodice() + "\n");
 end

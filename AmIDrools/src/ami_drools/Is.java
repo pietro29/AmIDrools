@@ -1,8 +1,12 @@
 package ami_drools;
 
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -19,10 +23,25 @@ import org.kie.internal.runtime.StatefulKnowledgeSession;
 
 import sharedFacts.Lampadina;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.TextArea;
+
+import java.awt.BorderLayout;
+
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+
+import java.awt.Font;
 
 
 
@@ -67,19 +86,24 @@ public class Is extends JFrame implements ActionListener{
      * Map of the device and their ID
      */
     private Map mDevices = new HashMap();
-    /**Graphic elements*/
-    JPanel p;
+    JPanel pTextArea;
 	JButton bManager;
 	JButton bLocal;
 	JLabel lInfo;
 	JLabel lError;
-	JTextArea txtServer;
+	JLabel picLabel;
 	/**Rule engine elements*/
 	KieServices ks ;
     KieContainer kContainer ;
 	KieSession kSession ;
 	
 	RuleRunner runner;
+	private TextArea textArea;
+	private JLabel label_1;
+	private JPanel panel;
+	private JLabel label;
+	private JLabel label_2;
+	private JLabel label_3;
 
     //
     
@@ -92,21 +116,57 @@ public class Is extends JFrame implements ActionListener{
 		remoteObject = new IsRemote( this );
 		this.name=name;
 		pos = new Position("id1",1,"Soggiorno");
-		
-		p=new JPanel();
+		//p.setLayout(pGrid);
+		pTextArea=new JPanel();
+    	BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);;
+    	try {
+    	    img = ImageIO.read(new File(System.getProperty("user.dir") + "/images/unibs.jpg"));
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	
     	lInfo=new JLabel();
     	lError=new JLabel();
-    	bManager=new JButton("Connect");
-    	bLocal=new JButton("Run Engine");
-    	txtServer=new JTextArea();
+   
+    	textArea = new TextArea();
+    	textArea.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
+    	textArea.setEditable(false);
+    	textArea.setForeground(UIManager.getColor("ToolBar.dockingForeground"));
+    	textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
+    	getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
+    	
+    	
+    	picLabel = new JLabel(new ImageIcon(img));
+    	getContentPane().add(picLabel);
+    	
+    	panel = new JPanel();
+    	getContentPane().add(panel);
+    	panel.setLayout(new GridLayout(0, 5, 0, 0));
+    	
+    	label = new JLabel("");
+    	panel.add(label);
+    	bManager=new JButton("");
+    	
+    	panel.add(bManager);
     	bManager.addActionListener((ActionListener) this);
+    	//this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
+    	label_2 = new JLabel("");
+    	panel.add(label_2);
+    	bLocal=new JButton("");
+    	//this.setImageButton(bLocal, System.getProperty("user.dir") + "/images/engine.png");
+    	panel.add(bLocal);
     	bLocal.addActionListener((ActionListener) this);
-    	p.add(lInfo);
-    	p.add(bManager);
-    	p.add(bLocal);
-    	p.add(lError);
-    	//p.add(txtServer);
-    	this.add(p);
+    	
+    	label_3 = new JLabel("");
+    	panel.add(label_3);
+    	
+    	getContentPane().add(textArea);
+    	
+    	label_1 = new JLabel("");
+    	getContentPane().add(label_1);
+    	
+    	//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
+    	//this.add(pTextArea);
     	pos=new Position("1p", 1, "soggiorno");
     	mDevices.put(pos.getId(), pos);
     	runners.add(createEngine());
@@ -115,12 +175,35 @@ public class Is extends JFrame implements ActionListener{
 	public String getIsName(){
 		return this.name;
 	}
+	
+	public void resizeButton()
+	{
+		this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
+		this.setImageButton(bLocal, System.getProperty("user.dir") + "/images/engine.png");
+	}
+	
+	public void setImageButton(JButton bt, String pathImage){
+		bt.setIcon(new ImageIcon(pathImage));
+        Image img = new ImageIcon(pathImage).getImage();
+        int minDimension=bt.getWidth();
+        if(minDimension>bt.getHeight())
+        	minDimension=bt.getHeight();
+        System.err.println(bt.getWidth());
+        //minDimension=80;
+        bt.setPreferredSize(new Dimension(minDimension,minDimension));
+        Image newimg = img.getScaledInstance(minDimension, minDimension,  java.awt.Image.SCALE_SMOOTH);  
+        bt.setIcon(new ImageIcon(newimg));  
+        bt.setBorderPainted(false);
+        bt.setFocusPainted(false);
+        bt.setContentAreaFilled(false);
+	}
+	
 	/**
 	 * add the private fact to the WM and run the engine
 	 */
 	private RuleRunner createEngine()
 	{
-		runner = new RuleRunner(name);
+		runner = new RuleRunner(name, textArea);
 		Fact privateFact = new Fact("1p","Position");
 		privateFact.insertAttributeValue("location", "int", "1");
 		privateFact.insertAttributeValue("codice", "String", "soggiorno");
@@ -255,15 +338,14 @@ public class Is extends JFrame implements ActionListener{
             		unregister(runner.wois);
             		runner.wois=null;
             		runner.runRules(privateFacts);
-            		lInfo.setText("non connesso");
-            		bManager.setText("Connect");
-            		lInfo.setText("gia' connesso");
+            		this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
+            		textArea.append("Non connesso\n");
             	}else{
             		Wois wois = new Wois("prova");
                 	register(wois, name);
                 	runner.runRules(privateFacts);
-                	lInfo.setText("connesso");
-                	bManager.setText("Disconnect");
+                	textArea.append("Connesso\n");
+                	this.setImageButton(bManager, System.getProperty("user.dir") + "/images/disconnect.png");
             	}
             	
                 //woises.add( wois );

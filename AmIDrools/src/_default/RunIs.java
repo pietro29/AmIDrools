@@ -1,5 +1,6 @@
 package _default;
 
+import java.awt.Toolkit;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,9 +28,10 @@ public class RunIs {
         try {
         	inf = new Is(args[0].toString());
         	inf.setTitle("Is " + args[0].toString());
-        	inf.setSize(500, 500);
+        	inf.setSize(500, 600);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        	inf.resizeButton();
         } catch (Exception e) {
             //ERRORE
         } finally {
