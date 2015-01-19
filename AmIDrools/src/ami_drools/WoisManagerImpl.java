@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -28,7 +29,10 @@ import sharedFacts.Lampadina;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
@@ -100,6 +104,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     */
     
 	JTextArea textArea;
+	DefaultListModel<String> model;
+	JList list;
 	//radio button
 	ButtonGroup groupLampadina;
 	ButtonGroup groupStereo;
@@ -112,6 +118,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	JRadioButton rbPersonaFuori;
     
 	private final static String newline = "\n";
+	private JTextField textField;
+	private JTextField textField_1;
 	
     /**
      * Constructor that requires the name of the new WoIS.
@@ -204,6 +212,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         
         startUserInterface(name);
         
+        loadInterfaceData();
     }
     
    public void startUserInterface(String name){
@@ -235,8 +244,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		
    	
    	GridBagLayout gbl_p = new GridBagLayout();
-   	gbl_p.columnWidths = new int[]{0, 0, 0, 0, 0, 200};
-   	gbl_p.rowHeights = new int[]{0, 0, 0, 0, 100};
+   	gbl_p.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
+   	gbl_p.rowHeights = new int[]{0, 0, 0, 0, 0};
    	gbl_p.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
    	gbl_p.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
    	panel1.setLayout(gbl_p);
@@ -244,14 +253,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	JRadioButton rdbtnF = new JRadioButton("Lampadina accesa");
    	rdbtnF.setSelected(true);
    	GridBagConstraints gbc_rdbtnF = new GridBagConstraints();
-   	gbc_rdbtnF.insets = new Insets(0, 0, 5, 5);
+   	gbc_rdbtnF.insets = new Insets(0, 0, 3, 3);
    	gbc_rdbtnF.gridx = 0;
    	gbc_rdbtnF.gridy = 0;
    	panel1.add(rdbtnF, gbc_rdbtnF);
    	
    	JRadioButton rdbtnNewRadioButton = new JRadioButton("Lampadina spenta");
    	GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
-   	gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 5, 5);
+   	gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 3, 3);
    	gbc_rdbtnNewRadioButton.gridx = 1;
    	gbc_rdbtnNewRadioButton.gridy = 0;
    	panel1.add(rdbtnNewRadioButton, gbc_rdbtnNewRadioButton);
@@ -263,54 +272,73 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	
    	//Users panel
    	JPanel panel2=new JPanel();
-   	GridBagLayout gbl_p1 = new GridBagLayout();
-   	gbl_p1.columnWidths = new int[]{0, 0, 0, 0, 0, 200};
-   	gbl_p1.rowHeights = new int[]{0, 0, 0, 0, 100};
-   	gbl_p1.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-   	gbl_p1.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-   	panel2.setLayout(gbl_p1);
-   	
-   	JButton btnNewButton = new JButton("Aggiorna");
-   	
-   	GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-   	gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
-   	gbc_btnNewButton.gridx = 1;
-   	gbc_btnNewButton.gridy = 0;
-   	panel2.add(btnNewButton, gbc_btnNewButton);
-   	
-   	JLabel lblNewLabel = new JLabel("Member list:");
-   	GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-   	gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
-   	gbc_lblNewLabel.gridx = 0;
-   	gbc_lblNewLabel.gridy = 0;
-   	panel2.add(lblNewLabel, gbc_lblNewLabel);
-   	
-   	final JTextArea textArea_1 = new JTextArea();
-   	textArea_1.setWrapStyleWord(true);
-   	textArea_1.setTabSize(10);
-   	textArea_1.setRows(5);
-   	textArea_1.setEditable(false);
-   	GridBagConstraints gbc_textArea_1 = new GridBagConstraints();
-   	gbc_textArea_1.gridwidth = 2;
-   	gbc_textArea_1.insets = new Insets(0, 0, 0, 5);
-   	gbc_textArea_1.fill = GridBagConstraints.BOTH;
-   	gbc_textArea_1.gridx = 0;
-   	gbc_textArea_1.gridy = 1;
-   	panel2.add(textArea_1, gbc_textArea_1);
    	//
    	
    	//Tebbed pane creation
    	JTabbedPane tabbedPane = new JTabbedPane();
-   	ImageIcon iconPanel1 = new ImageIcon("images/exchange32.png", "users");
-	tabbedPane.addTab( "Devices", panel1 );
+   	ImageIcon iconPanel1 = new ImageIcon("images/wand32.png", "users");
+	//tabbedPane.addTab( "Devices", panel1 );
 	tabbedPane.addTab("Devices", iconPanel1, panel1, "Devices");
 	
 	ImageIcon iconPanel2 = new ImageIcon("images/users32.png", "users");
 	//tabbedPane.addTab( "Users", panel2 );
 	tabbedPane.addTab("Users", iconPanel2, panel2, "Users");
-	topPanel.add( tabbedPane, BorderLayout.CENTER );
-   	
-   	btnNewButton.addActionListener(new java.awt.event.ActionListener() {
+	
+    model = new DefaultListModel<String>();
+	GridBagLayout gbl_panel2 = new GridBagLayout();
+	gbl_panel2.columnWidths = new int[]{53, 41, 108, 52, 114, 0};
+	gbl_panel2.rowHeights = new int[]{30, 90, 35, 19, 1, 17, 49, 25, 0, 0};
+	gbl_panel2.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+	gbl_panel2.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+	panel2.setLayout(gbl_panel2);
+	
+	final JTextArea textArea_1 = new JTextArea();
+	textArea_1.setTabSize(4);
+	textArea_1.setRows(6);
+	textArea_1.setEditable(false);
+	GridBagConstraints gbc_textArea_1 = new GridBagConstraints();
+	gbc_textArea_1.anchor = GridBagConstraints.NORTH;
+	gbc_textArea_1.fill = GridBagConstraints.HORIZONTAL;
+	gbc_textArea_1.insets = new Insets(0, 0, 5, 5);
+	gbc_textArea_1.gridwidth = 3;
+	gbc_textArea_1.gridx = 0;
+	gbc_textArea_1.gridy = 1;
+	panel2.add(textArea_1, gbc_textArea_1);
+	
+	JScrollPane scrollPane = new JScrollPane();
+	list = new JList(model);
+	list.setVisibleRowCount(6);
+	scrollPane.setViewportView(list);
+	GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+	gbc_scrollPane.anchor = GridBagConstraints.NORTHWEST;
+	gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
+	gbc_scrollPane.gridheight = 4;
+	gbc_scrollPane.gridwidth = 3;
+	gbc_scrollPane.gridx = 0;
+	gbc_scrollPane.gridy = 3;
+	panel2.add(scrollPane, gbc_scrollPane);
+	
+	JLabel lblNewLabel_1 = new JLabel("User");
+	GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+	gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+	gbc_lblNewLabel_1.gridx = 3;
+	gbc_lblNewLabel_1.gridy = 3;
+	panel2.add(lblNewLabel_1, gbc_lblNewLabel_1);
+	
+	textField = new JTextField();
+	textField.setToolTipText("User");
+	textField.setColumns(10);
+	GridBagConstraints gbc_textField = new GridBagConstraints();
+	gbc_textField.anchor = GridBagConstraints.NORTHWEST;
+	gbc_textField.insets = new Insets(0, 0, 5, 0);
+	gbc_textField.gridx = 4;
+	gbc_textField.gridy = 3;
+	panel2.add(textField, gbc_textField);
+	
+	//Icon updateIcon = new ImageIcon("images/Update.png");
+	JButton btUpdateMembersList = new JButton();
+	
+   	btUpdateMembersList.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
         	textArea_1.setText("");
         	
@@ -330,13 +358,111 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
     });
    	
+   	
+   	GridBagConstraints gbc_btUpdateMembersList = new GridBagConstraints();
+   	gbc_btUpdateMembersList.anchor = GridBagConstraints.NORTHWEST;
+   	gbc_btUpdateMembersList.insets = new Insets(0, 0, 5, 5);
+   	gbc_btUpdateMembersList.gridx = 3;
+   	gbc_btUpdateMembersList.gridy = 1;
+   	panel2.add(btUpdateMembersList, gbc_btUpdateMembersList);
+	
+	textField_1 = new JTextField();
+	textField_1.setToolTipText("Priority");
+	textField_1.setColumns(10);
+	GridBagConstraints gbc_textField_1 = new GridBagConstraints();
+	gbc_textField_1.anchor = GridBagConstraints.NORTHWEST;
+	gbc_textField_1.insets = new Insets(0, 0, 5, 0);
+	gbc_textField_1.gridheight = 2;
+	gbc_textField_1.gridx = 4;
+	gbc_textField_1.gridy = 4;
+	panel2.add(textField_1, gbc_textField_1);
+	
+	JLabel lblNewLabel_2 = new JLabel("Priority");
+	GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+	gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
+	gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
+	gbc_lblNewLabel_2.gridx = 3;
+	gbc_lblNewLabel_2.gridy = 5;
+	panel2.add(lblNewLabel_2, gbc_lblNewLabel_2);
+	topPanel.add( tabbedPane, BorderLayout.CENTER );
+   	
+		
+		JButton btAddUser = new JButton();
+		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
+		gbc_btnNewButton_1.anchor = GridBagConstraints.NORTH;
+		gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton_1.gridx = 0;
+		gbc_btnNewButton_1.gridy = 7;
+		panel2.add(btAddUser, gbc_btnNewButton_1);
+		
+		//List add button
+		btAddUser.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	if (!(textField.getText().equals("") && textField_1.getText().equals(""))){
+        		model.addElement(textField.getText() + " - " + textField_1.getText());
+        		textField.setText("");
+        		textField_1.setText("");
+        	}
+        }
+		});
+		
+		JButton btModifyUser = new JButton();
+		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
+		gbc_btnNewButton_3.anchor = GridBagConstraints.NORTHWEST;
+		gbc_btnNewButton_3.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton_3.gridx = 1;
+		gbc_btnNewButton_3.gridy = 7;
+		panel2.add(btModifyUser, gbc_btnNewButton_3);
+		
+		JButton btRemoveUsers = new JButton();
+		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
+		gbc_btnNewButton_2.anchor = GridBagConstraints.NORTHWEST;
+		gbc_btnNewButton_2.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton_2.gridx = 2;
+		gbc_btnNewButton_2.gridy = 7;
+		panel2.add(btRemoveUsers, gbc_btnNewButton_2);
+		//List remove button
+		btRemoveUsers.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	if (model.getSize() > 0)
+                model.removeElementAt(list.getSelectedIndex());
+        }
+		});
+		
 		frame.pack();
-		frame.setMinimumSize(new Dimension(300, 300));
+		frame.setMinimumSize(new Dimension(400, 400));
 		frame.setVisible(true);
+		
+		setImageButton(btUpdateMembersList, "images/exchange32.png");
+		setImageButton(btAddUser, "images/plus32.png");
+		setImageButton(btRemoveUsers, "images/stop32.png");
+		setImageButton(btModifyUser, "images/pencil32.png");
    }
-   private void createTabDevices(){
-	   
+   
+   private void loadInterfaceData(){
+	   Iterator<Map.Entry<String, Integer>> it = mPriorities.entrySet().iterator();
+
+   	while (it.hasNext()) {
+   		Map.Entry<String, Integer> entry = it.next();
+   		model.addElement(entry.getKey().toString() + " - " + entry.getValue().toString());
+   	}
    }
+   
+   public void setImageButton(JButton bt, String pathImage){
+		bt.setIcon(new ImageIcon(pathImage));
+       Image img = new ImageIcon(pathImage).getImage();
+       int minDimension=bt.getWidth();
+       if(minDimension>bt.getHeight())
+       	minDimension=bt.getHeight();
+       System.err.println(bt.getWidth());
+       //minDimension=80;
+       bt.setPreferredSize(new Dimension(40, 40));
+       Image newimg = img.getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);  
+       bt.setIcon(new ImageIcon(newimg));  
+       bt.setBorderPainted(false);
+       bt.setFocusPainted(false);
+       bt.setContentAreaFilled(false);
+	}
    
     private void checkLockProcess() throws InterruptedException{
     	while(true){
@@ -660,7 +786,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private void getPrioritiesTable(){
     	String s="";
     	try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/wois_priorities.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/wois_priorities.txt"));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    String[] parts;
