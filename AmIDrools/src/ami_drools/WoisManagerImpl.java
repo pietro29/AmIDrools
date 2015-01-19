@@ -777,7 +777,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    s = sb.toString();
 		    br.close();
 		    } catch (Throwable t) {
-		    	System.err.println(t.toString());
+		    	//System.err.println(t.toString());
 		    	s="";
 		    }
 		//System.out.println(s);
@@ -786,7 +786,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private void getPrioritiesTable(){
     	String s="";
     	try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/resources/wois_priorities.txt"));
+			//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/wois_priorities.txt"));
+    		BufferedReader br = new BufferedReader(new FileReader("wois_priorities.txt"));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    String[] parts;
