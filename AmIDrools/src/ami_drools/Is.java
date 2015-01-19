@@ -35,7 +35,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.TextArea;
-
 import java.awt.BorderLayout;
 
 import javax.swing.GroupLayout.Alignment;
@@ -86,11 +85,8 @@ public class Is extends JFrame implements ActionListener{
      * Map of the device and their ID
      */
     private Map mDevices = new HashMap();
-    JPanel pTextArea;
 	JButton bManager;
 	JButton bLocal;
-	JLabel lInfo;
-	JLabel lError;
 	JLabel picLabel;
 	/**Rule engine elements*/
 	KieServices ks ;
@@ -99,11 +95,13 @@ public class Is extends JFrame implements ActionListener{
 	
 	RuleRunner runner;
 	private TextArea textArea;
-	private JLabel label_1;
 	private JPanel panel;
 	private JLabel label;
 	private JLabel label_2;
 	private JLabel label_3;
+	private JTabbedPane tabbedPane;
+	private JPanel panelFireRule;
+	private JPanel panelNewRule;
 
     //
     
@@ -116,31 +114,27 @@ public class Is extends JFrame implements ActionListener{
 		remoteObject = new IsRemote( this );
 		this.name=name;
 		pos = new Position("id1",1,"Soggiorno");
-		//p.setLayout(pGrid);
-		pTextArea=new JPanel();
     	BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);;
     	try {
     	    img = ImageIO.read(new File(System.getProperty("user.dir") + "/images/unibs.jpg"));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	
-    	lInfo=new JLabel();
-    	lError=new JLabel();
-   
-    	textArea = new TextArea();
-    	textArea.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
-    	textArea.setEditable(false);
-    	textArea.setForeground(UIManager.getColor("ToolBar.dockingForeground"));
-    	textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
     	getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
+    	
+    	tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+    	getContentPane().add(tabbedPane);
+    	
+    	panelFireRule = new JPanel();
+    	tabbedPane.addTab("New tab", null, panelFireRule, null);
+    	panelFireRule.setLayout(new GridLayout(0, 1, 0, 0));
     	
     	
     	picLabel = new JLabel(new ImageIcon(img));
-    	getContentPane().add(picLabel);
+    	panelFireRule.add(picLabel);
     	
     	panel = new JPanel();
-    	getContentPane().add(panel);
+    	panelFireRule.add(panel);
     	panel.setLayout(new GridLayout(0, 5, 0, 0));
     	
     	label = new JLabel("");
@@ -160,10 +154,15 @@ public class Is extends JFrame implements ActionListener{
     	label_3 = new JLabel("");
     	panel.add(label_3);
     	
-    	getContentPane().add(textArea);
+    	textArea = new TextArea();
+    	panelFireRule.add(textArea);
+    	textArea.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
+    	textArea.setEditable(false);
+    	textArea.setForeground(UIManager.getColor("ToolBar.dockingForeground"));
+    	textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
     	
-    	label_1 = new JLabel("");
-    	getContentPane().add(label_1);
+    	panelNewRule = new JPanel();
+    	tabbedPane.addTab("New tab", null, panelNewRule, null);
     	
     	//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
     	//this.add(pTextArea);
@@ -314,7 +313,6 @@ public class Is extends JFrame implements ActionListener{
 	    {
             //String host = (args.length < 1) ? null : args[0];
             try {
-            	lInfo.setText("avvio motore");
               
             	runner.matchResolveAct(this.name, privateFacts);
               
@@ -341,18 +339,24 @@ public class Is extends JFrame implements ActionListener{
             		this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
             		textArea.append("Non connesso\n");
             	}else{
-            		Wois wois = new Wois("prova");
-                	register(wois, name);
-                	runner.runRules(privateFacts);
-                	textArea.append("Connesso\n");
-                	this.setImageButton(bManager, System.getProperty("user.dir") + "/images/disconnect.png");
-            	}
+            	
+            		try {
+						Wois wois = new Wois("prova");
+						register(wois, name);
+						runner.runRules(privateFacts);
+						textArea.append("Connesso\n");
+						this.setImageButton(bManager, System.getProperty("user.dir") + "/images/disconnect.png");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						textArea.append("Errore, connessione fallita\n");}
+				}
             	
                 //woises.add( wois );
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();
-                lInfo.setText("Errore Server");}
+                textArea.append("Errore Server\n");}
 	    	
     	}
     }
