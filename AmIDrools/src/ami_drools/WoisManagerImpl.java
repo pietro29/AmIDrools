@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -276,11 +277,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	
    	//Tebbed pane creation
    	JTabbedPane tabbedPane = new JTabbedPane();
-   	ImageIcon iconPanel1 = new ImageIcon("images/wand32.png", "users");
-	//tabbedPane.addTab( "Devices", panel1 );
+   	
+   	ImageIcon iconPanel1 = new ImageIcon(ClassLoader.getSystemResource("images/wand32.png"), "devices");
+	
 	tabbedPane.addTab("Devices", iconPanel1, panel1, "Devices");
 	
-	ImageIcon iconPanel2 = new ImageIcon("images/users32.png", "users");
+	ImageIcon iconPanel2 = new ImageIcon(ClassLoader.getSystemResource("images/users32.png"), "users");
 	//tabbedPane.addTab( "Users", panel2 );
 	tabbedPane.addTab("Users", iconPanel2, panel2, "Users");
 	
@@ -454,7 +456,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
        int minDimension=bt.getWidth();
        if(minDimension>bt.getHeight())
        	minDimension=bt.getHeight();
-       System.err.println(bt.getWidth());
+       //System.err.println(bt.getWidth());
        //minDimension=80;
        bt.setPreferredSize(new Dimension(40, 40));
        Image newimg = img.getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);  
@@ -755,18 +757,20 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	
     }
     public String getSharedTemplates(){
-    	return getStringFromFile("/shared_declare.txt");
+    	return getStringFromFile("shared_declare.txt");
     }
     public String getSharedFunctions(){
-    	return getStringFromFile("/shared_function.txt");
+    	return getStringFromFile("shared_function.txt");
     }
     public String getSharedRules(){
-    	return getStringFromFile("/shared_rules.txt");
+    	return getStringFromFile("shared_rules.txt");
     }
     private String getStringFromFile(String fileName) {
 		String s = "" ;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
+			//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
+			InputStream in=ClassLoader.getSystemResourceAsStream("resources/" + fileName);
+    		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    while (line != null) {
@@ -787,7 +791,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	String s="";
     	try {
 			//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/wois_priorities.txt"));
-    		BufferedReader br = new BufferedReader(new FileReader("wois_priorities.txt"));
+    		InputStream in=ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt");
+    		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+    		
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    String[] parts;
@@ -802,7 +808,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    s = sb.toString();
 		    br.close();
 		    } catch (Throwable t) {
-		    	System.err.println(t.toString());
+		    	//System.err.println(t.toString());
 		    	s="";
 		    }
 		//System.out.println(mPriorities.get("pippo"));
