@@ -451,8 +451,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    }
    
    public void setImageButton(JButton bt, String pathImage){
-		bt.setIcon(new ImageIcon(pathImage));
-       Image img = new ImageIcon(pathImage).getImage();
+		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
+       Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
        int minDimension=bt.getWidth();
        if(minDimension>bt.getHeight())
        	minDimension=bt.getHeight();
@@ -768,7 +768,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private String getStringFromFile(String fileName) {
 		String s = "" ;
 		try {
-			//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
 			InputStream in=ClassLoader.getSystemResourceAsStream("resources/" + fileName);
     		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			StringBuilder sb = new StringBuilder();
@@ -790,7 +789,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private void getPrioritiesTable(){
     	String s="";
     	try {
-			//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/wois_priorities.txt"));
+			
     		InputStream in=ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt");
     		BufferedReader br = new BufferedReader(new InputStreamReader(in));
     		
