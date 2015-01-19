@@ -25,6 +25,11 @@ import java.util.Vector;
 
 import sharedFacts.Lampadina;
 
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
 	/**
@@ -87,6 +92,27 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
     private Thread checkIs;
     
+    //Interfaccia grafica
+    /*
+    JTabbedPane tabbedPane;
+	JPanel panel1;
+	JPanel panel2;
+    */
+    
+	JTextArea textArea;
+	//radio button
+	ButtonGroup groupLampadina;
+	ButtonGroup groupStereo;
+	ButtonGroup groupPersona;
+	JRadioButton rbLampadinaAccesa;
+	JRadioButton rbLampadinaSpenta;
+	JRadioButton rbStereoAcceso;
+	JRadioButton rbStereoSpento;
+	JRadioButton rbPersonaDentro;
+	JRadioButton rbPersonaFuori;
+    
+	private final static String newline = "\n";
+	
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -175,8 +201,138 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         	}
         };
         checkIs.start();
+        
+        startUserInterface(name);
+        
     }
     
+   public void startUserInterface(String name){
+	   
+	 //GUI
+       JFrame frame = new JFrame("WoIS manager" + name);
+		// Add a window listner for close button
+		frame.addWindowListener(new WindowAdapter() {
+
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		
+		//Create top panel
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout( new BorderLayout() );	
+		frame.getContentPane().add(topPanel);
+		
+		
+		
+		//Create tabs
+		//createTabDevices();
+	
+	//Devices panel
+	JPanel panel1=new JPanel();	
+		
+	groupLampadina = new ButtonGroup();
+		
+   	
+   	GridBagLayout gbl_p = new GridBagLayout();
+   	gbl_p.columnWidths = new int[]{0, 0, 0, 0, 0, 200};
+   	gbl_p.rowHeights = new int[]{0, 0, 0, 0, 100};
+   	gbl_p.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+   	gbl_p.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+   	panel1.setLayout(gbl_p);
+   	
+   	JRadioButton rdbtnF = new JRadioButton("Lampadina accesa");
+   	rdbtnF.setSelected(true);
+   	GridBagConstraints gbc_rdbtnF = new GridBagConstraints();
+   	gbc_rdbtnF.insets = new Insets(0, 0, 5, 5);
+   	gbc_rdbtnF.gridx = 0;
+   	gbc_rdbtnF.gridy = 0;
+   	panel1.add(rdbtnF, gbc_rdbtnF);
+   	
+   	JRadioButton rdbtnNewRadioButton = new JRadioButton("Lampadina spenta");
+   	GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
+   	gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 5, 5);
+   	gbc_rdbtnNewRadioButton.gridx = 1;
+   	gbc_rdbtnNewRadioButton.gridy = 0;
+   	panel1.add(rdbtnNewRadioButton, gbc_rdbtnNewRadioButton);
+   	
+   	groupLampadina.add(rdbtnF);
+   	groupLampadina.add(rdbtnNewRadioButton);
+   	
+   	//end device panel
+   	
+   	//Users panel
+   	JPanel panel2=new JPanel();
+   	GridBagLayout gbl_p1 = new GridBagLayout();
+   	gbl_p1.columnWidths = new int[]{0, 0, 0, 0, 0, 200};
+   	gbl_p1.rowHeights = new int[]{0, 0, 0, 0, 100};
+   	gbl_p1.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+   	gbl_p1.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+   	panel2.setLayout(gbl_p1);
+   	
+   	JButton btnNewButton = new JButton("Aggiorna");
+   	
+   	GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+   	gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
+   	gbc_btnNewButton.gridx = 1;
+   	gbc_btnNewButton.gridy = 0;
+   	panel2.add(btnNewButton, gbc_btnNewButton);
+   	
+   	JLabel lblNewLabel = new JLabel("Member list:");
+   	GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+   	gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+   	gbc_lblNewLabel.gridx = 0;
+   	gbc_lblNewLabel.gridy = 0;
+   	panel2.add(lblNewLabel, gbc_lblNewLabel);
+   	
+   	final JTextArea textArea_1 = new JTextArea();
+   	textArea_1.setWrapStyleWord(true);
+   	textArea_1.setTabSize(10);
+   	textArea_1.setRows(5);
+   	textArea_1.setEditable(false);
+   	GridBagConstraints gbc_textArea_1 = new GridBagConstraints();
+   	gbc_textArea_1.gridwidth = 2;
+   	gbc_textArea_1.insets = new Insets(0, 0, 0, 5);
+   	gbc_textArea_1.fill = GridBagConstraints.BOTH;
+   	gbc_textArea_1.gridx = 0;
+   	gbc_textArea_1.gridy = 1;
+   	panel2.add(textArea_1, gbc_textArea_1);
+   	//
+   	
+   	//Tebbed pane creation
+   	JTabbedPane tabbedPane = new JTabbedPane();
+	tabbedPane.addTab( "Devices", panel1 );
+	tabbedPane.addTab( "Users", panel2 );
+	topPanel.add( tabbedPane, BorderLayout.CENTER );
+   	
+   	btnNewButton.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	textArea_1.setText("");
+        	
+        	if (members.size()==0){
+        		textArea_1.setText("Member list is empty");
+        	}
+        	else {
+        	
+	        	Iterator<Map.Entry<String, IsIntf>> it = members.entrySet().iterator();
+	
+	        	while (it.hasNext()) {
+	        		Map.Entry<String, IsIntf> entry = it.next();
+	        		
+	        		textArea_1.append(entry.getKey() + newline);
+	        	}
+        	}
+        }
+    });
+   	
+		frame.pack();
+		frame.setMinimumSize(new Dimension(300, 300));
+		frame.setVisible(true);
+   }
+   private void createTabDevices(){
+	   
+   }
+   
     private void checkLockProcess() throws InterruptedException{
     	while(true){
     		checkLockStatus();
