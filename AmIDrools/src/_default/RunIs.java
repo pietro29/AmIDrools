@@ -31,6 +31,7 @@ public class RunIs {
         	inf.setSize(500, 600);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        	inf.resizeLogoUnibs(System.getProperty("user.dir") + "/images/Logo_unibs.gif",150,150);
         	inf.resizeButton();
         } catch (Exception e) {
             //ERRORE

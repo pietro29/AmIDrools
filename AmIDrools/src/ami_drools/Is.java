@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.Collection;
 
+import org.apache.poi.hssf.util.HSSFColor.RED;
 import org.drools.core.rule.FactType;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
@@ -28,6 +29,7 @@ import javax.swing.*;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
@@ -102,6 +104,8 @@ public class Is extends JFrame implements ActionListener{
 	private JTabbedPane tabbedPane;
 	private JPanel panelFireRule;
 	private JPanel panelNewRule;
+	private JPanel panelLogo;
+	private JLabel label_1;
 
     //
     
@@ -114,24 +118,24 @@ public class Is extends JFrame implements ActionListener{
 		remoteObject = new IsRemote( this );
 		this.name=name;
 		pos = new Position("id1",1,"Soggiorno");
-    	BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);;
-    	try {
-    	    img = ImageIO.read(new File(System.getProperty("user.dir") + "/images/unibs.jpg"));
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+    	
     	getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
     	
     	tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     	getContentPane().add(tabbedPane);
-    	
+    	   	
     	panelFireRule = new JPanel();
-    	tabbedPane.addTab("New tab", null, panelFireRule, null);
+    	//tabbedPane.addTab("New tab", null, panelFireRule, null);
     	panelFireRule.setLayout(new GridLayout(0, 1, 0, 0));
     	
+    	panelLogo = new JPanel();
+    	panelFireRule.add(panelLogo);
+    	panelLogo.setLayout(new GridLayout(0, 3, 0, 0));
     	
-    	picLabel = new JLabel(new ImageIcon(img));
-    	panelFireRule.add(picLabel);
+    	label_1 = new JLabel("");
+    	panelLogo.add(label_1);
+    	picLabel = new JLabel();
+    	panelLogo.add(picLabel);
     	
     	panel = new JPanel();
     	panelFireRule.add(panel);
@@ -162,10 +166,15 @@ public class Is extends JFrame implements ActionListener{
     	textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
     	
     	panelNewRule = new JPanel();
-    	tabbedPane.addTab("New tab", null, panelNewRule, null);
+    	//tabbedPane.addTab("New tab", null, panelNewRule, null);
     	
     	//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
     	//this.add(pTextArea);
+    	
+    	ImageIcon iconPanel1 = new ImageIcon("images/gear32.png", "users");
+    	ImageIcon iconPanel2 = new ImageIcon("images/folderplus32.png", "users");
+    	tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
+    	tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
     	pos=new Position("1p", 1, "soggiorno");
     	mDevices.put(pos.getId(), pos);
     	runners.add(createEngine());
@@ -195,6 +204,19 @@ public class Is extends JFrame implements ActionListener{
         bt.setBorderPainted(false);
         bt.setFocusPainted(false);
         bt.setContentAreaFilled(false);
+	}
+	
+	public void resizeLogoUnibs(String pathImage, int width, int height){
+		BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);
+    	try {
+    	    img = ImageIO.read(new File(pathImage));
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	Image newimg = img.getScaledInstance(width, height,  java.awt.Image.SCALE_SMOOTH);
+    	picLabel.setIcon(new ImageIcon(newimg));
+    	picLabel.setHorizontalAlignment(JLabel.CENTER);
+    
 	}
 	
 	/**
