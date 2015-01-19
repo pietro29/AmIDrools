@@ -301,8 +301,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	
    	//Tebbed pane creation
    	JTabbedPane tabbedPane = new JTabbedPane();
+   	ImageIcon iconPanel1 = new ImageIcon("images/exchange32.png", "users");
 	tabbedPane.addTab( "Devices", panel1 );
-	tabbedPane.addTab( "Users", panel2 );
+	tabbedPane.addTab("Devices", iconPanel1, panel1, "Devices");
+	
+	ImageIcon iconPanel2 = new ImageIcon("images/users32.png", "users");
+	//tabbedPane.addTab( "Users", panel2 );
+	tabbedPane.addTab("Users", iconPanel2, panel2, "Users");
 	topPanel.add( tabbedPane, BorderLayout.CENTER );
    	
    	btnNewButton.addActionListener(new java.awt.event.ActionListener() {
