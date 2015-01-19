@@ -393,8 +393,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
 		gbc_btnNewButton_1.anchor = GridBagConstraints.NORTH;
 		gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 5);
-		gbc_btnNewButton_1.gridx = 0;
-		gbc_btnNewButton_1.gridy = 7;
+		gbc_btnNewButton_1.gridx = 4;
+		gbc_btnNewButton_1.gridy = 6;
 		panel2.add(btAddUser, gbc_btnNewButton_1);
 		
 		//List add button
@@ -412,7 +412,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
 		gbc_btnNewButton_3.anchor = GridBagConstraints.NORTHWEST;
 		gbc_btnNewButton_3.insets = new Insets(0, 0, 5, 5);
-		gbc_btnNewButton_3.gridx = 1;
+		gbc_btnNewButton_3.gridx = 0;
 		gbc_btnNewButton_3.gridy = 7;
 		panel2.add(btModifyUser, gbc_btnNewButton_3);
 		
@@ -420,7 +420,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
 		gbc_btnNewButton_2.anchor = GridBagConstraints.NORTHWEST;
 		gbc_btnNewButton_2.insets = new Insets(0, 0, 5, 5);
-		gbc_btnNewButton_2.gridx = 2;
+		gbc_btnNewButton_2.gridx = 1;
 		gbc_btnNewButton_2.gridy = 7;
 		panel2.add(btRemoveUsers, gbc_btnNewButton_2);
 		//List remove button
