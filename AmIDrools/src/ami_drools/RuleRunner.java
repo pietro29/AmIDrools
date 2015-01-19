@@ -220,7 +220,11 @@ public class RuleRunner {
 	private String getRule() throws RemoteException {
 		String s = "" ;
 		s+=getStringFromFile("/resources/local_import.txt");//import the local class and the package
-		s+="\n";
+		if (s.equals(""))
+		{
+			s="KB non caricato";
+		}else{
+			s+="\n";
 		//s+=getStringFromFile("/resources/shared_declare.txt");
 		if (wois!=null)
 			s+=wois.getSharedFactsTemplates();//import the template/declare of the shared fact
@@ -234,7 +238,10 @@ public class RuleRunner {
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
 		if (wois!=null)
 			s+=wois.getSharedFactsRules();
+		}
+			
 		System.out.println(s);
+		txtArea.append(s);
 		return s;
 	}
 
@@ -246,7 +253,7 @@ public class RuleRunner {
 	private String getStringFromFile(String fileName) {
 		String s = "" ;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + fileName ));
+			BufferedReader br = new BufferedReader(new FileReader(this.getClass().getResource(fileName).getFile()));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    while (line != null) {
@@ -326,7 +333,6 @@ public class RuleRunner {
 			}
 		});*/
 		System.out.println("********************************");
-		System.out.println("********************************");
 		kSession.fireAllRules(new AgendaFilter()
 		{//define the condition to fire the rule
 			public boolean accept(Match match)
@@ -380,7 +386,6 @@ public class RuleRunner {
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		System.out.println("********************************");
 		System.out.println("********************************");
 		System.out.println("DOPO--------------------");
 		// import all the fact from the working memory

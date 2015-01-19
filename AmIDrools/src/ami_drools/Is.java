@@ -34,6 +34,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.TextArea;
@@ -112,71 +113,77 @@ public class Is extends JFrame implements ActionListener{
     
 	public Is(String name) throws RemoteException
 	{	
-		woises = new Vector<WoisRegistration>();
-		runners = new Vector<RuleRunner>();
-		privateFacts=new Vector<Fact>();
-		remoteObject = new IsRemote( this );
-		this.name=name;
-		pos = new Position("id1",1,"Soggiorno");
-    	
-    	getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
-    	
-    	tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-    	getContentPane().add(tabbedPane);
-    	   	
-    	panelFireRule = new JPanel();
-    	//tabbedPane.addTab("New tab", null, panelFireRule, null);
-    	panelFireRule.setLayout(new GridLayout(0, 1, 0, 0));
-    	
-    	panelLogo = new JPanel();
-    	panelFireRule.add(panelLogo);
-    	panelLogo.setLayout(new GridLayout(0, 3, 0, 0));
-    	
-    	label_1 = new JLabel("");
-    	panelLogo.add(label_1);
-    	picLabel = new JLabel();
-    	panelLogo.add(picLabel);
-    	
-    	panel = new JPanel();
-    	panelFireRule.add(panel);
-    	panel.setLayout(new GridLayout(0, 5, 0, 0));
-    	
-    	label = new JLabel("");
-    	panel.add(label);
-    	bManager=new JButton("");
-    	
-    	panel.add(bManager);
-    	bManager.addActionListener((ActionListener) this);
-    	//this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
-    	label_2 = new JLabel("");
-    	panel.add(label_2);
-    	bLocal=new JButton("");
-    	//this.setImageButton(bLocal, System.getProperty("user.dir") + "/images/engine.png");
-    	panel.add(bLocal);
-    	bLocal.addActionListener((ActionListener) this);
-    	
-    	label_3 = new JLabel("");
-    	panel.add(label_3);
-    	
-    	textArea = new TextArea();
-    	panelFireRule.add(textArea);
-    	textArea.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
-    	textArea.setEditable(false);
-    	textArea.setForeground(UIManager.getColor("ToolBar.dockingForeground"));
-    	textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
-    	
-    	panelNewRule = new JPanel();
-    	//tabbedPane.addTab("New tab", null, panelNewRule, null);
-    	
-    	//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
-    	//this.add(pTextArea);
-    	
-    	ImageIcon iconPanel1 = new ImageIcon("images/gear32.png", "users");
-    	ImageIcon iconPanel2 = new ImageIcon("images/folderplus32.png", "users");
-    	tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
-    	tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
-    	pos=new Position("1p", 1, "soggiorno");
-    	mDevices.put(pos.getId(), pos);
+		
+			woises = new Vector<WoisRegistration>();
+			runners = new Vector<RuleRunner>();
+			privateFacts=new Vector<Fact>();
+		try {
+			remoteObject = new IsRemote( this );
+			this.name=name;
+			pos = new Position("id1",1,"Soggiorno");
+			
+			getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
+			
+			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			getContentPane().add(tabbedPane);
+			   	
+			panelFireRule = new JPanel();
+			//tabbedPane.addTab("New tab", null, panelFireRule, null);
+			panelFireRule.setLayout(new GridLayout(0, 1, 0, 0));
+			
+			panelLogo = new JPanel();
+			panelFireRule.add(panelLogo);
+			panelLogo.setLayout(new GridLayout(0, 3, 0, 0));
+			
+			label_1 = new JLabel("");
+			panelLogo.add(label_1);
+			picLabel = new JLabel();
+			panelLogo.add(picLabel);
+			
+			panel = new JPanel();
+			panelFireRule.add(panel);
+			panel.setLayout(new GridLayout(0, 5, 0, 0));
+			
+			label = new JLabel("");
+			panel.add(label);
+			bManager=new JButton("");
+			
+			panel.add(bManager);
+			bManager.addActionListener((ActionListener) this);
+			//this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
+			label_2 = new JLabel("");
+			panel.add(label_2);
+			bLocal=new JButton("");
+			//this.setImageButton(bLocal, System.getProperty("user.dir") + "/images/engine.png");
+			panel.add(bLocal);
+			bLocal.addActionListener((ActionListener) this);
+			
+			label_3 = new JLabel("");
+			panel.add(label_3);
+			
+			textArea = new TextArea();
+			panelFireRule.add(textArea);
+			textArea.setFont(new Font("Microsoft Sans Serif", Font.PLAIN, 14));
+			textArea.setEditable(false);
+			textArea.setForeground(UIManager.getColor("ToolBar.dockingForeground"));
+			textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
+			
+			panelNewRule = new JPanel();
+			//tabbedPane.addTab("New tab", null, panelNewRule, null);
+			
+			//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
+			//this.add(pTextArea);
+			
+			ImageIcon iconPanel1 = new ImageIcon(this.getClass().getResource("/images/gear32.png"), "users");
+			ImageIcon iconPanel2 = new ImageIcon(this.getClass().getResource("/images/folderplus32.png"), "users");
+			tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
+			tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
+			pos=new Position("1p", 1, "soggiorno");
+			mDevices.put(pos.getId(), pos);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	runners.add(createEngine());
     	
 	}
@@ -186,17 +193,16 @@ public class Is extends JFrame implements ActionListener{
 	
 	public void resizeButton()
 	{
-		this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
-		this.setImageButton(bLocal, System.getProperty("user.dir") + "/images/engine.png");
+		this.setImageButton(bManager, "/images/connect.png");
+		this.setImageButton(bLocal, "/images/engine.png");
 	}
 	
 	public void setImageButton(JButton bt, String pathImage){
-		bt.setIcon(new ImageIcon(pathImage));
-        Image img = new ImageIcon(pathImage).getImage();
+		bt.setIcon(new ImageIcon(this.getClass().getResource(pathImage)));
+        Image img = new ImageIcon(this.getClass().getResource(pathImage)).getImage();
         int minDimension=bt.getWidth();
         if(minDimension>bt.getHeight())
         	minDimension=bt.getHeight();
-        System.err.println(bt.getWidth());
         //minDimension=80;
         bt.setPreferredSize(new Dimension(minDimension,minDimension));
         Image newimg = img.getScaledInstance(minDimension, minDimension,  java.awt.Image.SCALE_SMOOTH);  
@@ -209,7 +215,7 @@ public class Is extends JFrame implements ActionListener{
 	public void resizeLogoUnibs(String pathImage, int width, int height){
 		BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);
     	try {
-    	    img = ImageIO.read(new File(pathImage));
+    	    img = ImageIO.read(this.getClass().getResource(pathImage));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}

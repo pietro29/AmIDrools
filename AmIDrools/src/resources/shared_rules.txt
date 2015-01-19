@@ -1,0 +1,28 @@
+rule "rule 1"
+when
+	$f:Lampadina(accesa==true)
+	$wi: Wois()
+then
+	if(setLock($f.getId(),$wi,ISName))
+	{
+		txtArea.append( "Lights ON!\n" );
+		modify($f) {setAccesa(false)};
+		$f.getModificati().add(new String("accesa"));
+	}
+	//must release the lock after the update
+end
+				
+rule "rule 2"
+when
+	$f:Lampadina(spenta==true)
+then
+	txtArea.append( "Lampadina spenta da nuovo drl!\n" );
+end
+
+rule "rule teleport"
+when
+	$p:Position(location==1)
+	$l:Lampadina(spenta==true)
+then
+	txtArea.append( "Sei in " + $p.getCodice() + " al buio, attento al gradino!\n" );
+end
