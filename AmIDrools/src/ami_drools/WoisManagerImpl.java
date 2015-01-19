@@ -1,11 +1,7 @@
 package ami_drools;
 
-import java.io.BufferedInputStream;
+
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -18,22 +14,16 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
 import sharedFacts.Lampadina;
-
 import java.awt.*;
 import java.awt.event.*;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
+
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
