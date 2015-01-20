@@ -10,6 +10,7 @@ import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Enumeration;
@@ -19,11 +20,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+
 import sharedFacts.Lampadina;
+
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 
+import javax.swing.*;
 import javax.swing.UIManager.*;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
@@ -127,6 +130,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         bindingUrl = name;
         sharedFacts = new Vector<Fact>();
         assertions = new Vector<Assertion>();
+        
+        try{
+        	LocateRegistry.createRegistry(1099);
+        } catch (Exception ex){
+        	System.out.println(ex.getMessage());
+        }
         
         boolean done = false;
         try {
