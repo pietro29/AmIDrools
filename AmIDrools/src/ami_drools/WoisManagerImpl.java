@@ -24,6 +24,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import javax.swing.UIManager.*;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
@@ -207,6 +208,17 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
     
    public void startUserInterface(String name){
+	  
+	   try {
+		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+		        if ("Nimbus".equals(info.getName())) {
+		            UIManager.setLookAndFeel(info.getClassName());
+		            break;
+		        }
+		    }
+		} catch (Exception e) {
+		    // If Nimbus is not available, you can set the GUI to another look and feel.
+		}
 	   
 	 //GUI
        JFrame frame = new JFrame("WoIS manager" + name);
@@ -358,6 +370,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	gbc_btUpdateMembersList.gridy = 1;
    	panel2.add(btUpdateMembersList, gbc_btUpdateMembersList);
 	
+	JLabel lblNewLabel_2 = new JLabel("Priority");
+	GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+	gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
+	gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
+	gbc_lblNewLabel_2.gridx = 3;
+	gbc_lblNewLabel_2.gridy = 4;
+	panel2.add(lblNewLabel_2, gbc_lblNewLabel_2);
+	
 	textField_1 = new JTextField();
 	textField_1.setToolTipText("Priority");
 	textField_1.setColumns(10);
@@ -368,21 +388,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	gbc_textField_1.gridx = 4;
 	gbc_textField_1.gridy = 4;
 	panel2.add(textField_1, gbc_textField_1);
-	
-	JLabel lblNewLabel_2 = new JLabel("Priority");
-	GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-	gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-	gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
-	gbc_lblNewLabel_2.gridx = 3;
-	gbc_lblNewLabel_2.gridy = 5;
-	panel2.add(lblNewLabel_2, gbc_lblNewLabel_2);
 	topPanel.add( tabbedPane, BorderLayout.CENTER );
    	
 		
 		JButton btAddUser = new JButton();
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
 		gbc_btnNewButton_1.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 0);
 		gbc_btnNewButton_1.gridx = 4;
 		gbc_btnNewButton_1.gridy = 6;
 		panel2.add(btAddUser, gbc_btnNewButton_1);
