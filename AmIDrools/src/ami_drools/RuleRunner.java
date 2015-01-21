@@ -302,7 +302,7 @@ public class RuleRunner {
 				}
 			}
 		handleWois = kSession.insert(wois);
-		} catch (Exception e) {
+		} catch (Exception e) { 
 			// TODO: handle exception
 		}
 		privateFacts=new Vector<Fact>();

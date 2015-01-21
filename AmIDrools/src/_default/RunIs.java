@@ -24,7 +24,7 @@ public class RunIs {
 	static Is inf = null;
 	
     public static void main( String args[] ) throws RemoteException, IOException
-    {
+    { 
         try {
         	//inf = new Is(args[0].toString());
         	inf = new Is(args[0], args[1]);

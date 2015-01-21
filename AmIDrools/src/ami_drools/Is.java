@@ -369,7 +369,7 @@ public class Is extends JFrame implements ActionListener{
             	System.out.println(pos.toString());
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
-                e.printStackTrace();}
+                e.printStackTrace();} 
 	    	
     	}
     	//manage the connection and the registration of the wois
