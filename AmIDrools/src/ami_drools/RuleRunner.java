@@ -3,6 +3,8 @@ package ami_drools;
 import java.awt.TextArea;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
@@ -219,7 +221,7 @@ public class RuleRunner {
 	 */
 	private String getRule() throws RemoteException {
 		String s = "" ;
-		s+=getStringFromFile("/resources/local_import.txt");//import the local class and the package
+		s+=getStringFromFile("resources/local_import.txt");//import the local class and the package
 		if (s.equals(""))
 		{
 			s="KB non caricato";
@@ -233,7 +235,7 @@ public class RuleRunner {
 		if (wois!=null) 
 			s+=wois.getSharedFactsFunctions();
 		s+="\n";
-		s+=getStringFromFile("/resources/local_rules.txt");//import the rules that use local variable (no declare needed)
+		s+=getStringFromFile("resources/local_rules.txt");//import the rules that use local variable (no declare needed)
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
 		if (wois!=null)
@@ -241,7 +243,7 @@ public class RuleRunner {
 		}
 			
 		System.out.println(s);
-		txtArea.append(s);
+		//txtArea.append(s);
 		return s;
 	}
 
@@ -253,7 +255,8 @@ public class RuleRunner {
 	private String getStringFromFile(String fileName) {
 		String s = "" ;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(this.getClass().getResource(fileName).getFile()));
+			InputStream in=ClassLoader.getSystemResourceAsStream(fileName);
+    		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			StringBuilder sb = new StringBuilder();
 		    String line = br.readLine();
 		    while (line != null) {
@@ -263,7 +266,7 @@ public class RuleRunner {
 		    }
 		    s = sb.toString();
 		    br.close();
-		    } catch (Throwable t) {
+		    } catch (Exception t) {
 		    	System.err.println(t.toString());
 		    	s="";
 		    }

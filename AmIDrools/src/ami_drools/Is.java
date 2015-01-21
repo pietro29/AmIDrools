@@ -44,7 +44,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import java.awt.Font;
-
+import javax.swing.UIManager.*;
 
 
 class IsRemote extends UnicastRemoteObject implements IsIntf 
@@ -78,6 +78,7 @@ public class Is extends JFrame implements ActionListener{
     private IsRemote remoteObject;
     /** Name of the Is */
     private String name;
+    private String nomeServer;
     /** Private fact */
     private Position pos;
     /**
@@ -111,13 +112,15 @@ public class Is extends JFrame implements ActionListener{
     //
     
     
-	public Is(String name) throws RemoteException
+	public Is(String name, String nomeServer) throws RemoteException
 	{	
 		
 			woises = new Vector<WoisRegistration>();
 			runners = new Vector<RuleRunner>();
+			this.nomeServer=nomeServer;
 			privateFacts=new Vector<Fact>();
 		try {
+			setGraphics();
 			remoteObject = new IsRemote( this );
 			this.name=name;
 			pos = new Position("id1",1,"Soggiorno");
@@ -171,11 +174,11 @@ public class Is extends JFrame implements ActionListener{
 			panelNewRule = new JPanel();
 			//tabbedPane.addTab("New tab", null, panelNewRule, null);
 			
-			//this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/images/drools.png").getImage());
+			this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
 			//this.add(pTextArea);
 			
-			ImageIcon iconPanel1 = new ImageIcon(this.getClass().getResource("/images/gear32.png"), "users");
-			ImageIcon iconPanel2 = new ImageIcon(this.getClass().getResource("/images/folderplus32.png"), "users");
+			ImageIcon iconPanel1 = new ImageIcon(ClassLoader.getSystemResource("images/gear32.png"), "users");
+			ImageIcon iconPanel2 = new ImageIcon(ClassLoader.getSystemResource("images/folderplus32.png"), "users");
 			tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
 			tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
 			pos=new Position("1p", 1, "soggiorno");
@@ -187,19 +190,33 @@ public class Is extends JFrame implements ActionListener{
     	runners.add(createEngine());
     	
 	}
+	
+	public void setGraphics(){
+		try {
+		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+		        if ("Nimbus".equals(info.getName())) {
+		            UIManager.setLookAndFeel(info.getClassName());
+		            break;
+		        }
+		    }
+		} catch (Exception e) {
+		    // If Nimbus is not available, you can set the GUI to another look and feel.
+		}
+	}
+	
 	public String getIsName(){
 		return this.name;
 	}
 	
 	public void resizeButton()
 	{
-		this.setImageButton(bManager, "/images/connect.png");
-		this.setImageButton(bLocal, "/images/engine.png");
+		this.setImageButton(bManager, "images/connect.png");
+		this.setImageButton(bLocal, "images/engine.png");
 	}
 	
 	public void setImageButton(JButton bt, String pathImage){
-		bt.setIcon(new ImageIcon(this.getClass().getResource(pathImage)));
-        Image img = new ImageIcon(this.getClass().getResource(pathImage)).getImage();
+		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
+        Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
         int minDimension=bt.getWidth();
         if(minDimension>bt.getHeight())
         	minDimension=bt.getHeight();
@@ -215,7 +232,7 @@ public class Is extends JFrame implements ActionListener{
 	public void resizeLogoUnibs(String pathImage, int width, int height){
 		BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);
     	try {
-    	    img = ImageIO.read(this.getClass().getResource(pathImage));
+    	    img = ImageIO.read(ClassLoader.getSystemResource(pathImage));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -364,16 +381,17 @@ public class Is extends JFrame implements ActionListener{
             		unregister(runner.wois);
             		runner.wois=null;
             		runner.runRules(privateFacts);
-            		this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
+            		this.setImageButton(bManager, "images/connect.png");
             		textArea.append("Non connesso\n");
             	}else{
             	
             		try {
-						Wois wois = new Wois("prova");
+            			
+						Wois wois = new Wois(nomeServer);System.err.println("dopo wois");
 						register(wois, name);
 						runner.runRules(privateFacts);
 						textArea.append("Connesso\n");
-						this.setImageButton(bManager, System.getProperty("user.dir") + "/images/disconnect.png");
+						this.setImageButton(bManager, "images/disconnect.png");
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

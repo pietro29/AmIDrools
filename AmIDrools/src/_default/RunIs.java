@@ -27,12 +27,12 @@ public class RunIs {
     {
         try {
         	//inf = new Is(args[0].toString());
-        	inf = new Is("MATTIA");
-        	inf.setTitle("Is " + "MATTIA");
+        	inf = new Is(args[0], args[1]);
+        	inf.setTitle("Is " + args[0]);
         	inf.setSize(500, 600);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        	inf.resizeLogoUnibs("/images/Logo_unibs.gif",150,150);
+        	inf.resizeLogoUnibs("images/Logo_unibs.gif",150,150);
         	inf.resizeButton();
         } catch (Exception e) {
             //ERRORE
