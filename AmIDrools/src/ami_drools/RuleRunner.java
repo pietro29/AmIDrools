@@ -239,7 +239,8 @@ public class RuleRunner {
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
 		if (wois!=null)
-			s+=wois.getSharedFactsRules();
+			//s+=wois.getSharedFactsRules();
+			s+=getStringFromFile("resources/shared_rules.txt");
 		}
 			
 		System.out.println(s);

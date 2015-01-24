@@ -364,7 +364,7 @@ public class Is extends JFrame implements ActionListener{
                 //get the value of the private fact
             	privateFacts=runner.getPrivateFacts();
             	for (Fact fact : privateFacts) {
-            		updatePrivateFact(fact);
+            		//updatePrivateFact(fact);
 				}
             	System.out.println(pos.toString());
             } catch (Exception e) {
@@ -386,7 +386,7 @@ public class Is extends JFrame implements ActionListener{
             	}else{
             	
             		try {
-            			
+            			textArea.append("Inizio Connessione\n");
 						Wois wois = new Wois(nomeServer);System.err.println("dopo wois");
 						register(wois, name);
 						runner.runRules(privateFacts);
