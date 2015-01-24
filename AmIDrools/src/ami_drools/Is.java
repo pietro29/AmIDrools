@@ -108,6 +108,8 @@ public class Is extends JFrame implements ActionListener{
 	private JPanel panelNewRule;
 	private JPanel panelLogo;
 	private JLabel label_1;
+	private JPanel panel_1;
+	private JTextField txtServerIP;
 
     //
     
@@ -149,9 +151,16 @@ public class Is extends JFrame implements ActionListener{
 			
 			label = new JLabel("");
 			panel.add(label);
-			bManager=new JButton("");
 			
-			panel.add(bManager);
+			panel_1 = new JPanel();
+			panel.add(panel_1);
+			panel_1.setLayout(new GridLayout(2, 1, 0, 0));
+			bManager=new JButton("");
+			panel_1.add(bManager);
+			
+			txtServerIP = new JTextField(nomeServer);
+			panel_1.add(txtServerIP);
+			txtServerIP.setColumns(10);
 			bManager.addActionListener((ActionListener) this);
 			//this.setImageButton(bManager, System.getProperty("user.dir") + "/images/connect.png");
 			label_2 = new JLabel("");
@@ -387,7 +396,8 @@ public class Is extends JFrame implements ActionListener{
             	
             		try {
             			textArea.append("Inizio Connessione\n");
-						Wois wois = new Wois(nomeServer);System.err.println("dopo wois");
+            			nomeServer=txtServerIP.getText();
+						Wois wois = new Wois(nomeServer);
 						register(wois, name);
 						runner.runRules(privateFacts);
 						textArea.append("Connesso\n");
