@@ -71,4 +71,6 @@ public interface WoisManager extends Remote {
      * @throws NotRegisteredException
      */
     void removeMember( IsIntf inf ) throws RemoteException, NotRegisteredException;
+    
+    String say() throws RemoteException;
 }

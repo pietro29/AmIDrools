@@ -5,7 +5,7 @@ public class NotRegisteredException extends Exception
     /**
      * Version ID used by deserialization in J2SE >= 1.5.0.
      */
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
     
     /**
      *  @see Exception#Exception()

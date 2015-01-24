@@ -1,6 +1,5 @@
 package ami_drools;
 
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,7 +33,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	/**
      * Version ID used by deserialization in J2SE >= 1.5.0.
      */
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Table containing all the members of this WoIS. It maps names ({@link String}s) to engines ({@link IsIntf}s).
@@ -131,15 +130,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         sharedFacts = new Vector<Fact>();
         assertions = new Vector<Assertion>();
         
-        try{
-        	LocateRegistry.createRegistry(1099);
-        } catch (Exception ex){
-        	System.out.println(ex.getMessage());
-        }
+        System.out.println(System.getProperty("java.rmi.server.hostname"));
+        
         
         boolean done = false;
         try {
-            Naming.rebind( name, this ); // FIXME: must be bind, not rebind
+            Naming.rebind( name, this); 
             done = true;
         } finally {
             // If bind fails, unexport this object
@@ -443,7 +439,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		});
 		
 		frame.pack();
-		frame.setMinimumSize(new Dimension(400, 400));
+		frame.setMinimumSize(new Dimension(500, 500));
 		frame.setVisible(true);
 		
 		setImageButton(btUpdateMembersList, "images/exchange32.png");
@@ -818,18 +814,20 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    s = sb.toString();
 		    br.close();
 		    } catch (Throwable t) {
-		    	//System.err.println(t.toString());
 		    	s="";
 		    }
-		//System.out.println(mPriorities.get("pippo"));
-    	
     }
+    public String say() throws RemoteException {
+        return "Ciao Client";
+      }
     /**
      * Main function
      * @param args  <code>args[0]</code> is the name of the new WoIS
      */
     public static void main( String[] args ) throws Exception
     {
+    	LocateRegistry.createRegistry(1099);
+    	System.setProperty("java.rmi.server.hostname", "192.168.43.186");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
