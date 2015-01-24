@@ -702,7 +702,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		Fact asserctionFact = asrt.getFact();
     		User asserctionUser = asrt.getUser();
     		String asserctionAttribute = asrt.getAttribute();
-    		if (asserctionFact.getId()==idDevice  && asserctionAttribute == attribute && asserctionUser.getPriority()>priority){
+    		if (asserctionFact.getId().equals(idDevice)  && asserctionAttribute.equals(attribute) && asserctionUser.getPriority()>priority){
     			check=false;
     		}
     	}
@@ -723,12 +723,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		User asserctionUser = asrt.getUser();
     		String asserctionAttribute = asrt.getAttribute();
     		
-    		if (asserctionFact.getId()==fact.getId()  && asserctionAttribute == attribute){
+    		if (asserctionFact.getId().equals(fact.getId())  && asserctionAttribute.equals(attribute)){
     			if (asserctionUser.getPriority()<user.getPriority()){
     				assertions.remove(i);
     			}
     			if (asserctionUser.getPriority()==user.getPriority()){
-    				if(asserctionUser.getId()==user.getId()){
+    				if(asserctionUser.getId().equals(user.getId())){
     					insert=false;
     				}
     			}
@@ -826,8 +826,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     public static void main( String[] args ) throws Exception
     {
-    	LocateRegistry.createRegistry(1099);
-    	System.setProperty("java.rmi.server.hostname", "192.168.43.186");
+    	//LocateRegistry.createRegistry(1099);
+    	System.setProperty("java.rmi.server.hostname", "192.168.153.130");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
