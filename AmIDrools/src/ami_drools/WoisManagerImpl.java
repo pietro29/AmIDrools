@@ -1,8 +1,12 @@
 package ami_drools;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
@@ -27,6 +31,14 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.UIManager.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.text.TabExpander;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.MatteBorder;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
@@ -99,7 +111,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
 	JTextArea textArea;
 	DefaultListModel<String> model;
-	JList list;
 	//radio button
 	ButtonGroup groupLampadina;
 	ButtonGroup groupStereo;
@@ -112,8 +123,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	JRadioButton rbPersonaFuori;
     
 	private final static String newline = "\n";
-	private JTextField textField;
-	private JTextField textField_1;
+	private JTable tableUser;
 	
     /**
      * Constructor that requires the name of the new WoIS.
@@ -242,8 +252,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		
 		
 		
-		//Create tabs
-		//createTabDevices();
+	JPanel panel0 = new JPanel();
 	
 	//Devices panel
 	JPanel panel1=new JPanel();	
@@ -285,6 +294,28 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	//Tebbed pane creation
    	JTabbedPane tabbedPane = new JTabbedPane();
    	
+   	ImageIcon iconPanel0 = new ImageIcon(ClassLoader.getSystemResource("images/lightbulb32.png"), "home");
+	
+	tabbedPane.addTab("Home", iconPanel0, panel0, "Home");
+	panel0.setLayout(new GridLayout(2, 0, 0, 0));
+	
+	JPanel panel01 = new JPanel();
+	panel0.add(panel01);
+	
+	JLabel lbltitle0 = new JLabel("AmIDrools Manager");
+	lbltitle0.setForeground(new Color(0, 0, 0));
+	lbltitle0.setBackground(SystemColor.window);
+	lbltitle0.setFont(new Font("Ubuntu Light", Font.BOLD, 28));
+	panel01.add(lbltitle0);
+	
+	JPanel panel02 = new JPanel();
+	panel02.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
+	panel0.add(panel02);
+	panel02.setLayout(new GridLayout(0, 1, 0, 0));
+	
+	JTextPane textAreaLog = new JTextPane();
+	panel02.add(textAreaLog);
+   	
    	ImageIcon iconPanel1 = new ImageIcon(ClassLoader.getSystemResource("images/wand32.png"), "devices");
 	
 	tabbedPane.addTab("Devices", iconPanel1, panel1, "Devices");
@@ -294,59 +325,32 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	tabbedPane.addTab("Users", iconPanel2, panel2, "Users");
 	
     model = new DefaultListModel<String>();
-	GridBagLayout gbl_panel2 = new GridBagLayout();
-	gbl_panel2.columnWidths = new int[]{53, 41, 108, 52, 114, 0};
-	gbl_panel2.rowHeights = new int[]{30, 90, 35, 19, 1, 17, 49, 25, 0, 0};
-	gbl_panel2.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-	gbl_panel2.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-	panel2.setLayout(gbl_panel2);
-	
-	final JTextArea textArea_1 = new JTextArea();
-	textArea_1.setTabSize(4);
-	textArea_1.setRows(6);
-	textArea_1.setEditable(false);
-	GridBagConstraints gbc_textArea_1 = new GridBagConstraints();
-	gbc_textArea_1.anchor = GridBagConstraints.NORTH;
-	gbc_textArea_1.fill = GridBagConstraints.HORIZONTAL;
-	gbc_textArea_1.insets = new Insets(0, 0, 5, 5);
-	gbc_textArea_1.gridwidth = 3;
-	gbc_textArea_1.gridx = 0;
-	gbc_textArea_1.gridy = 1;
-	panel2.add(textArea_1, gbc_textArea_1);
-	
-	JScrollPane scrollPane = new JScrollPane();
-	list = new JList(model);
-	list.setVisibleRowCount(6);
-	scrollPane.setViewportView(list);
-	GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-	gbc_scrollPane.anchor = GridBagConstraints.NORTHWEST;
-	gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
-	gbc_scrollPane.gridheight = 4;
-	gbc_scrollPane.gridwidth = 3;
-	gbc_scrollPane.gridx = 0;
-	gbc_scrollPane.gridy = 3;
-	panel2.add(scrollPane, gbc_scrollPane);
-	
-	JLabel lblNewLabel_1 = new JLabel("User");
-	GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-	gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-	gbc_lblNewLabel_1.gridx = 3;
-	gbc_lblNewLabel_1.gridy = 3;
-	panel2.add(lblNewLabel_1, gbc_lblNewLabel_1);
-	
-	textField = new JTextField();
-	textField.setToolTipText("User");
-	textField.setColumns(10);
-	GridBagConstraints gbc_textField = new GridBagConstraints();
-	gbc_textField.anchor = GridBagConstraints.NORTHWEST;
-	gbc_textField.insets = new Insets(0, 0, 5, 0);
-	gbc_textField.gridx = 4;
-	gbc_textField.gridy = 3;
-	panel2.add(textField, gbc_textField);
-	
-	//Icon updateIcon = new ImageIcon("images/Update.png");
-	JButton btUpdateMembersList = new JButton();
-	
+	panel2.setLayout(new GridLayout(2, 1, 0, 0));
+	topPanel.add( tabbedPane, BorderLayout.CENTER );
+		
+		frame.pack();
+		frame.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
+		frame.setMinimumSize(new Dimension(500, 500));
+		frame.setVisible(true);
+		
+		JPanel panel21 = new JPanel();
+		panel2.add(panel21);
+		panel21.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		final JTextArea textArea_1 = new JTextArea();
+		textArea_1.setColumns(20);
+		textArea_1.setLineWrap(true);
+		panel21.add(textArea_1);
+		textArea_1.setTabSize(4);
+		textArea_1.setRows(6);
+		textArea_1.setEditable(false);
+		
+		//Icon updateIcon = new ImageIcon("images/Update.png");
+		JButton btUpdateMembersList = new JButton();
+		btUpdateMembersList.setFont(new Font("Ubuntu", Font.BOLD | Font.ITALIC, 12));
+		btUpdateMembersList.setText("Update List");
+		panel21.add(btUpdateMembersList);
+		
    	btUpdateMembersList.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
         	textArea_1.setText("");
@@ -356,105 +360,143 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         	}
         	else {
         	
-	        	Iterator<Map.Entry<String, IsIntf>> it = members.entrySet().iterator();
-	
-	        	while (it.hasNext()) {
-	        		Map.Entry<String, IsIntf> entry = it.next();
-	        		
-	        		textArea_1.append(entry.getKey() + newline);
-	        	}
+		        	Iterator<Map.Entry<String, IsIntf>> it = members.entrySet().iterator();
+		
+		        	while (it.hasNext()) {
+		        		Map.Entry<String, IsIntf> entry = it.next();
+		        		
+		        		textArea_1.append(entry.getKey() + newline);
+		        	}
         	}
         }
     });
    	
+   	setImageButton(btUpdateMembersList, "images/exchange32.png");
    	
-   	GridBagConstraints gbc_btUpdateMembersList = new GridBagConstraints();
-   	gbc_btUpdateMembersList.anchor = GridBagConstraints.NORTHWEST;
-   	gbc_btUpdateMembersList.insets = new Insets(0, 0, 5, 5);
-   	gbc_btUpdateMembersList.gridx = 3;
-   	gbc_btUpdateMembersList.gridy = 1;
-   	panel2.add(btUpdateMembersList, gbc_btUpdateMembersList);
-	
-	JLabel lblNewLabel_2 = new JLabel("Priority");
-	GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-	gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-	gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
-	gbc_lblNewLabel_2.gridx = 3;
-	gbc_lblNewLabel_2.gridy = 4;
-	panel2.add(lblNewLabel_2, gbc_lblNewLabel_2);
-	
-	textField_1 = new JTextField();
-	textField_1.setToolTipText("Priority");
-	textField_1.setColumns(10);
-	GridBagConstraints gbc_textField_1 = new GridBagConstraints();
-	gbc_textField_1.anchor = GridBagConstraints.NORTHWEST;
-	gbc_textField_1.insets = new Insets(0, 0, 5, 0);
-	gbc_textField_1.gridheight = 2;
-	gbc_textField_1.gridx = 4;
-	gbc_textField_1.gridy = 4;
-	panel2.add(textField_1, gbc_textField_1);
-	topPanel.add( tabbedPane, BorderLayout.CENTER );
+   	JPanel panel22 = new JPanel();
+   	panel2.add(panel22);
+   	GridBagLayout gbl_panel22 = new GridBagLayout();
+   	gbl_panel22.columnWidths = new int[]{0, 0};
+   	gbl_panel22.rowHeights = new int[]{0, 0, 0};
+   	gbl_panel22.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+   	gbl_panel22.rowWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+   	panel22.setLayout(gbl_panel22);
    	
-		
-		JButton btAddUser = new JButton();
-		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
-		gbc_btnNewButton_1.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton_1.insets = new Insets(0, 0, 5, 0);
-		gbc_btnNewButton_1.gridx = 4;
-		gbc_btnNewButton_1.gridy = 6;
-		panel2.add(btAddUser, gbc_btnNewButton_1);
-		
-		//List add button
-		btAddUser.addActionListener(new java.awt.event.ActionListener() {
+   	JScrollPane scrollPane = new JScrollPane();
+   	GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+   	gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
+   	gbc_scrollPane.fill = GridBagConstraints.BOTH;
+   	gbc_scrollPane.gridx = 0;
+   	gbc_scrollPane.gridy = 0;
+   	gbc_scrollPane.gridwidth=3;
+   	gbc_scrollPane.weighty=2;
+   	panel22.add(scrollPane, gbc_scrollPane);
+   	
+   	String [] columnsName={"User","Priority"};
+   	final DefaultTableModel modelTable = new DefaultTableModel();
+   	modelTable.addColumn("User");
+   	modelTable.addColumn("Priority");
+   	
+   	int i=0;
+   	Iterator<Map.Entry<String, Integer>> it = mPriorities.entrySet().iterator();
+   	while (it.hasNext()) {
+   		Map.Entry<String, Integer> entry = it.next(); 		
+   		modelTable.addRow(new Object[] { entry.getKey().toString(), entry.getValue().toString() });
+   	i+=1;	
+   	}
+   	
+   	tableUser = new JTable(modelTable);
+   	tableUser.setShowVerticalLines(true);
+   	tableUser.setShowHorizontalLines(true);
+   	JTableHeader header = tableUser.getTableHeader();
+   	header.setBackground(Color.DARK_GRAY);
+    header.setForeground(Color.white);
+   	
+   	
+   	scrollPane.setViewportView(tableUser);
+   	
+   	JLabel lbInsertUser = new JLabel("User");
+   	lbInsertUser.setFont(new Font("Ubuntu Light", Font.BOLD, 12));
+   	GridBagConstraints gbc_lbInsertUser = new GridBagConstraints();
+   	gbc_lbInsertUser.insets = new Insets(0, 0, 5, 0);
+   	gbc_lbInsertUser.fill = GridBagConstraints.HORIZONTAL;
+   	gbc_lbInsertUser.gridx = 0;
+   	gbc_lbInsertUser.gridy = 1;
+   	gbc_lbInsertUser.weightx=1;
+   	gbc_lbInsertUser.weighty=1;
+   	panel22.add(lbInsertUser, gbc_lbInsertUser);
+   	
+   	JLabel lbInsertPriority = new JLabel("Priority");
+   	lbInsertPriority.setFont(new Font("Ubuntu Light", Font.BOLD, 12));
+   	GridBagConstraints gbc_lbInsertPriority = new GridBagConstraints();
+   	gbc_lbInsertPriority.insets = new Insets(0, 0, 5, 0);
+   	gbc_lbInsertPriority.fill = GridBagConstraints.HORIZONTAL;
+   	gbc_lbInsertPriority.gridx = 0;
+   	gbc_lbInsertPriority.gridy = 2;
+   	gbc_lbInsertPriority.weightx=1;
+   	gbc_lbInsertPriority.weighty=1;
+   	panel22.add(lbInsertPriority, gbc_lbInsertPriority);
+   	
+   	final JTextField txtInsertUser = new JTextField();
+   	GridBagConstraints gbc_txtInsertUser = new GridBagConstraints();
+   	gbc_txtInsertUser.insets = new Insets(0, 0, 5, 0);
+   	gbc_txtInsertUser.fill = GridBagConstraints.HORIZONTAL;
+   	gbc_txtInsertUser.gridx = 1;
+   	gbc_txtInsertUser.gridy = 1;
+   	gbc_txtInsertUser.weightx=1;
+   	gbc_txtInsertUser.weighty=1;
+   	panel22.add(txtInsertUser, gbc_txtInsertUser);
+   	
+   	final JTextField txtInsertPriority = new JTextField();
+   	GridBagConstraints gbc_txtInsertPriority = new GridBagConstraints();
+   	gbc_txtInsertPriority.insets = new Insets(0, 0, 5, 0);
+   	gbc_txtInsertPriority.fill = GridBagConstraints.HORIZONTAL;
+   	gbc_txtInsertPriority.gridx = 1;
+   	gbc_txtInsertPriority.gridy = 2;
+   	gbc_txtInsertPriority.weightx=1;
+   	gbc_txtInsertPriority.weighty=1;
+   	panel22.add(txtInsertPriority, gbc_txtInsertPriority);
+   	
+   	JButton btInsertUser = new JButton();
+   	btInsertUser.setFont(new Font("Ubuntu", Font.BOLD | Font.ITALIC, 12));
+   	btInsertUser.setToolTipText("Add User");
+   	btInsertUser.setText("Add User");
+   	GridBagConstraints gbc_btInsertUser = new GridBagConstraints();
+   	gbc_btInsertUser.insets = new Insets(0, 0, 5, 0);
+   	gbc_btInsertUser.fill = GridBagConstraints.NONE;
+   	gbc_btInsertUser.gridx = 2;
+   	gbc_btInsertUser.gridy = 1;
+   	gbc_btInsertUser.weightx=1;
+   	gbc_btInsertUser.weighty=1;
+   	gbc_btInsertUser.gridheight=2;
+   	panel22.add(btInsertUser, gbc_btInsertUser);
+   	btInsertUser.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (!(textField.getText().equals("") && textField_1.getText().equals(""))){
-        		model.addElement(textField.getText() + " - " + textField_1.getText());
-        		textField.setText("");
-        		textField_1.setText("");
+        	if(!(txtInsertUser.getText().toString().equals("") && txtInsertPriority.getText().toString().equals(""))){
+        		modelTable.addRow(new Object[] { txtInsertUser.getText().toString(), txtInsertPriority.getText().toString() });
+        		mPriorities.put(txtInsertUser.getText().toString(), Integer.parseInt(txtInsertPriority.getText().toString()));
+        		try {
+					PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("resources/wois_priorities.txt", true)));
+					out.println(txtInsertUser.getText().toString() + "-" + txtInsertPriority.getText().toString() );
+				} catch (IOException e1) {
+					System.out.println("Non ho scritto");
+				}
+        		//ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt")
         	}
+        	
         }
-		});
-		
-		JButton btModifyUser = new JButton();
-		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
-		gbc_btnNewButton_3.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnNewButton_3.insets = new Insets(0, 0, 5, 5);
-		gbc_btnNewButton_3.gridx = 0;
-		gbc_btnNewButton_3.gridy = 7;
-		panel2.add(btModifyUser, gbc_btnNewButton_3);
-		
-		JButton btRemoveUsers = new JButton();
-		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
-		gbc_btnNewButton_2.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnNewButton_2.insets = new Insets(0, 0, 5, 5);
-		gbc_btnNewButton_2.gridx = 1;
-		gbc_btnNewButton_2.gridy = 7;
-		panel2.add(btRemoveUsers, gbc_btnNewButton_2);
-		//List remove button
-		btRemoveUsers.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (model.getSize() > 0)
-                model.removeElementAt(list.getSelectedIndex());
-        }
-		});
-		
-		frame.pack();
-		frame.setMinimumSize(new Dimension(500, 500));
-		frame.setVisible(true);
-		
-		setImageButton(btUpdateMembersList, "images/exchange32.png");
-		setImageButton(btAddUser, "images/plus32.png");
-		setImageButton(btRemoveUsers, "images/stop32.png");
-		setImageButton(btModifyUser, "images/pencil32.png");
+   	});
+   	setImageButton(btInsertUser, "images/plus32.png");
    }
    
    private void loadInterfaceData(){
-	   Iterator<Map.Entry<String, Integer>> it = mPriorities.entrySet().iterator();
+	   /*
+	    Iterator<Map.Entry<String, Integer>> it = mPriorities.entrySet().iterator();
 
    	while (it.hasNext()) {
    		Map.Entry<String, Integer> entry = it.next();
    		model.addElement(entry.getKey().toString() + " - " + entry.getValue().toString());
-   	}
+   	}*/
    }
    
    public void setImageButton(JButton bt, String pathImage){
@@ -826,8 +868,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     public static void main( String[] args ) throws Exception
     {
-    	//LocateRegistry.createRegistry(1099);
-    	System.setProperty("java.rmi.server.hostname", "192.168.153.130");
+    	LocateRegistry.createRegistry(1099);
+    	System.setProperty("java.rmi.server.hostname", "192.168.43.186");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
