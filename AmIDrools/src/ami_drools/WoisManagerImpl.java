@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -28,7 +29,9 @@ import sharedFacts.Lampadina;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.UIManager.*;
 import javax.swing.table.AbstractTableModel;
@@ -39,6 +42,7 @@ import javax.swing.text.TabExpander;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.border.LineBorder;
 
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
@@ -102,6 +106,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
     private Thread checkIs;
     
+    private boolean uIActivation=true;
+    
     //Interfaccia grafica
     /*
     JTabbedPane tabbedPane;
@@ -111,8 +117,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     
 	JTextArea textArea;
 	DefaultListModel<String> model;
-	//radio button
-	ButtonGroup groupLampadina;
 	ButtonGroup groupStereo;
 	ButtonGroup groupPersona;
 	JRadioButton rbLampadinaAccesa;
@@ -121,10 +125,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	JRadioButton rbStereoSpento;
 	JRadioButton rbPersonaDentro;
 	JRadioButton rbPersonaFuori;
+	JTextArea textAreaLog;
     
 	private final static String newline = "\n";
 	private JTable tableUser;
-	
+	//Device
+	Lampadina lampadina;
+	Lampadina lampadina2;
+	//
     /**
      * Constructor that requires the name of the new WoIS.
      * @param name      the name for this WoIS.  It can be also a full URL (//host:port/name).
@@ -156,7 +164,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         //DEVICE 1
-        Lampadina lampadina = new Lampadina("1","lampadina1",true,true);
+        lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
         
         Fact fatto = new Fact("1","Lampadina");
@@ -171,7 +179,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         locks.put(fatto.getId(),new Lock(fatto.getId()) );
         
         //DEVICE 2
-        Lampadina lampadina2 = new Lampadina("2","lampadina2",true,true);
+        lampadina2 = new Lampadina("2","lampadina2",true,true);
         mDevices.put(lampadina2.getId(), lampadina2);
         
         Fact fatto2 = new Fact("2","Lampadina");
@@ -220,6 +228,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         startUserInterface(name);
         
         loadInterfaceData();
+        
+        writeTextAreaLog("Creazione della rete " + name);
+        writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
     }
     
    public void startUserInterface(String name){
@@ -255,35 +266,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	JPanel panel0 = new JPanel();
 	
 	//Devices panel
-	JPanel panel1=new JPanel();	
-		
-	groupLampadina = new ButtonGroup();
-		
-   	
-   	GridBagLayout gbl_p = new GridBagLayout();
-   	gbl_p.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
-   	gbl_p.rowHeights = new int[]{0, 0, 0, 0, 0};
-   	gbl_p.columnWeights = new double[]{1.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-   	gbl_p.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-   	panel1.setLayout(gbl_p);
-   	
-   	JRadioButton rdbtnF = new JRadioButton("Lampadina accesa");
-   	rdbtnF.setSelected(true);
-   	GridBagConstraints gbc_rdbtnF = new GridBagConstraints();
-   	gbc_rdbtnF.insets = new Insets(0, 0, 3, 3);
-   	gbc_rdbtnF.gridx = 0;
-   	gbc_rdbtnF.gridy = 0;
-   	panel1.add(rdbtnF, gbc_rdbtnF);
-   	
-   	JRadioButton rdbtnNewRadioButton = new JRadioButton("Lampadina spenta");
-   	GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
-   	gbc_rdbtnNewRadioButton.insets = new Insets(0, 0, 3, 3);
-   	gbc_rdbtnNewRadioButton.gridx = 1;
-   	gbc_rdbtnNewRadioButton.gridy = 0;
-   	panel1.add(rdbtnNewRadioButton, gbc_rdbtnNewRadioButton);
-   	
-   	groupLampadina.add(rdbtnF);
-   	groupLampadina.add(rdbtnNewRadioButton);
+	JPanel panel1=new JPanel();
    	
    	//end device panel
    	
@@ -308,17 +291,91 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	lbltitle0.setFont(new Font("Ubuntu Light", Font.BOLD, 28));
 	panel01.add(lbltitle0);
 	
+	JLabel lbLogo = new JLabel("");
+	panel01.add(lbLogo);
+	lbLogo.setIcon(new ImageIcon(ClassLoader.getSystemResource("images/AmIDrools.PNG"), "AmIDrools"));
+	
 	JPanel panel02 = new JPanel();
 	panel02.setBorder(new MatteBorder(2, 2, 2, 2, (Color) new Color(0, 0, 0)));
 	panel0.add(panel02);
 	panel02.setLayout(new GridLayout(0, 1, 0, 0));
 	
-	JTextPane textAreaLog = new JTextPane();
+	textAreaLog = new JTextArea();
+	textAreaLog.setEditable(false);
 	panel02.add(textAreaLog);
    	
    	ImageIcon iconPanel1 = new ImageIcon(ClassLoader.getSystemResource("images/wand32.png"), "devices");
 	
 	tabbedPane.addTab("Devices", iconPanel1, panel1, "Devices");
+	panel1.setLayout(new GridLayout(3, 1, 0, 0));
+	
+	JPanel panel11 = new JPanel();
+	panel11.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
+	panel1.add(panel11);
+	panel11.setLayout(new GridLayout(2, 1, 0, 0));
+	
+	JLabel lbLight0 = new JLabel(lampadina.getCodice().toUpperCase());
+	lbLight0.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 20));
+	lbLight0.setHorizontalAlignment(lbLight0.CENTER);
+	panel11.add(lbLight0);
+	
+	JPanel panel111 = new JPanel();
+	panel11.add(panel111);
+	panel111.setLayout(new GridLayout(0, 1, 0, 0));
+	
+	final JButton btnLight0 = new JButton("Switch on/off");
+	panel111.add(btnLight0);
+	
+	btnLight0.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	if (lampadina.getAccesa()){
+        		lampadina.setAccesa(false);
+        		setImageButton(btnLight0, "images/light-off-icon.png");
+        	} else {
+        		lampadina.setAccesa(true);
+        		setImageButton(btnLight0, "images/light-on-icon.png");
+        	}
+        }
+	});
+	if (lampadina.getAccesa()){
+		setImageButton(btnLight0, "images/light-on-icon.png");
+	} else {
+		setImageButton(btnLight0, "images/light-off-icon.png");
+	}
+	
+	JPanel panel12 = new JPanel();
+	panel12.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
+	panel1.add(panel12);
+	panel12.setLayout(new GridLayout(2, 1, 0, 0));
+	
+	JLabel lblLight1 = new JLabel(lampadina2.getCodice().toUpperCase());
+	lblLight1.setFont(new Font("Droid Sans Mono", Font.PLAIN, 20));
+	lblLight1.setHorizontalAlignment(SwingConstants.CENTER);
+	panel12.add(lblLight1);
+	
+	JPanel panel121 = new JPanel();
+	panel12.add(panel121);
+	panel121.setLayout(new GridLayout(0, 1, 0, 0));
+	
+	final JButton btnLight1 = new JButton("Switch on/off");
+	panel121.add(btnLight1);
+	
+	btnLight1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	if (lampadina.getAccesa()){
+        		lampadina.setAccesa(false);
+        		setImageButton(btnLight1, "images/light-off-icon.png");
+        	} else {
+        		lampadina.setAccesa(true);
+        		setImageButton(btnLight1, "images/light-on-icon.png");
+        	}
+        }
+	});
+	if (lampadina.getAccesa()){
+		setImageButton(btnLight1, "images/light-on-icon.png");
+	} else {
+		setImageButton(btnLight1, "images/light-off-icon.png");
+	}
 	
 	ImageIcon iconPanel2 = new ImageIcon(ClassLoader.getSystemResource("images/users32.png"), "users");
 	//tabbedPane.addTab( "Users", panel2 );
@@ -329,8 +386,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	topPanel.add( tabbedPane, BorderLayout.CENTER );
 		
 		frame.pack();
-		frame.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
-		frame.setMinimumSize(new Dimension(500, 500));
+		//frame.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
+		frame.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/AmIDrools.PNG")).getImage());
+		frame.setMinimumSize(new Dimension(600, 500));
 		frame.setVisible(true);
 		
 		JPanel panel21 = new JPanel();
@@ -347,6 +405,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		
 		//Icon updateIcon = new ImageIcon("images/Update.png");
 		JButton btUpdateMembersList = new JButton();
+		btUpdateMembersList.setToolTipText("Update List");
 		btUpdateMembersList.setFont(new Font("Ubuntu", Font.BOLD | Font.ITALIC, 12));
 		btUpdateMembersList.setText("Update List");
 		panel21.add(btUpdateMembersList);
@@ -388,7 +447,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	gbc_scrollPane.fill = GridBagConstraints.BOTH;
    	gbc_scrollPane.gridx = 0;
    	gbc_scrollPane.gridy = 0;
-   	gbc_scrollPane.gridwidth=3;
+   	gbc_scrollPane.gridwidth=4;
    	gbc_scrollPane.weighty=2;
    	panel22.add(scrollPane, gbc_scrollPane);
    	
@@ -477,9 +536,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         		mPriorities.put(txtInsertUser.getText().toString(), Integer.parseInt(txtInsertPriority.getText().toString()));
         		try {
 					PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("resources/wois_priorities.txt", true)));
-					out.println(txtInsertUser.getText().toString() + "-" + txtInsertPriority.getText().toString() );
+					out.write(txtInsertUser.getText().toString() + "-" + txtInsertPriority.getText().toString() );
 				} catch (IOException e1) {
 					System.out.println("Non ho scritto");
+					e1.getStackTrace();
 				}
         		//ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt")
         	}
@@ -487,6 +547,31 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
    	});
    	setImageButton(btInsertUser, "images/plus32.png");
+   	
+	JButton btDeleteUser = new JButton();
+	btDeleteUser.setFont(new Font("Ubuntu", Font.BOLD | Font.ITALIC, 12));
+	btDeleteUser.setToolTipText("Delete User");
+	btDeleteUser.setText("Delete User");
+   	GridBagConstraints gbc_btDeleteUser = new GridBagConstraints();
+   	gbc_btDeleteUser.insets = new Insets(0, 0, 5, 0);
+   	gbc_btDeleteUser.fill = GridBagConstraints.NONE;
+   	gbc_btDeleteUser.gridx = 3;
+   	gbc_btDeleteUser.gridy = 1;
+   	gbc_btDeleteUser.weightx=1;
+   	gbc_btDeleteUser.weighty=1;
+   	gbc_btDeleteUser.gridheight=2;
+   	panel22.add(btDeleteUser, gbc_btDeleteUser);
+   	btDeleteUser.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+        	
+        	
+        }
+   	});
+   	setImageButton(btDeleteUser, "images/stop32.png");
+   }
+   
+   private void writeTextAreaLog(String message){
+	   textAreaLog.append(message + newline);
    }
    
    private void loadInterfaceData(){
@@ -505,9 +590,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
        int minDimension=bt.getWidth();
        if(minDimension>bt.getHeight())
        	minDimension=bt.getHeight();
-       //System.err.println(bt.getWidth());
-       //minDimension=80;
-       bt.setPreferredSize(new Dimension(40, 40));
        Image newimg = img.getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);  
        bt.setIcon(new ImageIcon(newimg));  
        bt.setBorderPainted(false);
@@ -612,6 +694,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
             User user = new User(name,name, getUserPriority(name) );
             mUsers.put(name, user);
         }
+        if (uIActivation){
+        	writeTextAreaLog("Login " + name);
+        }
     }
     public void addMember( IsIntf inf, String name ) throws RemoteException
     {
@@ -650,7 +735,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 throw new RuntimeException( "Internal error: incosistent maps while removing " + name + " " + inf );
             }
             removeIsData(name.toString());
+            if (uIActivation){
+            	writeTextAreaLog("Log out " + name);
+            }
         }
+        
     }
     private void removeIsData(String isName){
     	//Remove all IS assertions
@@ -725,6 +814,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			    			}
 			    			//Set lock to false
 			    			locks.get(fact.getId()).unLock();
+			    			
+			    			if (uIActivation){
+			    	        	writeTextAreaLog(tempFactType + " " + fact.getId() + "update: " + tempAttr.get(i) + " :" + tempVal.get(i));
+			    	        }
 	    				}	
 	    			}
 	    		}
@@ -869,7 +962,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public static void main( String[] args ) throws Exception
     {
     	LocateRegistry.createRegistry(1099);
-    	System.setProperty("java.rmi.server.hostname", "192.168.43.186");
+    	System.setProperty("java.rmi.server.hostname", "192.168.153.130");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
