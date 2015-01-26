@@ -283,8 +283,21 @@ public class RuleRunner {
 	 */
 	public void matchResolveAct(String ISname, Vector<Fact> privateFactsReceived) throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
-		//insert the shared fact
+		//recreate the KB in case of changes
+		//is important that the path begins with src/main/resources
+		kieFileSystem.write("src/main/resources/rules/tempKB.drl", getRule());
+
+		kb = kieServices.newKieBuilder(kieFileSystem);
+		// compile the KB
+		kb.buildAll();
+		if (kb.getResults().hasMessages(Level.ERROR)) {
+			throw new RuntimeException("Build Errors:\n"
+					+ kb.getResults().toString());
+		}
+		kContainer = kieServices.newKieContainer(kieRepository
+				.getDefaultReleaseId());
 		
+		//insert the shared fact
 		sharedFacts = new Vector<Fact>();
 		// create new session
 		kSession = kContainer.newKieSession();

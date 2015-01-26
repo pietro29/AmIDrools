@@ -11,10 +11,3 @@ when
 then
 	txtArea.append( "Sei in " + $f.getCodice() + "\n");
 end
-
-rule "battery state"
-when
-	$f:Battery()
-then
-	txtArea.append( "Il livello della batteria è " + $f.getLevel() + "%\n");
-end
