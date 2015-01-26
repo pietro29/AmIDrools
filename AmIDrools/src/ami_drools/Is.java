@@ -42,9 +42,17 @@ import java.awt.BorderLayout;
 
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.WindowConstants;
 
 import java.awt.Font;
+
 import javax.swing.UIManager.*;
+
+import java.awt.SystemColor;
+
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
 
 
 class IsRemote extends UnicastRemoteObject implements IsIntf 
@@ -80,7 +88,11 @@ public class Is extends JFrame implements ActionListener{
     private String name;
     private String nomeServer;
     /** Private fact */
-    private Position pos;
+    private Position position;
+    private Battery battery;
+    boolean Cucina;
+    boolean Soggiorno;
+    boolean CameraLetto;
     /**
      * Shared facts vector
      */
@@ -110,6 +122,23 @@ public class Is extends JFrame implements ActionListener{
 	private JLabel label_1;
 	private JPanel panel_1;
 	private JTextField txtServerIP;
+	private JPanel panelStatus;
+	private JPanel panelPosizione;
+	private JButton btCucina;
+	private JButton btCameraLetto;
+	private JButton btSoggiorno;
+	private JLabel lblNewLabel;
+	private JLabel lblNewLabel_3;
+	private JLabel lblNewLabel_4;
+	private JPanel panelBatteria;
+	private JLabel label_4;
+	private JLabel lblBattetr;
+	private JLabel label_6;
+	private JButton btAggiornaBatteria;
+	private JTextField txtBatteria;
+	private JTextPane lbBatteryError;
+	private JButton btRegolaCondivisa;
+	private JButton btRegolaPrivata;
 
     //
     
@@ -125,8 +154,8 @@ public class Is extends JFrame implements ActionListener{
 			setGraphics();
 			remoteObject = new IsRemote( this );
 			this.name=name;
-			pos = new Position("id1",1,"Soggiorno");
-			
+			position = new Position("idp1",1,"Soggiorno");
+			battery = new Battery("idb1",100);
 			getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 			
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -185,13 +214,91 @@ public class Is extends JFrame implements ActionListener{
 			
 			this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
 			//this.add(pTextArea);
-			
 			ImageIcon iconPanel1 = new ImageIcon(ClassLoader.getSystemResource("images/gear32.png"), "users");
 			ImageIcon iconPanel2 = new ImageIcon(ClassLoader.getSystemResource("images/folderplus32.png"), "users");
+			ImageIcon iconPanel3 = new ImageIcon(ClassLoader.getSystemResource("images/spanner32.png"), "users");
+			
+			panelStatus = new JPanel();
+			
+			panelStatus.setLayout(new GridLayout(3, 1, 0, 0));
+			
+			panelPosizione = new JPanel();
+			panelPosizione.setBorder(new LineBorder(new Color(0, 0, 255), 2, true));
+			panelStatus.add(panelPosizione);
+			panelPosizione.setLayout(new GridLayout(2, 3, 0, 0));
+			
+			lblNewLabel = new JLabel("");
+			panelPosizione.add(lblNewLabel);
+			
+			lblNewLabel_3 = new JLabel("POSIZIONE");
+			lblNewLabel_3.setFont(new Font("Trebuchet MS", Font.PLAIN, 20));
+			lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+			panelPosizione.add(lblNewLabel_3);
+			
+			lblNewLabel_4 = new JLabel("");
+			panelPosizione.add(lblNewLabel_4);
+			
+			btCucina = new JButton("");
+			panelPosizione.add(btCucina);
+			btCucina.addActionListener((ActionListener) this);
+			
+			btCameraLetto = new JButton("");
+			panelPosizione.add(btCameraLetto);
+			btCameraLetto.addActionListener((ActionListener) this);
+			
+			btSoggiorno = new JButton("");
+			panelPosizione.add(btSoggiorno);
+			btSoggiorno.addActionListener((ActionListener) this);
+			
 			tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
 			tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
-			pos=new Position("1p", 1, "soggiorno");
-			mDevices.put(pos.getId(), pos);
+			panelNewRule.setLayout(new GridLayout(2, 0, 0, 0));
+			
+			btRegolaCondivisa = new JButton("Regola con fatti condivisi");
+			panelNewRule.add(btRegolaCondivisa);
+			btRegolaCondivisa.addActionListener((ActionListener) this);
+			
+			btRegolaPrivata = new JButton("Regola con fatti privati");
+			panelNewRule.add(btRegolaPrivata);
+			btRegolaPrivata.addActionListener((ActionListener) this);
+			//tabbedPane.addTab("Status", iconPanel3, panelStatus, "Status");
+			tabbedPane.addTab("Status", iconPanel3, panelStatus, "Status");
+			
+			panelBatteria = new JPanel();
+			panelBatteria.setBorder(new LineBorder(new Color(0, 128, 0), 2, true));
+			panelStatus.add(panelBatteria);
+			panelBatteria.setLayout(new GridLayout(2, 3, 0, 0));
+			
+			label_4 = new JLabel("");
+			panelBatteria.add(label_4);
+			
+			lblBattetr = new JLabel("BATTERIA");
+			lblBattetr.setHorizontalAlignment(SwingConstants.CENTER);
+			lblBattetr.setFont(new Font("Trebuchet MS", Font.PLAIN, 20));
+			panelBatteria.add(lblBattetr);
+			
+			label_6 = new JLabel("");
+			panelBatteria.add(label_6);
+			
+			btAggiornaBatteria = new JButton("");
+			panelBatteria.add(btAggiornaBatteria);
+			btAggiornaBatteria.addActionListener((ActionListener) this);
+			
+			txtBatteria = new JTextField();
+			txtBatteria.setFont(new Font("Trebuchet MS", Font.BOLD, 37));
+			panelBatteria.add(txtBatteria);
+			txtBatteria.setColumns(10);
+			
+			txtBatteria.setText(new Integer(battery.getLevel()).toString());
+			
+			lbBatteryError = new JTextPane();
+			lbBatteryError.setBackground(SystemColor.control);
+			lbBatteryError.setFont(new Font("Tahoma", Font.PLAIN, 13));
+			panelBatteria.add(lbBatteryError);
+			
+			lbBatteryError.setEditable(false);
+			mDevices.put(position.getId(), position);
+			mDevices.put(battery.getId(), battery);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -221,6 +328,10 @@ public class Is extends JFrame implements ActionListener{
 	{
 		this.setImageButton(bManager, "images/connect.png");
 		this.setImageButton(bLocal, "images/engine.png");
+		this.setImageButton(btSoggiorno, "images/soggiorno.png",50,50);
+		this.setImageButton(btCameraLetto, "images/cameralettoBN.png",50,50);
+		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
+		this.setImageButton(btAggiornaBatteria, "images/exchange32.png",50,50);
 	}
 	
 	public void setImageButton(JButton bt, String pathImage){
@@ -232,6 +343,17 @@ public class Is extends JFrame implements ActionListener{
         //minDimension=80;
         bt.setPreferredSize(new Dimension(minDimension,minDimension));
         Image newimg = img.getScaledInstance(minDimension, minDimension,  java.awt.Image.SCALE_SMOOTH);  
+        bt.setIcon(new ImageIcon(newimg));  
+        bt.setBorderPainted(false);
+        bt.setFocusPainted(false);
+        bt.setContentAreaFilled(false);
+	}
+	
+	public void setImageButton(JButton bt, String pathImage, int dimensioX, int dimensionY){
+		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
+        Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
+        bt.setPreferredSize(new Dimension(dimensioX,dimensionY));
+        Image newimg = img.getScaledInstance(dimensioX, dimensionY,  java.awt.Image.SCALE_SMOOTH);  
         bt.setIcon(new ImageIcon(newimg));  
         bt.setBorderPainted(false);
         bt.setFocusPainted(false);
@@ -257,13 +379,24 @@ public class Is extends JFrame implements ActionListener{
 	private RuleRunner createEngine()
 	{
 		runner = new RuleRunner(name, textArea);
-		Fact privateFact = new Fact("1p","Position");
-		privateFact.insertAttributeValue("location", "int", "1");
-		privateFact.insertAttributeValue("codice", "String", "soggiorno");
-		privateFact.insertAttributeValue("_privateVisibility", "Boolean", "true");
-		privateFacts.add(privateFact);
+		insertPrivateFacts();
     	runner.runRules(privateFacts);
     	return runner;
+	}
+	
+	private void insertPrivateFacts(){
+		privateFacts=new Vector<Fact>();
+		//insert position fact
+		Fact privateFactPos = new Fact(position.getId(),"Position");
+		privateFactPos.insertAttributeValue("location", "int", new Integer(position.getLocation()).toString());
+		privateFactPos.insertAttributeValue("codice", "String", position.getCodice());
+		privateFactPos.insertAttributeValue("_privateVisibility", "Boolean", "true");
+		//insert battery fact
+		Fact privateFactBat = new Fact(battery.getId(),"Battery");
+		privateFactBat.insertAttributeValue("level", "int", new Integer(battery.getLevel()).toString());
+		privateFactBat.insertAttributeValue("_privateVisibility", "Boolean", "true");
+		privateFacts.add(privateFactBat);
+		privateFacts.add(privateFactPos);
 	}
 	
 	public IsIntf getRemoteProxy()
@@ -375,7 +508,7 @@ public class Is extends JFrame implements ActionListener{
             	for (Fact fact : privateFacts) {
             		updatePrivateFact(fact);
 				}
-            	System.out.println(pos.toString());
+            	System.out.println(position.toString());
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();} 
@@ -414,8 +547,107 @@ public class Is extends JFrame implements ActionListener{
                 e.printStackTrace();
                 textArea.append("Errore Server\n");}
 	    	
+    	}//manage the change of the position
+    	if (event.getSource()==btSoggiorno)
+	    {
+            try {//if i choose soggiorno then disable the other position
+            		Soggiorno=true;
+            		Cucina=false;
+            		CameraLetto=false;
+            		position.setCodice("Soggiorno");
+            		position.setLocation(1);
+            		this.setImageButton(btSoggiorno, "images/soggiorno.png",50,50);
+            		this.setImageButton(btCameraLetto, "images/cameralettoBN.png",50,50);
+            		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
+            		insertPrivateFacts();                
+            } catch (Exception e) {
+                System.err.println("Client exception: " + e.toString());
+                e.printStackTrace();
+            }
     	}
+    	
+    	if (event.getSource()==btCameraLetto)
+	    {
+            try {//if i choose soggiorno then disable the other position
+            		Soggiorno=false;
+            		Cucina=false;
+            		CameraLetto=true;
+            		position.setCodice("Camera da letto");
+            		position.setLocation(3);
+            		this.setImageButton(btSoggiorno, "images/soggiornoBN.png",50,50);
+            		this.setImageButton(btCameraLetto, "images/cameraletto.png",50,50);
+            		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
+            		insertPrivateFacts();
+            } catch (Exception e) {
+                System.err.println("Client exception: " + e.toString());
+                e.printStackTrace();
+            }
+    	}
+    	
+    	if (event.getSource()==btCucina)
+	    {
+            try {//if i choose soggiorno then disable the other position
+            		Soggiorno=false;
+            		Cucina=true;
+            		CameraLetto=false;
+            		position.setCodice("Cucina");
+            		position.setLocation(2);
+            		this.setImageButton(btSoggiorno, "images/soggiornoBN.png",50,50);
+            		this.setImageButton(btCameraLetto, "images/cameralettoBN.png",50,50);
+            		this.setImageButton(btCucina, "images/cucina.png",50,50);
+            		insertPrivateFacts();
+            } catch (Exception e) {
+                System.err.println("Client exception: " + e.toString());
+                e.printStackTrace();
+            }
+    	}
+    	
+    	if (event.getSource()==btAggiornaBatteria)
+	    {
+            try {
+            	int level=Integer.parseInt(txtBatteria.getText());
+                if (level>=0 && level<=100)
+                {
+                	battery.setLevel(level);
+                	insertPrivateFacts();
+                	lbBatteryError.setText("Aggiornamento effettuato!");
+                }else{
+                	lbBatteryError.setText("Il livello della batteria deve essere compreso tra 0 e 100");
+                }
+            } catch (Exception e) {
+                lbBatteryError.setText("Valore non numerico!");
+                e.printStackTrace();
+            }
+    	}
+    	if (event.getSource()==btRegolaPrivata)
+	    {
+    		try {
+            	IsNewRule IsNR = new IsNewRule(privateFacts);
+            	IsNR.setTitle("New Rule");
+            	IsNR.setSize(700, 500);
+            	IsNR.setVisible(true);
+            	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    	}
+    	if (event.getSource()==btRegolaCondivisa)
+	    {
+            try {
+            	if (runner.wois!=null){
+            		/*IsNewRule IsNR = new IsNewRule(runner);
+                	IsNR.setTitle("New Rule");
+                	IsNR.setSize(400, 500);
+                	IsNR.setVisible(true);
+                	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);*/
+            	}
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    	}
+    	
     }
+    
     
     public void updatePrivateFact(Fact fact)
     {
@@ -423,12 +655,18 @@ public class Is extends JFrame implements ActionListener{
     		Vector <String> tempAttr = fact.getAttributes();
     		Vector <String> tempVal = fact.getValues();
     		String tempFactType = fact.getFactType();
+    		System.err.println(tempFactType);
+    		Class cls;
     		for (int i=0;i<tempAttr.size();i++){//update all the attribute, even if not modified
     			switch(tempFactType){
-    			case "Position" :	Class cls = Class.forName("ami_drools." + tempFactType);
-    								Position l = (Position) cls.cast(mDevices.get(fact.getId()));
-    								l.updateField(tempAttr.get(i), tempVal.get(i));
+    			case "Position" :	cls = Class.forName("ami_drools." + tempFactType);
+    								Position p = (Position) cls.cast(mDevices.get(fact.getId()));
+    								p.updateField(tempAttr.get(i), tempVal.get(i));
     								break;
+    			case "Battery" :	cls = Class.forName("ami_drools." + tempFactType);
+									Battery b = (Battery) cls.cast(mDevices.get(fact.getId()));
+									b.updateField(tempAttr.get(i), tempVal.get(i));
+									break;
     			}
     		}
 		} catch (Exception e) {

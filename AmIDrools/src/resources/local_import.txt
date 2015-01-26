@@ -13,3 +13,9 @@ declare Position
 	modificati	: java.util.List
 	_privateVisibility	: Boolean
 end
+declare Battery
+	id			: String
+	level	: int
+	modificati	: java.util.List
+	_privateVisibility	: Boolean
+end

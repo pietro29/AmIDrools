@@ -33,6 +33,7 @@ public class RunIs {
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         	inf.resizeLogoUnibs("images/Logo_unibs.gif",150,150);
+        	
         	inf.resizeButton();
         } catch (Exception e) {
             //ERRORE
