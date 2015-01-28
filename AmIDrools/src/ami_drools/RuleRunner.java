@@ -432,27 +432,60 @@ public class RuleRunner {
 			if (index>=0)
 			{
 				factToSend = sharedFacts.get(index);
+				for (Field field : attributes) {
+					field.setAccessible(true);
+					// Dynamically read Attribute Name
+					System.out.println(field.getName() + ", " + field.get(ogg).toString());
+					if (field.getName().equals("modificati"))
+					{
+						factToSend.insertModifiedAttribute(field.get(ogg).toString());
+					}
+					else
+					{
+						factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+					}
+				}
+				sharedFactsSend.add(factToSend);
 			}else{
 				//System.err.println("id of the object not found inside the array of the fact");
 				//private fact
 				System.out.println("fatto privato, non verrà inviato");
-				continue;
-			}
-			
-			for (Field field : attributes) {
-				field.setAccessible(true);
-				// Dynamically read Attribute Name
-				System.out.println(field.getName() + ", " + field.get(ogg).toString());
-				if (field.getName().equals("modificati"))
-				{
-					factToSend.insertModifiedAttribute(field.get(ogg).toString());
+				//search the index of the fact in the vector of the private facts
+				for (Field field : attributes) {
+					field.setAccessible(true);
+					
+					if(field.getName().toLowerCase().equals("id"))
+					{
+						for(int j=0;j<privateFacts.size() && index<0;j++)
+						{//if the id is found in the shared fact save the index j
+							
+							if(privateFacts.get(j).getId().equals(field.get(ogg).toString()))
+							{
+								index=j;
+							}
+						}
+					}
+					if (index>=0) break;
 				}
-				else
-				{
-					factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+				if(index>=0)
+				{//update the private facts
+					factToSend = privateFacts.get(index);
+					for (Field field : attributes) {
+						field.setAccessible(true);
+						// Dynamically read Attribute Name
+						System.out.println(field.getName() + ", " + field.get(ogg).toString());
+						if (field.getName().equals("modificati"))
+						{
+							factToSend.insertModifiedAttribute(field.get(ogg).toString());
+						}
+						else
+						{
+							factToSend.updateAttributeValue(field.getName(), field.get(ogg).toString());
+						}
+					}
+					privateFactsSend.add(factToSend);
 				}
 			}
-			sharedFactsSend.add(factToSend);
 		}
 		//send here
 		try {
@@ -503,6 +536,6 @@ public class RuleRunner {
 	
 	public Vector<Fact> getPrivateFacts()
 	{
-		return privateFacts;
+		return privateFactsSend;
 	}
 }

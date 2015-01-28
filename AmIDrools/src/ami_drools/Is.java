@@ -5,8 +5,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -53,6 +59,7 @@ import java.awt.SystemColor;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
 
 class IsRemote extends UnicastRemoteObject implements IsIntf 
@@ -139,6 +146,11 @@ public class Is extends JFrame implements ActionListener{
 	private JTextPane lbBatteryError;
 	private JButton btRegolaCondivisa;
 	private JButton btRegolaPrivata;
+	private JTable tbSharedRules;
+	private JTable tbPrivateRules;
+	private JPanel panelSharedTableButton;
+	private JPanel panelPrivateTableButton;
+	private JButton btCancellaRegolaPrivata;
 
     //
     
@@ -252,7 +264,7 @@ public class Is extends JFrame implements ActionListener{
 			
 			tabbedPane.addTab("Fire", iconPanel1, panelFireRule, "Fire Rules");
 			tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
-			panelNewRule.setLayout(new GridLayout(2, 0, 0, 0));
+			panelNewRule.setLayout(new GridLayout(0, 2, 0, 0));
 			
 			btRegolaCondivisa = new JButton("Regola con fatti condivisi");
 			panelNewRule.add(btRegolaCondivisa);
@@ -260,6 +272,39 @@ public class Is extends JFrame implements ActionListener{
 			
 			btRegolaPrivata = new JButton("Regola con fatti privati");
 			panelNewRule.add(btRegolaPrivata);
+			tbPrivateRules = new JTable();
+			tbPrivateRules.setModel(new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+				}
+			));
+			extractRuleFromFile("resources/local_rules.txt");
+			
+			tbSharedRules = new JTable();
+			tbSharedRules.setModel(new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+				}
+			));
+			extractRuleFromFile("resources/shared_rules.txt");
+			tbSharedRules.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
+			panelNewRule.add(tbSharedRules);
+			tbPrivateRules.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
+			panelNewRule.add(tbPrivateRules);
+			
+			panelSharedTableButton = new JPanel();
+			panelNewRule.add(panelSharedTableButton);
+			
+			panelPrivateTableButton = new JPanel();
+			panelNewRule.add(panelPrivateTableButton);
+			panelPrivateTableButton.setLayout(new GridLayout(1, 0, 0, 0));
+			
+			btCancellaRegolaPrivata = new JButton("Cancella");
+			panelPrivateTableButton.add(btCancellaRegolaPrivata);
+			btCancellaRegolaPrivata.addActionListener((ActionListener) this);
+			
 			btRegolaPrivata.addActionListener((ActionListener) this);
 			//tabbedPane.addTab("Status", iconPanel3, panelStatus, "Status");
 			tabbedPane.addTab("Status", iconPanel3, panelStatus, "Status");
@@ -297,6 +342,7 @@ public class Is extends JFrame implements ActionListener{
 			panelBatteria.add(lbBatteryError);
 			
 			lbBatteryError.setEditable(false);
+			
 			mDevices.put(position.getId(), position);
 			mDevices.put(battery.getId(), battery);
 		} catch (Exception e) {
@@ -508,7 +554,7 @@ public class Is extends JFrame implements ActionListener{
             	for (Fact fact : privateFacts) {
             		updatePrivateFact(fact);
 				}
-            	System.out.println(position.toString());
+            	updateInternalState();
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();} 
@@ -550,7 +596,7 @@ public class Is extends JFrame implements ActionListener{
     	}//manage the change of the position
     	if (event.getSource()==btSoggiorno)
 	    {
-            try {//if i choose soggiorno then disable the other position
+            try {//if i choose living room then disable the other position
             		Soggiorno=true;
             		Cucina=false;
             		CameraLetto=false;
@@ -568,7 +614,7 @@ public class Is extends JFrame implements ActionListener{
     	
     	if (event.getSource()==btCameraLetto)
 	    {
-            try {//if i choose soggiorno then disable the other position
+            try {//if i choose bedroom then disable the other position
             		Soggiorno=false;
             		Cucina=false;
             		CameraLetto=true;
@@ -586,7 +632,7 @@ public class Is extends JFrame implements ActionListener{
     	
     	if (event.getSource()==btCucina)
 	    {
-            try {//if i choose soggiorno then disable the other position
+            try {//if i choose chicken then disable the other position
             		Soggiorno=false;
             		Cucina=true;
             		CameraLetto=false;
@@ -622,7 +668,7 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==btRegolaPrivata)
 	    {
     		try {
-            	IsNewRule IsNR = new IsNewRule(privateFacts);
+            	IsNewRule IsNR = new IsNewRule(privateFacts, true);
             	IsNR.setTitle("New Rule");
             	IsNR.setSize(700, 500);
             	IsNR.setVisible(true);
@@ -635,12 +681,27 @@ public class Is extends JFrame implements ActionListener{
 	    {
             try {
             	if (runner.wois!=null){
-            		/*IsNewRule IsNR = new IsNewRule(runner);
+            		//insert the public fact inside the private fact
+            		Vector<Fact> generalFacts = runner.wois.getSharedFacts();
+            		for(int i=0;i<privateFacts.size();i++)
+            		{
+            			generalFacts.add(privateFacts.get(i));
+            		}
+            		
+            		IsNewRule IsNR = new IsNewRule(generalFacts, false);
                 	IsNR.setTitle("New Rule");
-                	IsNR.setSize(400, 500);
+                	IsNR.setSize(700, 500);
                 	IsNR.setVisible(true);
-                	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);*/
+                	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             	}
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    	}
+    	if (event.getSource()==btCancellaRegolaPrivata)
+	    {
+            try {
+            	deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -655,7 +716,6 @@ public class Is extends JFrame implements ActionListener{
     		Vector <String> tempAttr = fact.getAttributes();
     		Vector <String> tempVal = fact.getValues();
     		String tempFactType = fact.getFactType();
-    		System.err.println(tempFactType);
     		Class cls;
     		for (int i=0;i<tempAttr.size();i++){//update all the attribute, even if not modified
     			switch(tempFactType){
@@ -674,5 +734,120 @@ public class Is extends JFrame implements ActionListener{
 			 e.printStackTrace();
 		}
     	
+    }
+    
+    private void extractRuleFromFile(String fileName) throws FileNotFoundException
+	{
+    	Vector<String> rows=new Vector<String>();
+		BufferedReader br = new BufferedReader(new FileReader(ClassLoader.getSystemResource(fileName).getFile()));
+        try {
+            String line = br.readLine();
+            while (line != null) {
+                if(line.contains("rule ")) {
+                    //extract the rule name
+                	rows.add(line.substring(line.indexOf("\""),line.length()));
+                } else if (line.contains("String 2")) {
+                    // ...
+                }               
+                line = br.readLine();
+            }
+            br.close();
+            if (fileName.contains("shared"))
+            {
+            	setSharedRuleTable(rows);
+            }else{
+            	setPrivateRuleTable(rows);
+            }
+            
+        } catch(IOException e) {
+            
+        }
+	}
+    
+    private void setPrivateRuleTable(Vector<String> rows)
+    {
+    	DefaultTableModel model = new DefaultTableModel();  
+    	// Create a column 
+    	model.addColumn("Rule"); 
+    	for(int i=0;i<rows.size();i++)
+    	{	// Append a row 
+        	model.addRow(new Object[]{rows.get(i)});
+        }
+    	tbPrivateRules = new JTable(model);
+    	
+    }
+    
+    private void setSharedRuleTable(Vector<String> rows)
+    {
+    	DefaultTableModel model = new DefaultTableModel();  
+    	// Create a column 
+    	model.addColumn("Rule"); 
+    	for(int i=0;i<rows.size();i++)
+    	{	// Append a row 
+        	model.addRow(new Object[]{rows.get(i)});
+        }
+    	tbSharedRules = new JTable(model);
+    	
+    }
+    
+    private void deleteRuleFromFile(String fileName, String ruleName) throws FileNotFoundException
+	{
+    	Vector<String> rows=new Vector<String>();
+		BufferedReader br = new BufferedReader(new FileReader(ClassLoader.getSystemResource(fileName).getFile()));
+		String newFile=new String("");
+		boolean delete=false;
+        try {
+            String line = br.readLine();
+            while (line != null) {//delete until found end
+                if(line.contains(ruleName)) {
+                    delete=true;
+                }
+                if(!delete){
+                	newFile+=line+"\n";
+                }
+                if(line.contains("end")) {
+                	newFile+="end\n";
+                    delete=false;
+                }
+                line = br.readLine();
+            }
+            br.close();
+            try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource(fileName).getFile(), false)))) {
+			    out.println(newFile);
+			}catch (IOException e) {
+			    //exception handling left as an exercise for the reader
+			}
+            setPrivateRuleTable(rows);
+        } catch(IOException e) {
+            
+        }
+	}
+    private void updateInternalState(){
+    	System.err.println(battery.toString());
+    	System.err.println(position.toString());
+    	txtBatteria.setText(Integer.valueOf(battery.getLevel()).toString());
+    	if (position.getCodice().toLowerCase().equals("soggiorno"))
+    	{
+    		Soggiorno=true;
+    		Cucina=false;
+    		CameraLetto=false;
+    		this.setImageButton(btSoggiorno, "images/soggiorno.png",50,50);
+    		this.setImageButton(btCameraLetto, "images/cameralettoBN.png",50,50);
+    		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
+    	}else if (position.getCodice().toLowerCase().equals("cucina")){
+    		Soggiorno=true;
+    		Cucina=false;
+    		CameraLetto=false;
+    		this.setImageButton(btSoggiorno, "images/soggiornoBN.png",50,50);
+    		this.setImageButton(btCameraLetto, "images/cameralettoBN.png",50,50);
+    		this.setImageButton(btCucina, "images/cucina.png",50,50);
+    	}else{
+    		Soggiorno=true;
+    		Cucina=false;
+    		CameraLetto=false;
+    		this.setImageButton(btSoggiorno, "images/soggiornoBN.png",50,50);
+    		this.setImageButton(btCameraLetto, "images/cameraletto.png",50,50);
+    		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
+    	}
     }
 }
