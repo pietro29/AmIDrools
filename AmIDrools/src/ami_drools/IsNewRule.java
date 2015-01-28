@@ -15,6 +15,8 @@ import javax.swing.JComboBox;
 import java.awt.FlowLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,13 +41,13 @@ public class IsNewRule extends JFrame implements ActionListener{
 	 */
 	private static final long serialVersionUID = 1L;
 	private Vector<String> factsType;
-	private RuleRunner runner;
+	private Boolean privFact;
 	private Vector<Fact> privateFacts;
 	private Vector<String> declareType;
 	private Vector<String> attributeType;
 	private Vector<String> attributeTypeTHEN;
 	private JTextField txtValore;
-	
+	private Integer counter=0;
 	JComboBox<String> cbTipologia;
 	JComboBox<String> cbAttributo;
 	JComboBox<String> cbOperatore;
@@ -67,8 +69,9 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private JTextField txtRuleName;
 	private JLabel lbnewRule;
 	private JButton btSaveRule;
-	public IsNewRule(Vector<Fact> privateFacts) {
+	public IsNewRule(Vector<Fact> privateFacts,Boolean privFact ) {
 		this.privateFacts=privateFacts;
+		this.privFact=privFact; 
 		getContentPane().setLayout(new GridLayout(2, 0, 0, 0));
 		getDeclareFromFacts();
 		JPanel panelIF = new JPanel();
@@ -330,9 +333,15 @@ public class IsNewRule extends JFrame implements ActionListener{
             	if(operator.equals("=")) operator="==";
             	String value = new String(txtValore.getText());
             	//create the rule
-            	String newRule = new String("rule \""+txtRuleName.getText()+"\" \n");
+            	String newRule = new String("rule \""+txtRuleName.getText()+"\" \nno-loop\n");
             	newRule+="when \n";
-            	newRule+="\t $f:" + template + "("+ attribute + operator + value +") \n";
+            	newRule+="\t $wi: Wois() \n";
+            	if (!txtResult.getText().equals(""))
+            	{
+            		newRule=txtResult.getText();
+            	}
+            	newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value +") \n";
+            	counter+=1;
             	txtResult.setText(newRule);
             } catch (Exception e) {
             	e.printStackTrace();
@@ -348,13 +357,35 @@ public class IsNewRule extends JFrame implements ActionListener{
             	//if(operator.equals("scrivi")) value="";
             	//create the rule
             	String newRule = new String("then \n");
+            	if (!txtResultTHEN.getText().equals(""))
+            	{
+            		newRule=txtResultTHEN.getText().substring(0, txtResultTHEN.getText().indexOf(" end "));
+            	}
             	if(operator.equals("scrivi"))
             	{ //print some text
-            		newRule+="\t txtArea.append(\""+ value +"\"+$f.get"+attribute.substring(0,1).toUpperCase()+attribute.substring(1,attribute.length())+"()+\"\n\")\n";
-            	}else{
-            		newRule+="\t $f:" + template + "("+ attribute + operator + value +") \n";
+            		String var = new String("$"+template.toLowerCase());
+            		newRule+="\t txtArea.append(\""+ value +"\"+"+var+".get"+attribute.substring(0,1).toUpperCase()+attribute.substring(1,attribute.length())+"()+\"\\n\");\n";
+            	}else{//modify an attribute
+            		/*
+            		 * if(setLock($f.getId(),$wi,ISName))
+						{
+							modify($f) {setAccesa(false)};
+							$f.getModificati().add(new String("accesa"));
+						}*/
+            		String var = new String("$"+template.toLowerCase());
+            		if (!privFact)
+            		{
+            			newRule+="\tif(setLock("+var+".getId(),$wi,ISName))\n";
+            			newRule+="\t{\n";
+            		}
+            		newRule+="\t modify("+var+") {set"+attribute.substring(0,1).toUpperCase()+attribute.substring(1,attribute.length())+"("+value+")};\n";
+            		newRule+="\t "+var+".getModificati().add(new String(\""+attribute+"\"));\n";
+            		if (!privFact)
+            		{
+            			newRule+="\t}\n";
+            		}
             	}
-            	newRule+="end";
+            	newRule+=" end ";
             	txtResultTHEN.setText(newRule);
             } catch (Exception e) {
             	e.printStackTrace();
@@ -363,7 +394,15 @@ public class IsNewRule extends JFrame implements ActionListener{
 		if (event.getSource()==btSaveRule)
 	    {
 			try {//write into the file txt
-				try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource("resources/local_rules.txt").getFile(), true)))) {
+				String fileName = new String();
+				if(privFact)
+				{
+					fileName="resources/local_rules.txt";
+				}else
+				{
+					fileName="resources/shared_rules.txt";
+				}
+				try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource(fileName).getFile(), true)))) {
 				    out.println("\n"+txtResult.getText()+"\n"+txtResultTHEN.getText()+"\n");
 				}catch (IOException e) {
 				    //exception handling left as an exercise for the reader
