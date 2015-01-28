@@ -63,7 +63,12 @@ public class DBTool {
 	        if (stmt != null) { stmt.close(); }
 	    }
 	}
-	
+	/**
+	 * 
+	 * @param tablename
+	 * @param statement select from tablename
+	 * @return a result set 
+	 */
 	public ResultSet retrieveData(String tablename, String statement){
 		// Connect to MySQL
 		Connection conn = null;
