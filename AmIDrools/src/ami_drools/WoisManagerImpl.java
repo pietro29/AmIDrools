@@ -535,13 +535,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         		modelTable.addRow(new Object[] { txtInsertUser.getText().toString(), txtInsertPriority.getText().toString() });
         		mPriorities.put(txtInsertUser.getText().toString(), Integer.parseInt(txtInsertPriority.getText().toString()));
         		try {
-					PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("resources/wois_priorities.txt", true)));
-					out.write(txtInsertUser.getText().toString() + "-" + txtInsertPriority.getText().toString() );
+					PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource("resources/wois_priorities.txt").getFile(), true)));
+					out.println(txtInsertUser.getText().toString() + "-" + txtInsertPriority.getText().toString() );
 				} catch (IOException e1) {
 					System.out.println("Non ho scritto");
 					e1.getStackTrace();
 				}
-        		//ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt")
+        		txtInsertPriority.setText("");
+        		txtInsertUser.setText("");
         	}
         	
         }
@@ -563,7 +564,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    	panel22.add(btDeleteUser, gbc_btDeleteUser);
    	btDeleteUser.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	
+        	if (tableUser.getSelectedRow()>-1){
+        		int row = tableUser.convertRowIndexToModel(tableUser.getSelectedRow());
+            	mPriorities.remove(modelTable.getValueAt(row, 0));
+            	modelTable.removeRow(row);
+        	}
         	
         }
    	});
