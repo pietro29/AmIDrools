@@ -16,6 +16,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import sharedFacts.Lampadina;
+import utility.DBTool;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -934,6 +937,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		return s;
 	}
     private void getPrioritiesTable(){
+    	/*
     	String s="";
     	try {
 			
@@ -956,6 +960,24 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    } catch (Throwable t) {
 		    	s="";
 		    }
+    	*/
+    	DBTool dbt= new DBTool();
+    	ResultSet rs = null;
+    	rs = dbt.retrieveData("users", "SELECT * FROM users");
+    	if (rs==null){
+    		System.out.println("Table users is empty");
+    	} else {
+    		try {
+				while (rs.next()) {
+				    //System.out.print(rs.getInt(3));
+				    //System.out.print(": ");
+				    //System.out.println(rs.getString(2));
+				    mPriorities.put(rs.getString(2), rs.getInt(3));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+    	}
     }
     public String say() throws RemoteException {
         return "Ciao Client";
