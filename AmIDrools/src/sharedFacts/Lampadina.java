@@ -54,12 +54,12 @@ public class Lampadina implements java.io.Serializable{
     	 switch (field){
     	 case "codice" : setCodice(value);
     	 				break;
-    	 case "accesa" : if (value=="true")
+    	 case "accesa" : if (value.equals("true"))
     		 				setAccesa(true);
     	 				else
     	 					setAccesa(false);
     	 				break;
-    	 case "spenta" : if (value=="true")
+    	 case "spenta" : if (value.equals("true"))
 				setSpenta(true);
 			else
 				setSpenta(false);
