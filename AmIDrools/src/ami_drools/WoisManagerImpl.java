@@ -166,6 +166,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 } catch (NoSuchObjectException ee) {
                 }
         }
+        
+        //getSharedTemplates();
+        
+        
         //DEVICE 1
         lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
@@ -906,8 +910,60 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		}
     	
     }
+    public void getDevice(){
+    	DBTool dbt = new DBTool();
+    	int id_modelinstance = 0;
+    	ResultSet rs = null;
+    	ResultSet rsDevice=null;
+    	rs = dbt.retrieveData("CALL 'amidrools'.'modelsinstancesSelect'();");
+    	if (rs==null){
+    		System.out.println("Table users is empty");
+    	} else {
+    		try {
+				while (rs.next()) {
+				    id_modelinstance=rs.getInt(1);
+				    rsDevice = dbt.retrieveData("CALL 'amidrools'.'templatesinstancesSelectExtended'(" + id_modelinstance + ");");
+				    while (rsDevice.next()) {
+				    	
+				    }
+				}
+			} catch (SQLException e) {
+				System.out.println("Database connection error");
+			}
+    	}
+    }
     public String getSharedTemplates(){
-    	return getStringFromFile("shared_declare.txt");
+    	String s="";
+    	StringBuilder sb = new StringBuilder();
+    	DBTool dbt = new DBTool();
+    	int id_model = 0;
+    	ResultSet rs = null;
+    	ResultSet rsTemplate=null;
+    	rs = dbt.retrieveData("select * from amidrools.models;");
+    	if (rs==null){
+    		System.out.println("Table users is empty");
+    	} else {
+    		try {
+				while (rs.next()) {
+				    id_model=rs.getInt(1);
+				    sb.append("declare " + rs.getString(2));
+			    	sb.append(System.lineSeparator());
+				    rsTemplate = dbt.retrieveData("select * from amidrools.templates t where t.id_model=" + id_model + ";");
+				    while (rsTemplate.next()) {
+				    	sb.append(rsTemplate.getString(3) + " : " + rsTemplate.getString(4));
+				    	sb.append(System.lineSeparator());
+				    }
+				    //sb.append("modificati : " + "java.util.List");
+			    	//sb.append(System.lineSeparator());
+				}
+				s = sb.toString();
+			} catch (SQLException e) {
+				System.out.println("Database connection error");
+				s = getStringFromFile("shared_declare.txt");
+			}
+    	}
+    	//System.out.println(s);
+    	return s;
     }
     public String getSharedFunctions(){
     	return getStringFromFile("shared_function.txt");
@@ -963,7 +1019,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	*/
     	DBTool dbt= new DBTool();
     	ResultSet rs = null;
-    	rs = dbt.retrieveData("users", "SELECT * FROM users");
+    	rs = dbt.retrieveData("SELECT * FROM users");
     	if (rs==null){
     		System.out.println("Table users is empty");
     	} else {
