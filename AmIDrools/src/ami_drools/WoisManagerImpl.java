@@ -167,9 +167,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         
-        //getSharedTemplates();
-        
-        
+          
         //DEVICE 1
         lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
@@ -235,9 +233,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         startUserInterface(name);
         
         loadInterfaceData();
+        DBTool dbt = new DBTool();
+        String connectionMessage=dbt.dbConnected();
         
         writeTextAreaLog("Creazione della rete " + name);
         writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
+        writeTextAreaLog(connectionMessage);
     }
     
    public void startUserInterface(String name){
@@ -915,17 +916,19 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	int id_modelinstance = 0;
     	ResultSet rs = null;
     	ResultSet rsDevice=null;
-    	rs = dbt.retrieveData("CALL 'amidrools'.'modelsinstancesSelect'();");
+    	rs = dbt.retrieveData("CALL amidrools.modelsinstancesSelect();");
     	if (rs==null){
     		System.out.println("Table users is empty");
     	} else {
     		try {
 				while (rs.next()) {
 				    id_modelinstance=rs.getInt(1);
-				    rsDevice = dbt.retrieveData("CALL 'amidrools'.'templatesinstancesSelectExtended'(" + id_modelinstance + ");");
+				    
+				    rsDevice = dbt.retrieveData("CALL amidrools.templatesinstancesSelectExtended(" + id_modelinstance + ");");
 				    while (rsDevice.next()) {
-				    	
+				    	System.out.println(rsDevice.getString(13));
 				    }
+				   
 				}
 			} catch (SQLException e) {
 				System.out.println("Database connection error");

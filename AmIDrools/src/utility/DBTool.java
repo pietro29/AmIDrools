@@ -91,6 +91,17 @@ public class DBTool {
 		
 		return null;
 	}
+	public String dbConnected(){
+		Connection conn = null;
+		String s="";
+		try {
+			conn = this.getConnection();
+			s="Connected to database";
+		} catch (SQLException e) {
+			s="Could not connect to the database";
+		}
+		return s;
+	}
 	
 	public DBTool() {
 		// TODO Auto-generated constructor stub
