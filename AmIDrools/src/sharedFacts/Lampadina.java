@@ -18,6 +18,10 @@ public class Lampadina implements java.io.Serializable{
     	this.accesa=accesa;
     	this.spenta=spenta;
     }
+    public Lampadina(String id, String codice){
+    	this.id=id;
+    	this.codice=codice;
+    }
     public String getId() {
         return this.id;
     }

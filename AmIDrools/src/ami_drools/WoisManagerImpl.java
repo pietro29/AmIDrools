@@ -42,6 +42,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.text.TabExpander;
+import javax.swing.text.html.parser.Parser;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
@@ -76,7 +77,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     /**
      * Map of the device and their ID
      */
-    private Map mDevices = new HashMap();
+    private Map<String, Object> mDevices = new HashMap<String, Object>();
     /**
      * Map of the registered users
      */
@@ -167,7 +168,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         
-          
+         /* 
         //DEVICE 1
         lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
@@ -196,7 +197,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         mFacts.put(fatto2.getId(), fatto2);
         
         locks.put(fatto2.getId(),new Lock(fatto2.getId()) );
+        */
         
+        //Creo gli oggetti per gestire i device dal database
+        getDevice();
+        //Solo per il simulatore
+        lampadina = (Lampadina) mDevices.get("1");
+        lampadina2 = (Lampadina) mDevices.get("2");
+        //
         //Read priority config. file
         getPrioritiesTable();
         
@@ -321,7 +329,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	panel11.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
 	panel1.add(panel11);
 	panel11.setLayout(new GridLayout(2, 1, 0, 0));
-	
+		
 	JLabel lbLight0 = new JLabel(lampadina.getCodice().toUpperCase());
 	lbLight0.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 20));
 	lbLight0.setHorizontalAlignment(lbLight0.CENTER);
@@ -370,16 +378,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	
 	btnLight1.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (lampadina.getAccesa()){
-        		lampadina.setAccesa(false);
+        	if (lampadina2.getAccesa()){
+        		lampadina2.setAccesa(false);
         		setImageButton(btnLight1, "images/light-off-icon.png");
         	} else {
-        		lampadina.setAccesa(true);
+        		lampadina2.setAccesa(true);
         		setImageButton(btnLight1, "images/light-on-icon.png");
         	}
         }
 	});
-	if (lampadina.getAccesa()){
+	if (lampadina2.getAccesa()){
 		setImageButton(btnLight1, "images/light-on-icon.png");
 	} else {
 		setImageButton(btnLight1, "images/light-off-icon.png");
@@ -918,17 +926,29 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	ResultSet rsDevice=null;
     	rs = dbt.retrieveData("CALL amidrools.modelsinstancesSelect();");
     	if (rs==null){
-    		System.out.println("Table users is empty");
+    		System.out.println("Table devices is empty");
     	} else {
     		try {
 				while (rs.next()) {
 				    id_modelinstance=rs.getInt(1);
 				    
 				    rsDevice = dbt.retrieveData("CALL amidrools.templatesinstancesSelectExtended(" + id_modelinstance + ");");
+				    
+				    
+				    Lampadina lampadina = new Lampadina(String.valueOf(id_modelinstance),rs.getString(2));
+			        mDevices.put(lampadina.getId(), lampadina);
+			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString(5));
 				    while (rsDevice.next()) {
-				    	System.out.println(rsDevice.getString(13));
+				    	if(! rsDevice.getString(9).equals("id")){
+				    		lampadina.updateField(rsDevice.getString(9), rsDevice.getString(14));
+				    		fatto.insertAttributeValue(rsDevice.getString(9), rsDevice.getString(10), rsDevice.getString(14));
+				    	}
 				    }
-				   
+				  //Aggiungo gli oggetti al vettore dei fatti condivisi
+			        sharedFacts.add(fatto);
+			        mFacts.put(fatto.getId(), fatto);
+			        
+			        locks.put(fatto.getId(),new Lock(fatto.getId()) );
 				}
 			} catch (SQLException e) {
 				System.out.println("Database connection error");
