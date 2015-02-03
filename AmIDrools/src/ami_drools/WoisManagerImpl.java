@@ -168,7 +168,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         
-         /* 
+         /* Per simulatore
         //DEVICE 1
         lampadina = new Lampadina("1","lampadina1",true,true);
         mDevices.put(lampadina.getId(), lampadina);
@@ -976,8 +976,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    	sb.append(rsTemplate.getString(3) + " : " + rsTemplate.getString(4));
 				    	sb.append(System.lineSeparator());
 				    }
-				    //sb.append("modificati : " + "java.util.List");
-			    	//sb.append(System.lineSeparator());
+				    sb.append("modificati : " + "java.util.List");
+			    	sb.append(System.lineSeparator());
+			    	sb.append("end");
+			    	sb.append(System.lineSeparator());
 				}
 				s = sb.toString();
 			} catch (SQLException e) {

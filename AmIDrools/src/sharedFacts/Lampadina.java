@@ -1,5 +1,9 @@
 package sharedFacts;
 
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class Lampadina implements java.io.Serializable{
 
 	/**
@@ -45,6 +49,24 @@ public class Lampadina implements java.io.Serializable{
 
      public void setAccesa(Boolean accesa) {
          this.accesa = accesa;
+         try {
+        	 URL url = new URL("http://localhost:8000/api/newdeveloper/lights/"+ this.id +"/state");
+             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+             connection.setRequestMethod("PUT");
+             connection.setDoOutput(true);
+             connection.setRequestProperty("Content-Type", "application/json");
+             connection.setRequestProperty("Accept", "application/json");
+             OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream());
+             //osw.write(String.format("{\"pos\":{\"left\":%1$d,\"top\":%2$d}}", random.nextInt(30), random.nextInt(20)));
+             osw.write("{\"on\":" + accesa + "}");
+             osw.flush();
+             osw.close();
+             System.err.println(connection.getResponseCode());
+			
+		} catch (Exception e) {
+			System.out.println("ERRORE nella scrittura d");
+		}
+         
      }
      
      public Boolean getSpenta() {
