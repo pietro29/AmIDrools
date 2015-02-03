@@ -69,7 +69,7 @@ public class DBTool {
 	 * @param statement select from tablename
 	 * @return a result set 
 	 */
-	public ResultSet retrieveData(String tablename, String statement){
+	public ResultSet retrieveData(String statement){
 		// Connect to MySQL
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -90,6 +90,17 @@ public class DBTool {
 		}
 		
 		return null;
+	}
+	public String dbConnected(){
+		Connection conn = null;
+		String s="";
+		try {
+			conn = this.getConnection();
+			s="Connected to database";
+		} catch (SQLException e) {
+			s="Could not connect to the database";
+		}
+		return s;
 	}
 	
 	public DBTool() {
