@@ -8,8 +8,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Vector;
 
@@ -174,6 +176,10 @@ public class RuleRunner {
 					if (attributesType.get(i).toLowerCase().equals("int"))
 					{
 						factType.set(NewFactType, attributes.get(i), Integer.parseInt(values.get(i)));
+					}else if(attributesType.get(i).equals("java.util.Date")){
+						SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+						Date date = formatter.parse(values.get(i));
+						factType.set(NewFactType, attributes.get(i), date);
 					}
 					else
 					{
@@ -349,6 +355,9 @@ public class RuleRunner {
 				// 
 			}
 		});*/
+		System.setProperty("drools.dateformat", "dd-MM-yyyy HH:mm:ss");//setting date format for drools
+		System.setProperty( "drools.defaultcountry" ,"IT" );
+		System.setProperty( "drools.defaultlanguage", "it" );
 		System.out.println("********************************");
 		kSession.fireAllRules(new AgendaFilter()
 		{//define the condition to fire the rule

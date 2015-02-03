@@ -11,3 +11,10 @@ when
 then
 	txtArea.append( "Sei in " + $f.getCodice() + "\n");
 end
+
+rule "what time is it?"
+when
+	$f:Clock()
+then
+	txtArea.append( "Data di oggi: " + $f.getDateTime() + "\n");
+end

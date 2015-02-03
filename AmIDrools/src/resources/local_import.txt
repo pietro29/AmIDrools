@@ -19,3 +19,9 @@ declare Battery
 	modificati	: java.util.List
 	_privateVisibility	: Boolean
 end
+declare Clock
+	id			: String
+	dateTime	: java.util.Date
+	modificati	: java.util.List
+	_privateVisibility	: Boolean
+end

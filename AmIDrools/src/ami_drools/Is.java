@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -86,6 +87,7 @@ public class Is extends JFrame implements ActionListener{
      * field is very important, as this collection contains the information about which WoISs are
      * considered subscribed to.
      */
+	SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 	private static final long serialVersionUID = 1L;
     private Vector<WoisRegistration> woises; 
     private Vector<RuleRunner> runners;
@@ -97,6 +99,7 @@ public class Is extends JFrame implements ActionListener{
     /** Private fact */
     private Position position;
     private Battery battery;
+    private Clock clock;
     boolean Cucina;
     boolean Soggiorno;
     boolean CameraLetto;
@@ -168,6 +171,8 @@ public class Is extends JFrame implements ActionListener{
 			this.name=name;
 			position = new Position("idp1",1,"Soggiorno");
 			battery = new Battery("idb1",100);
+			clock=new Clock("idc1");
+			
 			getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 			
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -345,6 +350,7 @@ public class Is extends JFrame implements ActionListener{
 			
 			mDevices.put(position.getId(), position);
 			mDevices.put(battery.getId(), battery);
+			mDevices.put(clock.getId(), clock);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -441,8 +447,13 @@ public class Is extends JFrame implements ActionListener{
 		Fact privateFactBat = new Fact(battery.getId(),"Battery");
 		privateFactBat.insertAttributeValue("level", "int", new Integer(battery.getLevel()).toString());
 		privateFactBat.insertAttributeValue("_privateVisibility", "Boolean", "true");
+		//insert clock fact
+		Fact privateFactClo = new Fact(clock.getId(),"Clock");
+		privateFactClo.insertAttributeValue("dateTime", "java.util.Date",dateFormat.format(clock.getDateUpdated()));
+		privateFactClo.insertAttributeValue("_privateVisibility", "Boolean", "true");
 		privateFacts.add(privateFactBat);
 		privateFacts.add(privateFactPos);
+		privateFacts.add(privateFactClo);
 	}
 	
 	public IsIntf getRemoteProxy()
@@ -823,8 +834,6 @@ public class Is extends JFrame implements ActionListener{
         }
 	}
     private void updateInternalState(){
-    	System.err.println(battery.toString());
-    	System.err.println(position.toString());
     	txtBatteria.setText(Integer.valueOf(battery.getLevel()).toString());
     	if (position.getCodice().toLowerCase().equals("soggiorno"))
     	{
