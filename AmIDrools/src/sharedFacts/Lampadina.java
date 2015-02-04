@@ -57,7 +57,6 @@ public class Lampadina implements java.io.Serializable{
              connection.setRequestProperty("Content-Type", "application/json");
              connection.setRequestProperty("Accept", "application/json");
              OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream());
-             //osw.write(String.format("{\"pos\":{\"left\":%1$d,\"top\":%2$d}}", random.nextInt(30), random.nextInt(20)));
              osw.write("{\"on\":" + accesa + "}");
              osw.flush();
              osw.close();
@@ -91,5 +90,23 @@ public class Lampadina implements java.io.Serializable{
 				setSpenta(false);
 			break;
     	 }
+     }
+     public String getUpdatedField(String field){
+    	 String s="";
+    	 switch (field){
+    	 case "codice" : s=getCodice();
+    	 				break;
+    	 case "accesa" : if (getAccesa())
+    		 				s="true";
+    	 				else
+    	 					s="false";
+    	 				break;
+    	 case "spenta" : if (getSpenta())
+				s="true";
+			else
+				s="false";
+			break;
+    	 }
+    	 return s;
      }
 }

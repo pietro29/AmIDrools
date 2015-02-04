@@ -787,6 +787,25 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	for (Fact fact: sharedFacts){
     		fact.removeAllModifiedAttributed();
     	}
+    	for (Fact fact : sharedFacts){
+    		String tempFactType = fact.getFactType();
+    		Vector <String>	tempAttr = fact.getAttributes();
+    		Vector <String> tempVal = fact.getValues();
+    		for (int i=0;i<tempAttr.size();i++){
+    			switch(tempFactType){
+    			case "Lampadina" : Class cls;
+					try {
+						cls = Class.forName("sharedFacts." + tempFactType);
+						Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+						 tempVal.set(i, l.getUpdatedField(tempAttr.get(i)));
+						break;
+					} catch (ClassNotFoundException e) {
+						System.out.println("Errore nell'aggiornamento dei campi");
+					}
+    								
+    			}
+    		}
+    	}
     	return sharedFacts;
     }
     /**

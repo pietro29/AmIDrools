@@ -453,7 +453,7 @@ public class Is extends JFrame implements ActionListener{
 		privateFactClo.insertAttributeValue("_privateVisibility", "Boolean", "true");
 		privateFacts.add(privateFactBat);
 		privateFacts.add(privateFactPos);
-		privateFacts.add(privateFactClo);
+		//privateFacts.add(privateFactClo);
 	}
 	
 	public IsIntf getRemoteProxy()
