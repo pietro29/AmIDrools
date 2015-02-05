@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import sharedFacts.Lampadina;
+import sharedFacts.HueLight;
 import utility.DBTool;
 
 import java.awt.*;
@@ -47,7 +47,11 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.LineBorder;
-
+/**
+ * Implementation of WoisManager interface
+ * @author 
+ *
+ */
 public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager {
 
 	/**
@@ -102,22 +106,20 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     private Vector<Fact> sharedFacts;
     
     /**
-     * Assertion object vector
+     * Table of the asserted fact made by the user.  
      */
     private Vector<Assertion> assertions;
-    
+    /**
+     * Check lock age and delete old lock
+     */
     private Thread checklockdate;
     
     private Thread checkIs;
-    
+    /**
+     * True if GUI is loaded
+     */
     private boolean uIActivation=true;
     
-    //Interfaccia grafica
-    /*
-    JTabbedPane tabbedPane;
-	JPanel panel1;
-	JPanel panel2;
-    */
     
 	JTextArea textArea;
 	DefaultListModel<String> model;
@@ -134,8 +136,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	private final static String newline = "\n";
 	private JTable tableUser;
 	//Device
-	Lampadina lampadina;
-	Lampadina lampadina2;
+	HueLight lampadina;
+	HueLight lampadina2;
 	//
     /**
      * Constructor that requires the name of the new WoIS.
@@ -199,17 +201,18 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         locks.put(fatto2.getId(),new Lock(fatto2.getId()) );
         */
         
-        //Creo gli oggetti per gestire i device dal database
+        //Load registered devices
         getDevice();
+        
         //Solo per il simulatore
-        lampadina = (Lampadina) mDevices.get("1");
-        lampadina2 = (Lampadina) mDevices.get("2");
-        //
-        //Read priority config. file
+        lampadina = (HueLight) mDevices.get("1");
+        lampadina2 = (HueLight) mDevices.get("2");
+        
+        //Load priority table from db
         getPrioritiesTable();
         
         
-        //Start lock thread
+        //Start lock check thread
         checklockdate=new Thread("Check lock"){
         	public void run(){
         		try {
@@ -222,7 +225,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         };
         checklockdate.start();
         
-        //Start IS thread
+        //Start IS check thread
         checkIs = new Thread("Check IS"){
         	public void run(){
         		try {
@@ -238,9 +241,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         };
         checkIs.start();
         
+        //Load UI. It requires the name of the wois
         startUserInterface(name);
         
-        loadInterfaceData();
+        //Connect to MySQL db
         DBTool dbt = new DBTool();
         String connectionMessage=dbt.dbConnected();
         
@@ -248,7 +252,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
         writeTextAreaLog(connectionMessage);
     }
-    
+    /**
+     * Load GUI
+     * @param name of the wois
+     */
    public void startUserInterface(String name){
 	  
 	   try {
@@ -330,7 +337,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	panel1.add(panel11);
 	panel11.setLayout(new GridLayout(2, 1, 0, 0));
 		
-	JLabel lbLight0 = new JLabel(lampadina.getCodice().toUpperCase());
+	JLabel lbLight0 = new JLabel(lampadina.getDeviceNumber().toUpperCase());
 	lbLight0.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 20));
 	lbLight0.setHorizontalAlignment(lbLight0.CENTER);
 	panel11.add(lbLight0);
@@ -344,16 +351,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	
 	btnLight0.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (lampadina.getAccesa()){
-        		lampadina.setAccesa(false);
+        	if (lampadina.getisOn()){
+        		lampadina.setisOn(false);
         		setImageButton(btnLight0, "images/light-off-icon.png");
         	} else {
-        		lampadina.setAccesa(true);
+        		lampadina.setisOn(true);
         		setImageButton(btnLight0, "images/light-on-icon.png");
         	}
         }
 	});
-	if (lampadina.getAccesa()){
+	if (lampadina.getisOn()){
 		setImageButton(btnLight0, "images/light-on-icon.png");
 	} else {
 		setImageButton(btnLight0, "images/light-off-icon.png");
@@ -364,7 +371,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	panel1.add(panel12);
 	panel12.setLayout(new GridLayout(2, 1, 0, 0));
 	
-	JLabel lblLight1 = new JLabel(lampadina2.getCodice().toUpperCase());
+	JLabel lblLight1 = new JLabel(lampadina2.getDeviceNumber().toUpperCase());
 	lblLight1.setFont(new Font("Droid Sans Mono", Font.PLAIN, 20));
 	lblLight1.setHorizontalAlignment(SwingConstants.CENTER);
 	panel12.add(lblLight1);
@@ -378,16 +385,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	
 	btnLight1.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (lampadina2.getAccesa()){
-        		lampadina2.setAccesa(false);
+        	if (lampadina2.getisOn()){
+        		lampadina2.setisOn(false);
         		setImageButton(btnLight1, "images/light-off-icon.png");
         	} else {
-        		lampadina2.setAccesa(true);
+        		lampadina2.setisOn(true);
         		setImageButton(btnLight1, "images/light-on-icon.png");
         	}
         }
 	});
-	if (lampadina2.getAccesa()){
+	if (lampadina2.getisOn()){
 		setImageButton(btnLight1, "images/light-on-icon.png");
 	} else {
 		setImageButton(btnLight1, "images/light-off-icon.png");
@@ -594,17 +601,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
    private void writeTextAreaLog(String message){
 	   textAreaLog.append(message + newline);
    }
-   
-   private void loadInterfaceData(){
-	   /*
-	    Iterator<Map.Entry<String, Integer>> it = mPriorities.entrySet().iterator();
-
-   	while (it.hasNext()) {
-   		Map.Entry<String, Integer> entry = it.next();
-   		model.addElement(entry.getKey().toString() + " - " + entry.getValue().toString());
-   	}*/
-   }
-   
+   /**
+    * Set the image for the button in the bt parameter
+    * @param bt button
+    * @param pathImage path of the image
+    */
    public void setImageButton(JButton bt, String pathImage){
 		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
        Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
@@ -617,7 +618,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
        bt.setFocusPainted(false);
        bt.setContentAreaFilled(false);
 	}
-   
+   /**
+    * Set a sleep interval for the lock thread
+    * @throws InterruptedException
+    */
     private void checkLockProcess() throws InterruptedException{
     	while(true){
     		checkLockStatus();
@@ -625,6 +629,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	}
     	
     }
+    /**
+     * Check the lock date. If the difference between lock date and current date pass 5000ms, unlock 
+     */
     private void checkLockStatus(){
     	Iterator<Map.Entry<String, Lock>> it = locks.entrySet().iterator();
     	Date dateToCompare=new Date();
@@ -639,6 +646,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		}
     	}
     }
+    /**
+     * Set a sleep interval for the IS thread
+     * @throws InterruptedException
+     * @throws NotRegisteredException
+     */
     private void checkIsProcess() throws InterruptedException, NotRegisteredException{
     	while(true){
     		checkISStatus();
@@ -646,6 +658,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	}
     	
     }
+    /**
+     * Check if the IS is still connected. If not, delete his data
+     */
     private void checkISStatus() {
     	Iterator<Map.Entry<String, IsIntf>> it = members.entrySet().iterator();
 
@@ -694,7 +709,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * @param inf the engine.
      * @param name the name of the engine in this WoIS.
      * @throws AlreadyRegisteredException if the name is already in use by another IS or if
-     *             <code>dr</code> was already registered with another name.
+     * was already registered with another name.
      */
     protected void insertMember( IsIntf inf, String name ) throws AlreadyRegisteredException
     {
@@ -719,6 +734,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         	writeTextAreaLog("Login " + name);
         }
     }
+    
     public void addMember( IsIntf inf, String name ) throws RemoteException
     {
         // IMPORTANT: update members before getting templates and facts */
@@ -729,9 +745,19 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			e.printStackTrace();
 		}
     }
+    /**
+     * Get user priority
+     * @param infName the registered IS
+     * @return the priority of the registered user
+     */
     public int getUserPriority(String infName){
     	return (int) mPriorities.get(infName);
     }
+    /**
+     * Get registered members list
+     * @return IsIntf[]
+     * @throws RemoteException
+     */
     public IsIntf[] getMemberList() throws RemoteException
     {
         IsIntf[] ret;
@@ -762,6 +788,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
         
     }
+    /**
+     * Remove all data of the isName IS
+     * @param isName of the IS registered member
+     */
     private void removeIsData(String isName){
     	//Remove all IS assertions
     	for(int i=0; i<assertions.size();i++){
@@ -793,10 +823,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		Vector <String> tempVal = fact.getValues();
     		for (int i=0;i<tempAttr.size();i++){
     			switch(tempFactType){
-    			case "Lampadina" : Class cls;
+    			case "HueLight" : Class cls;
 					try {
 						cls = Class.forName("sharedFacts." + tempFactType);
-						Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+						HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
 						 tempVal.set(i, l.getUpdatedField(tempAttr.get(i)));
 						break;
 					} catch (ClassNotFoundException e) {
@@ -847,8 +877,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    				updateAssertionTable(tempAttr.get(i),tempUsr,fact);
 		    				//aggiorno i device specifici
 			    			switch(tempFactType){
-			    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
-			    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+			    			case "HueLight" : Class cls = Class.forName("sharedFacts." + tempFactType);
+			    								HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
 			    								l.updateField(tempAttr.get(i), tempVal.get(i));
 			    								break;
 			    			}
@@ -938,6 +968,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		}
     	
     }
+    /**
+     * Load devices from db
+     */
     public void getDevice(){
     	DBTool dbt = new DBTool();
     	int id_modelinstance = 0;
@@ -954,7 +987,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    rsDevice = dbt.retrieveData("CALL amidrools.templatesinstancesSelectExtended(" + id_modelinstance + ");");
 				    
 				    
-				    Lampadina lampadina = new Lampadina(String.valueOf(id_modelinstance),rs.getString(2));
+				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance),rs.getString(2));
 			        mDevices.put(lampadina.getId(), lampadina);
 			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString(5));
 				    while (rsDevice.next()) {
@@ -974,6 +1007,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			}
     	}
     }
+   
     public String getSharedTemplates(){
     	String s="";
     	StringBuilder sb = new StringBuilder();
@@ -1015,6 +1049,11 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public String getSharedRules(){
     	return getStringFromFile("shared_rules.txt");
     }
+    /**
+     * Parse a file in a string
+     * @param fileName
+     * @return String
+     */
     private String getStringFromFile(String fileName) {
 		String s = "" ;
 		try {
@@ -1036,31 +1075,10 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		//System.out.println(s);
 		return s;
 	}
-    private void getPrioritiesTable(){
-    	/*
-    	String s="";
-    	try {
-			
-    		InputStream in=ClassLoader.getSystemResourceAsStream("resources/wois_priorities.txt");
-    		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-    		
-			StringBuilder sb = new StringBuilder();
-		    String line = br.readLine();
-		    String[] parts;
-		    while (line != null) {
-		         sb.append(line);
-		         sb.append(System.lineSeparator());
-		         
-		         parts = line.split(":");
-		         mPriorities.put(parts[0], Integer.parseInt(parts[1]));
-		            line = br.readLine();
-		    }
-		    s = sb.toString();
-		    br.close();
-		    } catch (Throwable t) {
-		    	s="";
-		    }
-    	*/
+    /**
+     * Load Users table from db
+     */
+    private void getPrioritiesTable(){  
     	DBTool dbt= new DBTool();
     	ResultSet rs = null;
     	rs = dbt.retrieveData("SELECT * FROM users");
@@ -1069,9 +1087,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	} else {
     		try {
 				while (rs.next()) {
-				    //System.out.print(rs.getInt(3));
-				    //System.out.print(": ");
-				    //System.out.println(rs.getString(2));
 				    mPriorities.put(rs.getString(2), rs.getInt(3));
 				}
 			} catch (SQLException e) {
@@ -1088,7 +1103,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     public static void main( String[] args ) throws Exception
     {
+    	//Create RMI registry
     	LocateRegistry.createRegistry(1099);
+    	//Set IP server hostname
     	System.setProperty("java.rmi.server.hostname", "192.168.153.130");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );

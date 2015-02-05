@@ -29,7 +29,7 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 
-import sharedFacts.Lampadina;
+import sharedFacts.HueLight;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

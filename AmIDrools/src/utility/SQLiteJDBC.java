@@ -1,14 +1,22 @@
 package utility;
 
-import java.io.ObjectInputStream.GetField;
 import java.sql.*;
-
+/**
+ * SQLite management class
+ * @author 
+ *
+ */
 public final class SQLiteJDBC {
-	
+	/**
+	 * empty
+	 */
 	private SQLiteJDBC() {
 		
 	}
-	
+	/**
+	 * Get the connection with the local SQLite db
+	 * @return Connection object
+	 */
 	public static Connection getConnection(){
 		Connection c=null;
 		try {
@@ -22,7 +30,12 @@ public final class SQLiteJDBC {
 		    return c;
 	}
 
-	
+	/**
+	 * Run a SQL command which does not return a recordset:
+	 * CREATE/UPDATE/DELETE/DROP/etc.
+	 * @param sql
+	 * @return true when query is executed
+	 */
 	public static boolean executeUpdate(String sql){
 		Statement stmt = null;
 		Connection conn = SQLiteJDBC.getConnection();
@@ -38,6 +51,37 @@ public final class SQLiteJDBC {
 		      return false;
 		} 
 	}
+	/**
+	 * Run a SQL command which return last inserted id; INSERT statement
+	 * @param sql
+	 * @return last id of the inserted row
+	 */
+	public static int executeUpdate_Insert(String sql){
+		Statement stmt = null;
+		Connection conn = SQLiteJDBC.getConnection();
+		ResultSet rs=null;
+		int id=0;
+		try {
+			stmt = conn.createStatement();
+			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+			rs = stmt.getGeneratedKeys();
+		    if (rs.next()){
+		    	id=rs.getInt(1);
+		    }
+		    stmt.close();
+		    conn.close();
+		    System.out.println("Query executed");
+		    return id;
+		} catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      return id;
+		} 
+	}
+	/**
+	 * Run a SQL command which return a dataset; SELECT statement
+	 * @param statement
+	 * @return ResultSet object
+	 */
 	public static ResultSet retrieveData(String statement){
 		Connection conn = null;
 		ResultSet rs = null;

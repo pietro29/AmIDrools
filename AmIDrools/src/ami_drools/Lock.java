@@ -46,9 +46,17 @@ public class Lock {
 	public void setDateLocked(){
 		this.dateLocked=new Date();
 	}
+	/**
+	 * 
+	 * @return String
+	 */
 	public String getIsId(){
 		return isId;
 	}
+	/**
+	 * 
+	 * @param isId
+	 */
 	public void setIsId(String isId){
 		this.isId=isId;
 	}
