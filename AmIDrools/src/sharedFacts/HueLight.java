@@ -17,9 +17,9 @@ public class HueLight implements java.io.Serializable{
     private int brightness = 0; // possible values are 0 - 255
 	private int colorTemperature = 154; // possible values are 154 - 500
     
-    public HueLight(String id, String codice, Boolean isOn){
+    public HueLight(String id, String deviceNumber, Boolean isOn){
     	this.id=id;
-    	this.deviceNumber=codice;
+    	this.deviceNumber=deviceNumber;
     	this.isOn=isOn;
     }
     public HueLight(String id, String deviceNumber){
@@ -59,6 +59,10 @@ public class HueLight implements java.io.Serializable{
      public int getColorTemperature(){
     	 return this.colorTemperature;
      }
+     /**
+      * set isOn through REST API service
+      * @param isOn
+      */
      public void setisOn(Boolean isOn) {
          this.isOn = isOn;
          try {
@@ -79,7 +83,11 @@ public class HueLight implements java.io.Serializable{
 		}
          
      }
-     
+     /**
+      * Update attribute value from Fact class vector
+      * @param field
+      * @param value
+      */
      public void updateField(String field, String value){
     	 switch (field){
     	 case "deviceNumber" : setDeviceNumber(value);
@@ -95,6 +103,11 @@ public class HueLight implements java.io.Serializable{
 					break;
     	 }
      }
+     /**
+      * 
+      * @param field name
+      * @return updated value
+      */
      public String getUpdatedField(String field){
     	 String s="";
     	 switch (field){
