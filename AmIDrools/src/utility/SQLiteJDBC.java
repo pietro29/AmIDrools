@@ -1,6 +1,5 @@
 package utility;
 
-import java.io.ObjectInputStream.GetField;
 import java.sql.*;
 
 public final class SQLiteJDBC {
