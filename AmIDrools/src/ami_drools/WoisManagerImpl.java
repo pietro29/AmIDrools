@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import sharedFacts.Lampadina;
+import sharedFacts.HueLight;
 import utility.DBTool;
 
 import java.awt.*;
@@ -136,8 +136,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	private final static String newline = "\n";
 	private JTable tableUser;
 	//Device
-	Lampadina lampadina;
-	Lampadina lampadina2;
+	HueLight lampadina;
+	HueLight lampadina2;
 	//
     /**
      * Constructor that requires the name of the new WoIS.
@@ -205,8 +205,8 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         getDevice();
         
         //Solo per il simulatore
-        lampadina = (Lampadina) mDevices.get("1");
-        lampadina2 = (Lampadina) mDevices.get("2");
+        lampadina = (HueLight) mDevices.get("1");
+        lampadina2 = (HueLight) mDevices.get("2");
         
         //Load priority table from db
         getPrioritiesTable();
@@ -337,7 +337,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	panel1.add(panel11);
 	panel11.setLayout(new GridLayout(2, 1, 0, 0));
 		
-	JLabel lbLight0 = new JLabel(lampadina.getCodice().toUpperCase());
+	JLabel lbLight0 = new JLabel(lampadina.getDeviceNumber().toUpperCase());
 	lbLight0.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 20));
 	lbLight0.setHorizontalAlignment(lbLight0.CENTER);
 	panel11.add(lbLight0);
@@ -351,16 +351,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	
 	btnLight0.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (lampadina.getAccesa()){
-        		lampadina.setAccesa(false);
+        	if (lampadina.getisOn()){
+        		lampadina.setisOn(false);
         		setImageButton(btnLight0, "images/light-off-icon.png");
         	} else {
-        		lampadina.setAccesa(true);
+        		lampadina.setisOn(true);
         		setImageButton(btnLight0, "images/light-on-icon.png");
         	}
         }
 	});
-	if (lampadina.getAccesa()){
+	if (lampadina.getisOn()){
 		setImageButton(btnLight0, "images/light-on-icon.png");
 	} else {
 		setImageButton(btnLight0, "images/light-off-icon.png");
@@ -371,7 +371,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	panel1.add(panel12);
 	panel12.setLayout(new GridLayout(2, 1, 0, 0));
 	
-	JLabel lblLight1 = new JLabel(lampadina2.getCodice().toUpperCase());
+	JLabel lblLight1 = new JLabel(lampadina2.getDeviceNumber().toUpperCase());
 	lblLight1.setFont(new Font("Droid Sans Mono", Font.PLAIN, 20));
 	lblLight1.setHorizontalAlignment(SwingConstants.CENTER);
 	panel12.add(lblLight1);
@@ -385,16 +385,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 	
 	btnLight1.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-        	if (lampadina2.getAccesa()){
-        		lampadina2.setAccesa(false);
+        	if (lampadina2.getisOn()){
+        		lampadina2.setisOn(false);
         		setImageButton(btnLight1, "images/light-off-icon.png");
         	} else {
-        		lampadina2.setAccesa(true);
+        		lampadina2.setisOn(true);
         		setImageButton(btnLight1, "images/light-on-icon.png");
         	}
         }
 	});
-	if (lampadina2.getAccesa()){
+	if (lampadina2.getisOn()){
 		setImageButton(btnLight1, "images/light-on-icon.png");
 	} else {
 		setImageButton(btnLight1, "images/light-off-icon.png");
@@ -826,7 +826,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     			case "Lampadina" : Class cls;
 					try {
 						cls = Class.forName("sharedFacts." + tempFactType);
-						Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+						HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
 						 tempVal.set(i, l.getUpdatedField(tempAttr.get(i)));
 						break;
 					} catch (ClassNotFoundException e) {
@@ -878,7 +878,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    				//aggiorno i device specifici
 			    			switch(tempFactType){
 			    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
-			    								Lampadina l = (Lampadina) cls.cast(mDevices.get(fact.getId()));
+			    								HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
 			    								l.updateField(tempAttr.get(i), tempVal.get(i));
 			    								break;
 			    			}
@@ -987,7 +987,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    rsDevice = dbt.retrieveData("CALL amidrools.templatesinstancesSelectExtended(" + id_modelinstance + ");");
 				    
 				    
-				    Lampadina lampadina = new Lampadina(String.valueOf(id_modelinstance),rs.getString(2));
+				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance),rs.getString(2));
 			        mDevices.put(lampadina.getId(), lampadina);
 			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString(5));
 				    while (rsDevice.next()) {
