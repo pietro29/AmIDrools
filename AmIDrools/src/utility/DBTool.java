@@ -63,6 +63,27 @@ public class DBTool {
 	        if (stmt != null) { stmt.close(); }
 	    }
 	}
+	
+	/**
+	 * Run a SQL command which does not return a recordset:
+	 * INSERT
+	 * 
+	 * @throws SQLException If something goes wrong
+	 */
+	public int executeInsert(String command) throws SQLException {
+	    Statement stmt = null;
+	    try {
+	    	int id=0;
+	    	Connection conn = this.getConnection();
+	        stmt = conn.createStatement();
+	        id=stmt.executeUpdate(command,Statement.RETURN_GENERATED_KEYS); // This will throw a SQLException if it fails
+	        return id;
+	    } finally {
+
+	    	// This will run whether we throw an exception or not
+	        if (stmt != null) { stmt.close(); }
+	    }
+	}
 	/**
 	 * 
 	 * @param tablename

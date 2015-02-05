@@ -1,5 +1,8 @@
 package ami_drools;
 
+import utility.rulesSQL;
+import utility.ComboItem;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -22,6 +25,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Vector;
 
 import javax.swing.JTextField;
@@ -43,23 +50,30 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private Vector<String> factsType;
 	private Boolean privFact;
 	private Vector<Fact> privateFacts;
-	private Vector<String> declareType;
-	private Vector<String> attributeType;
+	private Vector<ComboItem> declareType;
+	//private Vector<String> attributeType;
 	private Vector<String> attributeTypeTHEN;
+	//set 4 vector for the storage of the condition
+	private Vector<String> typeSelected;
+	private Vector<String> attributeSelected;
+	private Vector<String> attributeTypeSelected;
+	private Vector<String> opSelected;
+	private Vector<String> valueSelected;
+	//-----------------------------------
 	private JTextField txtValore;
 	private Integer counter=0;
-	JComboBox<String> cbTipologia;
-	JComboBox<String> cbAttributo;
-	JComboBox<String> cbOperatore;
+	JComboBox<ComboItem> cbTipologia;
+	JComboBox<ComboItem> cbAttributo;
+	JComboBox<ComboItem> cbOperatore;
 	private JTextPane txtResult;
 	private JPanel panelIFResult;
 	private JPanel panelIFConstructor;
 	private JButton btAddCondition;
 	private JPanel panelTHENContructor;
 	private JLabel lblThen;
-	private JComboBox<String> cbTipologiaTHEN;
-	private JComboBox<String> cbAttributoTHEN;
-	private JComboBox<String> cbOperatoreTHEN;
+	private JComboBox<ComboItem> cbTipologiaTHEN;
+	private JComboBox<ComboItem> cbAttributoTHEN;
+	private JComboBox<ComboItem> cbOperatoreTHEN;
 	private JTextField txtValoreTHEN;
 	private JButton btAggiungiTHEN;
 	private JPanel panelTHENResult;
@@ -71,7 +85,14 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private JButton btSaveRule;
 	public IsNewRule(Vector<Fact> privateFacts,Boolean privFact ) {
 		this.privateFacts=privateFacts;
-		this.privFact=privFact; 
+		this.privFact=privFact;
+		
+		typeSelected=new Vector<String>();
+		attributeSelected=new Vector<String>();
+		attributeTypeSelected=new Vector<String>();
+		opSelected=new Vector<String>();
+		valueSelected=new Vector<String>();
+		
 		getContentPane().setLayout(new GridLayout(2, 0, 0, 0));
 		getDeclareFromFacts();
 		JPanel panelIF = new JPanel();
@@ -92,15 +113,15 @@ public class IsNewRule extends JFrame implements ActionListener{
 		lblThen = new JLabel("THEN");
 		panelTHENContructor.add(lblThen);
 		
-		cbTipologiaTHEN = new JComboBox<String>(declareType);
+		cbTipologiaTHEN = new JComboBox<ComboItem>(declareType);
 		cbTipologiaTHEN.addActionListener((ActionListener) this);
 		panelTHENContructor.add(cbTipologiaTHEN);
 		
-		cbAttributoTHEN = new JComboBox<String>();
+		cbAttributoTHEN = new JComboBox<ComboItem>();
 		panelTHENContructor.add(cbAttributoTHEN);
 		cbAttributoTHEN.addActionListener((ActionListener) this);
 		
-		cbOperatoreTHEN = new JComboBox<String>();
+		cbOperatoreTHEN = new JComboBox<ComboItem>();
 		panelTHENContructor.add(cbOperatoreTHEN);
 		cbOperatoreTHEN.addActionListener((ActionListener) this);
 		txtValoreTHEN = new JTextField();
@@ -153,16 +174,16 @@ public class IsNewRule extends JFrame implements ActionListener{
 		JLabel lblNewLabel = new JLabel("IF");
 		panel_1.add(lblNewLabel);
 		
-		cbTipologia = new JComboBox<String>(declareType);
+		cbTipologia = new JComboBox<ComboItem>(declareType);
 		panel_1.add(cbTipologia);
 		cbTipologia.addActionListener((ActionListener) this);
-		cbTipologia.setSelectedIndex(0);
 		
 		
-		cbAttributo = new JComboBox<String>();
+		
+		cbAttributo = new JComboBox<ComboItem>();
 		panel_1.add(cbAttributo);
 		
-		cbOperatore = new JComboBox<String>();
+		cbOperatore = new JComboBox<ComboItem>();
 		panel_1.add(cbOperatore);
 		
 		txtValore = new JTextField();
@@ -173,26 +194,27 @@ public class IsNewRule extends JFrame implements ActionListener{
 		panel_1.add(btAddCondition);
 		btAddCondition.addActionListener((ActionListener) this);
 		cbAttributo.addActionListener((ActionListener) this);
+		cbTipologia.setSelectedIndex(0);
 		cbTipologiaTHEN.setSelectedIndex(0);
 		txtRuleName.setText("New Rule 1");
 	}
 
 	private void getDeclareFromFacts() {
 		try {
-			declareType=new Vector<String>();
-			System.err.println(privateFacts.toString());
-			for (int j=0;j<privateFacts.size();j++)
-			{
-				boolean inserito =false;
-				Fact fact=privateFacts.get(j);
-				String tempFactType = fact.getFactType();
-	    		for(int i=0;i<declareType.size();i++)
-	    		{//inserisco la tipologia se non l'ho già fatto
-	    			if (declareType.get(i).equals(tempFactType)) inserito=true;
-	    		}
-	    		if (!inserito)declareType.add(tempFactType);
-			}
-			System.err.println( declareType.toString());
+			declareType=new Vector<ComboItem>();
+			ResultSet rs;
+			rs=rulesSQL.getModels();
+			if (rs==null){
+	    		System.out.println("Table of models is empty");
+	    	} else {
+	    		try {
+					while (rs.next()) {
+						declareType.add(new ComboItem(rs.getInt("id_model"), rs.getString("des_model")));
+					}
+				} catch (SQLException e) {
+					System.out.println("Database connection error");
+				}
+	    	}
 		} catch (Exception e) {
 			// TODO: handle exception
 			 e.printStackTrace();
@@ -203,31 +225,23 @@ public class IsNewRule extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent event) {
 		if (event.getSource()==cbTipologia)
 	    {
-			Vector<String> attribute;
+			Vector<ComboItem> attribute=new Vector<ComboItem>();
             try {
-            	attribute=new Vector<String>();
-            	attributeType=new Vector<String>();
-            	String tipologia = new String(cbTipologia.getSelectedItem().toString());
-            	System.err.println(tipologia);
-            	boolean inserito = false;
-            	for (int j=0;j<privateFacts.size() && !inserito;j++)
-    			{//if i found an object of that type extract the attributes
-    				if (privateFacts.get(j).getFactType().equals(tipologia)){
-    					Fact fact=privateFacts.get(j);
-    					Vector <String> tempAttr = fact.getAttributes();
-    		    		Vector <String> tempAttrType = fact.getAttributesType();
-    		    		for (int i=0;i<tempAttr.size();i++){
-    		    			if(!tempAttr.get(i).equals("_privateVisibility"))
-    		    			{
-    		    				attribute.addElement(tempAttr.get(i));
-    		    				attributeType.addElement(tempAttrType.get(i));
-    		    			}
-    		    		}
-    		    		inserito=false;
-    				}
-    			}
-            	System.err.println(attribute.toString());
+            	int id=((ComboItem)cbTipologia.getSelectedItem()).getKey();         	
             	//populate combo box
+            	ResultSet rs;
+    			rs=rulesSQL.getAttributeFromModels(id);
+    			if (rs==null){
+    	    		System.out.println("Table of template is empty");
+    	    	} else {
+    	    		try {
+    					while (rs.next()) {
+    						attribute.add(new ComboItem(rs.getInt("id_template"), rs.getString("des_template")));
+    					}
+    				} catch (SQLException e) {
+    					System.out.println("Database connection error");
+    				}
+    	    	}
             	DefaultComboBoxModel model = new DefaultComboBoxModel(attribute.toArray());
             	if (cbAttributo!=null)
             	{
@@ -246,7 +260,7 @@ public class IsNewRule extends JFrame implements ActionListener{
             	attribute=new Vector<String>();
             	attributeTypeTHEN=new Vector<String>();
             	String tipologia = new String(cbTipologiaTHEN.getSelectedItem().toString());
-            	System.err.println(tipologia);
+            	//System.err.println(tipologia);
             	boolean inserito = false;
             	for (int j=0;j<privateFacts.size() && !inserito;j++)
     			{//if i found an object of that type extract the attributes
@@ -264,7 +278,7 @@ public class IsNewRule extends JFrame implements ActionListener{
     		    		inserito=false;
     				}
     			}
-            	System.err.println(attribute.toString());
+            	//System.err.println(attribute.toString());
             	//populate combo box
             	DefaultComboBoxModel model = new DefaultComboBoxModel(attribute.toArray());
             	if (cbAttributoTHEN!=null)
@@ -279,27 +293,35 @@ public class IsNewRule extends JFrame implements ActionListener{
     	}
 		if (event.getSource()==cbAttributo)
 	    {
-			Vector<String> op = new Vector<String>();
+			Vector<ComboItem> op = new Vector<ComboItem>();
             try {
-            	String attributo = new String(cbAttributo.getSelectedItem().toString());
-            	for (int j=0;j<cbAttributo.getItemCount();j++)
-    			{//set the operator
-            		System.err.println(attributo);
-    				if (cbAttributo.getItemAt(j).equals(attributo)){
-    					if (attributeType.get(j).toLowerCase().equals("boolean") || attributeType.get(j).toLowerCase().equals("string"))
-    					{
-    						op.add(new String("="));
-    						op.add(new String("!="));
+            	int id=((ComboItem)cbAttributo.getSelectedItem()).getKey();         	
+            	//populate combo box
+            	ResultSet rs;
+    			rs=rulesSQL.getTypeOfAttributes(id);
+    			if (rs==null){
+    	    		System.out.println("Type of attribute not found");
+    	    	} else {
+    	    		try {
+    					while (rs.next()) {
+    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
+    						{
+    							op.add(new ComboItem(0, "="));
+    							op.add(new ComboItem(0, "!="));
+    						}else{
+    							op.add(new ComboItem(0, "="));
+    							op.add(new ComboItem(0, "!="));
+    							op.add(new ComboItem(0, "<"));
+    							op.add(new ComboItem(0, "<="));
+    							op.add(new ComboItem(0, ">"));
+    							op.add(new ComboItem(0, ">="));
+    						}
+    						
     					}
-    					if (attributeType.get(j).toLowerCase().equals("int") || attributeType.get(j).toLowerCase().equals("integer"))
-    					{
-    						op.add(new String("="));
-    						op.add(new String("!="));
-    						op.add(new String(">"));
-    						op.add(new String("<"));
-    					}
+    				} catch (SQLException e) {
+    					System.out.println("Database connection error");
     				}
-    			}
+    	    	}
             	//populate combo box
             	DefaultComboBoxModel model = new DefaultComboBoxModel(op.toArray());
             	cbOperatore.removeAllItems();
@@ -331,17 +353,44 @@ public class IsNewRule extends JFrame implements ActionListener{
             	String attribute = new String(cbAttributo.getSelectedItem().toString());
             	String operator = new String(cbOperatore.getSelectedItem().toString());
             	if(operator.equals("=")) operator="==";
-            	String value = new String(txtValore.getText());
+             	String value = new String(txtValore.getText());
+            	//store the condition
+            	typeSelected.add(template);
+            	attributeSelected.add(attribute);
+            	opSelected.add(operator);
+            	valueSelected.add(value);
             	//create the rule
             	String newRule = new String("rule \""+txtRuleName.getText()+"\" \nno-loop\n");
             	newRule+="when \n";
             	newRule+="\t $wi: Wois() \n";
-            	if (!txtResult.getText().equals(""))
+            	/*if (!txtResult.getText().equals(""))
             	{
             		newRule=txtResult.getText();
+            	}*/
+            	//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value +") \n";
+            	String oldTemplate=new String("_");
+            	
+            	Collections.sort(typeSelected);
+            	for(int i=0;i<typeSelected.size();i++)
+            	{
+            		template= typeSelected.get(i);
+            		attribute=attributeSelected.get(i);
+            		operator=opSelected.get(i);
+            		value=valueSelected.get(i);
+            		if(!oldTemplate.equals(template))
+            		{
+            			if(i>0){
+            				newRule+=") \n";
+            			}
+            			newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
+            			oldTemplate=new String(template);
+            		}else
+            		{
+            			newRule+=", "+attribute + operator + value; 
+            		}
+            		
             	}
-            	newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value +") \n";
-            	counter+=1;
+            	newRule+=") \n";
             	txtResult.setText(newRule);
             } catch (Exception e) {
             	e.printStackTrace();
@@ -372,6 +421,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 							modify($f) {setAccesa(false)};
 							$f.getModificati().add(new String("accesa"));
 						}*/
+            		
             		String var = new String("$"+template.toLowerCase());
             		if (!privFact)
             		{
@@ -402,14 +452,71 @@ public class IsNewRule extends JFrame implements ActionListener{
 				{
 					fileName="resources/shared_rules.txt";
 				}
-				try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource(fileName).getFile(), true)))) {
-				    out.println("\n"+txtResult.getText()+"\n"+txtResultTHEN.getText()+"\n");
-				}catch (IOException e) {
-				    //exception handling left as an exercise for the reader
+				if(!txtResult.equals("") && !txtResultTHEN.equals(""))
+				{
+					try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(ClassLoader.getSystemResource(fileName).getFile(), true)))) {
+					    out.println("\n"+txtResult.getText()+"\n"+txtResultTHEN.getText()+"\n");
+					}catch (IOException e) {
+					    //exception handling left as an exercise for the reader
+					}
 				}
             } catch (Exception e) {
             	e.printStackTrace();
             }
+			
+			Integer id=-1;
+			//insert rule header
+			System.err.println("0");
+			try {
+				rulesSQL.RulesInsert(txtRuleName.getText(), 1, 1, 50, 0);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			String oldTemplate=new String("_");
+			String template;
+			String attribute;
+			String operator;
+			String value;
+			Collections.sort(typeSelected);
+			for(int i=0;i<typeSelected.size();i++)
+			{
+				template= typeSelected.get(i);
+				attribute=attributeSelected.get(i);
+				operator=opSelected.get(i);
+				value=valueSelected.get(i);
+				if(!oldTemplate.equals(template))
+				{
+					//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
+					System.err.println("1");
+					try {
+						rulesSQL.RulesIfFactsInsert(1, template.toLowerCase());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.err.println("2");
+					try {
+						rulesSQL.RulesIfFactsDetailsInsert(1, operator.toLowerCase(), value);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					oldTemplate=new String(template);
+				}else
+				{
+					rulesSQL.RulesIfFactsDetailsInsert(1, operator.toLowerCase(), value);
+					//newRule+=", "+attribute + operator + value; 
+				}
+				
+			}
+			
+			typeSelected=new Vector<String>();
+			attributeSelected=new Vector<String>();
+			attributeTypeSelected=new Vector<String>();
+			opSelected=new Vector<String>();
+			valueSelected=new Vector<String>();
+			
     	}
 	}
 }
