@@ -823,7 +823,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		Vector <String> tempVal = fact.getValues();
     		for (int i=0;i<tempAttr.size();i++){
     			switch(tempFactType){
-    			case "Lampadina" : Class cls;
+    			case "HueLight" : Class cls;
 					try {
 						cls = Class.forName("sharedFacts." + tempFactType);
 						HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
@@ -877,7 +877,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 		    				updateAssertionTable(tempAttr.get(i),tempUsr,fact);
 		    				//aggiorno i device specifici
 			    			switch(tempFactType){
-			    			case "Lampadina" : Class cls = Class.forName("sharedFacts." + tempFactType);
+			    			case "HueLight" : Class cls = Class.forName("sharedFacts." + tempFactType);
 			    								HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
 			    								l.updateField(tempAttr.get(i), tempVal.get(i));
 			    								break;
