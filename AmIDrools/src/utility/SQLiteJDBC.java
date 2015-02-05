@@ -37,6 +37,27 @@ public final class SQLiteJDBC {
 		      return false;
 		} 
 	}
+	public static int executeUpdate_Insert(String sql){
+		Statement stmt = null;
+		Connection conn = SQLiteJDBC.getConnection();
+		ResultSet rs=null;
+		int id=0;
+		try {
+			stmt = conn.createStatement();
+			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+			rs = stmt.getGeneratedKeys();
+		    if (rs.next()){
+		    	id=rs.getInt(1);
+		    }
+		    stmt.close();
+		    conn.close();
+		    System.out.println("Query executed");
+		    return id;
+		} catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      return id;
+		} 
+	}
 	public static ResultSet retrieveData(String statement){
 		Connection conn = null;
 		ResultSet rs = null;
@@ -57,31 +78,6 @@ public final class SQLiteJDBC {
 			e.printStackTrace();
 		}
 		return null;
-	}
-	public static int getLastInsertedRowID(){
-		int id=0;
-		Connection conn = null;
-		ResultSet rs = null;
-		Statement stmt = null;
-		try {
-			conn = SQLiteJDBC.getConnection();
-			System.out.println("Connected to database");
-		} catch (Exception e) {
-			System.out.println("ERROR: Could not connect to the database");
-			e.printStackTrace();
-		}
-		try{
-			stmt = conn.createStatement();
-		    rs = stmt.getGeneratedKeys();
-		    if (rs.next()){
-		    	id=rs.getInt(1);
-		    }
-		    return id;
-		} catch (Exception e) {
-			System.out.println("ERROR: Could not executed query");
-			e.printStackTrace();
-		}
-		return id;
 	}
 }
 
