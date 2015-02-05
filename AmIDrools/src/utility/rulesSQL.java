@@ -18,7 +18,7 @@ public final class rulesSQL {
 		SQL+="(id_rule)";
 		SQL+="values";
 		SQL+="((select max(id_rule) from rules));";
-		SQLiteJDBC.executeUpdate(SQL);
+		SQLiteJDBC.executeUpdate(SQL,1);
 	}
 	public static void RulesIfFactsInsert(int id_model, String var_name){
 		String SQL=new String("");
@@ -26,7 +26,7 @@ public final class rulesSQL {
 		SQL+="(id_ruleif,id_model,var_name)";
 		SQL+="values";
 		SQL+="((select max(id_ruleif) from rulesif),"+id_model+",\""+var_name+"\");";
-		SQLiteJDBC.executeUpdate(SQL);
+		SQLiteJDBC.executeUpdate(SQL,1);
 	}
 	public static void RulesIfFactsDetailsInsert(int id_template, String operation, String value){
 		String SQL=new String("");
@@ -34,27 +34,27 @@ public final class rulesSQL {
 		SQL+="(id_ruleiffact,id_template,operation,value)";
 		SQL+="values";
 		SQL+="((select max(id_ruleiffact) from rulesiffacts),"+id_template+",\""+operation+"\",\""+value+"\");";
-		SQLiteJDBC.executeUpdate(SQL);
+		SQLiteJDBC.executeUpdate(SQL,1);
 	}
 	
 	public static ResultSet getModels()
 	{
 		String SQL = new String("");
 		SQL+="select id_model, des_model from models";
-		return SQLiteJDBC.retrieveData(SQL);
+		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
 	public static ResultSet getAttributeFromModels(int id_model)
 	{
 		String SQL = new String("");
 		SQL+="select id_template, des_template, type_attribute from templates where id_model="+id_model;
-		return SQLiteJDBC.retrieveData(SQL);
+		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
 	public static ResultSet getTypeOfAttributes(int id_template)
 	{
 		String SQL = new String("");
 		SQL+="select type_attribute from templates where id_template="+id_template;
-		return SQLiteJDBC.retrieveData(SQL);
+		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 }
