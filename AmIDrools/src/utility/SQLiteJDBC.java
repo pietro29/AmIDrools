@@ -17,11 +17,14 @@ public final class SQLiteJDBC {
 	 * Get the connection with the local SQLite db
 	 * @return Connection object
 	 */
-	public static Connection getConnection(){
+	public static Connection getConnection(int db){
 		Connection c=null;
 		try {
 		      Class.forName("org.sqlite.JDBC");
-		      c = DriverManager.getConnection("jdbc:sqlite:amidrools.db");
+		      if (db==0)
+		    	  c = DriverManager.getConnection("jdbc:sqlite:amidroolsManager.db");
+		      else if (db==1)
+		    	  c = DriverManager.getConnection("jdbc:sqlite:amidroolsIs.db");
 		    } catch ( Exception e ) {
 		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 		      System.exit(0);
@@ -36,9 +39,9 @@ public final class SQLiteJDBC {
 	 * @param sql
 	 * @return true when query is executed
 	 */
-	public static boolean executeUpdate(String sql){
+	public static boolean executeUpdate(String sql, int db){
 		Statement stmt = null;
-		Connection conn = SQLiteJDBC.getConnection();
+		Connection conn = SQLiteJDBC.getConnection(db);
 		try {
 			stmt = conn.createStatement();
 			stmt.executeUpdate(sql);
@@ -56,9 +59,9 @@ public final class SQLiteJDBC {
 	 * @param sql
 	 * @return last id of the inserted row
 	 */
-	public static int executeUpdate_Insert(String sql){
+	public static int executeUpdate_Insert(String sql, int db){
 		Statement stmt = null;
-		Connection conn = SQLiteJDBC.getConnection();
+		Connection conn = SQLiteJDBC.getConnection(db);
 		ResultSet rs=null;
 		int id=0;
 		try {
@@ -82,12 +85,12 @@ public final class SQLiteJDBC {
 	 * @param statement
 	 * @return ResultSet object
 	 */
-	public static ResultSet retrieveData(String statement){
+	public static ResultSet retrieveData(String statement, int db){
 		Connection conn = null;
 		ResultSet rs = null;
 		Statement stmt = null;
 		try {
-				conn = SQLiteJDBC.getConnection();
+				conn = SQLiteJDBC.getConnection(db);
 				System.out.println("Connected to database");
 			} catch (Exception e) {
 				System.out.println("ERROR: Could not connect to the database");
