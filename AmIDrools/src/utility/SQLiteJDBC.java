@@ -58,5 +58,30 @@ public final class SQLiteJDBC {
 		}
 		return null;
 	}
+	public static int getLastInsertedRowID(){
+		int id=0;
+		Connection conn = null;
+		ResultSet rs = null;
+		Statement stmt = null;
+		try {
+			conn = SQLiteJDBC.getConnection();
+			System.out.println("Connected to database");
+		} catch (Exception e) {
+			System.out.println("ERROR: Could not connect to the database");
+			e.printStackTrace();
+		}
+		try{
+			stmt = conn.createStatement();
+		    rs = stmt.getGeneratedKeys();
+		    if (rs.next()){
+		    	id=rs.getInt(1);
+		    }
+		    return id;
+		} catch (Exception e) {
+			System.out.println("ERROR: Could not executed query");
+			e.printStackTrace();
+		}
+		return id;
+	}
 }
 
