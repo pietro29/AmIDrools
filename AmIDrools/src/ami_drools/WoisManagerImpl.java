@@ -29,6 +29,7 @@ import java.util.Vector;
 
 import sharedFacts.HueLight;
 import utility.DBTool;
+import utility.SQLiteJDBC;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -47,6 +48,8 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.LineBorder;
+
+import org.sqlite.SQLite;
 /**
  * Implementation of WoisManager interface
  * @author 
@@ -972,19 +975,36 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * Load devices from db
      */
     public void getDevice(){
-    	DBTool dbt = new DBTool();
+    	//DBTool dbt = new DBTool();
     	int id_modelinstance = 0;
     	ResultSet rs = null;
     	ResultSet rsDevice=null;
-    	rs = dbt.retrieveData("CALL amidrools.modelsinstancesSelect();");
+    	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
+    							"from modelsinstances mi " +
+    							"join models m on m.id_model=mi.id_model " + 
+    							"where m.id_user is null ;", 0);
     	if (rs==null){
     		System.out.println("Table devices is empty");
     	} else {
     		try {
 				while (rs.next()) {
-				    id_modelinstance=rs.getInt(1);
+				    id_modelinstance=rs.getInt("id_modelinstance");
 				    
-				    rsDevice = dbt.retrieveData("CALL amidrools.templatesinstancesSelectExtended(" + id_modelinstance + ");");
+				    rsDevice = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
+				    		"mi.id_model, " +
+				    		"mi.des_modelinstance, " +
+				    		"mi.ip_model, " +
+				    		"m.des_model, " +
+				    		"a.id_attribute, " +
+				    		"a.des_attribute, " +
+				    		"a.type_attribute, " +
+				    		"ai.id_attributeinstance, " +
+				    		"ai.value_attribute " +
+				    		"from modelsinstances as mi " +
+				    		"join models as m on m.id_model=mi.id_model " +
+				    		"join attributes as a on a.id_model=mi.id_model " +
+				    		"join attributesinstances ai on ai.id_modelinstance=mi.id_modelinstance and ai.id_attribute=a.id_attribute " +
+				    		"where mi.id_modelinstance=" + id_modelinstance + ";", 0);
 				    
 				    
 				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance),rs.getString(2));
@@ -1079,15 +1099,16 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      * Load Users table from db
      */
     private void getPrioritiesTable(){  
-    	DBTool dbt= new DBTool();
+    	//DBTool dbt= new DBTool();
     	ResultSet rs = null;
-    	rs = dbt.retrieveData("SELECT * FROM users");
+    	//rs = dbt.retrieveData("SELECT * FROM users");
+    	rs=SQLiteJDBC.retrieveData("SELECT * FROM users", 0);
     	if (rs==null){
     		System.out.println("Table users is empty");
     	} else {
     		try {
 				while (rs.next()) {
-				    mPriorities.put(rs.getString(2), rs.getInt(3));
+				    mPriorities.put(rs.getString("des_user"), rs.getInt("priority"));
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
