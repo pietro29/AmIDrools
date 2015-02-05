@@ -3,13 +3,13 @@ package utility;
 import java.io.ObjectInputStream.GetField;
 import java.sql.*;
 
-public class SQLiteJDBC {
+public final class SQLiteJDBC {
 	
-	public SQLiteJDBC() {
+	private SQLiteJDBC() {
 		
 	}
 	
-	public Connection getConnection(){
+	public static Connection getConnection(){
 		Connection c=null;
 		try {
 		      Class.forName("org.sqlite.JDBC");
@@ -23,9 +23,9 @@ public class SQLiteJDBC {
 	}
 
 	
-	public boolean executeUpdate(String sql){
+	public static boolean executeUpdate(String sql){
 		Statement stmt = null;
-		Connection conn = this.getConnection();
+		Connection conn = SQLiteJDBC.getConnection();
 		try {
 			stmt = conn.createStatement();
 			stmt.executeUpdate(sql);
@@ -38,12 +38,12 @@ public class SQLiteJDBC {
 		      return false;
 		} 
 	}
-	public ResultSet retrieveData(String statement){
+	public static ResultSet retrieveData(String statement){
 		Connection conn = null;
 		ResultSet rs = null;
 		Statement stmt = null;
 		try {
-				conn = this.getConnection();
+				conn = SQLiteJDBC.getConnection();
 				System.out.println("Connected to database");
 			} catch (Exception e) {
 				System.out.println("ERROR: Could not connect to the database");
