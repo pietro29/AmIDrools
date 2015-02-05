@@ -79,7 +79,7 @@ public class HueLight implements java.io.Serializable{
              System.err.println(connection.getResponseCode());
 			
 		} catch (Exception e) {
-			System.out.println("ERRORE nella scrittura d");
+			System.out.println("HUE web service error");
 		}
          
      }
