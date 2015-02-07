@@ -537,6 +537,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 					System.out.println("Non ho scritto");
 					e1.getStackTrace();
 				}
+        		String sql = "insert into users (des_user,priority)" + 
+						" values(" + 
+						"'" + txtInsertUser.getText().toString() + "'" + 
+						"," +
+						txtInsertPriority.getText().toString() +
+						")";
+        		SQLiteJDBC.executeUpdate(sql, 0);
         		txtInsertPriority.setText("");
         		txtInsertUser.setText("");
         	}
