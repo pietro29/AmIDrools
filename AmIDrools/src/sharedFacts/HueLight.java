@@ -26,6 +26,9 @@ public class HueLight implements java.io.Serializable{
     	this.id=id;
     	this.deviceNumber=deviceNumber;
     }
+    public HueLight(String id){
+    	this.id=id;
+    }
     public String getId() {
         return this.id;
     }

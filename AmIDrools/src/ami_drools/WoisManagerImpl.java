@@ -248,12 +248,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         startUserInterface(name);
         
         //Connect to MySQL db
-        DBTool dbt = new DBTool();
-        String connectionMessage=dbt.dbConnected();
+        //DBTool dbt = new DBTool();
+        //String connectionMessage=dbt.dbConnected();
         
         writeTextAreaLog("Creazione della rete " + name);
         writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
-        writeTextAreaLog(connectionMessage);
+        //writeTextAreaLog(connectionMessage);
     }
     /**
      * Load GUI
@@ -979,7 +979,9 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	int id_modelinstance = 0;
     	ResultSet rs = null;
     	ResultSet rsDevice=null;
-    	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
+    	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance " +
+    							",mi.des_modelinstance " +
+    							", m.des_model " +
     							"from modelsinstances mi " +
     							"join models m on m.id_model=mi.id_model " + 
     							"where m.id_user is null ;", 0);
@@ -1007,13 +1009,14 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    		"where mi.id_modelinstance=" + id_modelinstance + ";", 0);
 				    
 				    
-				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance),rs.getString(2));
+				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance));
 			        mDevices.put(lampadina.getId(), lampadina);
-			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString(5));
+			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString("des_model"));
 				    while (rsDevice.next()) {
-				    	if(! rsDevice.getString(9).equals("id")){
-				    		lampadina.updateField(rsDevice.getString(9), rsDevice.getString(14));
-				    		fatto.insertAttributeValue(rsDevice.getString(9), rsDevice.getString(10), rsDevice.getString(14));
+				    	System.out.println("---->" + rsDevice.getString("value_attribute"));
+				    	if(! rsDevice.getString("des_attribute").equals("id")){
+				    		lampadina.updateField(rsDevice.getString("des_attribute"), rsDevice.getString("value_attribute"));
+				    		fatto.insertAttributeValue(rsDevice.getString("des_attribute"), rsDevice.getString("type_attribute"), rsDevice.getString("value_attribute"));
 				    	}
 				    }
 				  //Aggiungo gli oggetti al vettore dei fatti condivisi
