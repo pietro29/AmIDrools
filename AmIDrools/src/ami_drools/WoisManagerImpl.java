@@ -173,37 +173,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         
-         /* Per simulatore
-        //DEVICE 1
-        lampadina = new Lampadina("1","lampadina1",true,true);
-        mDevices.put(lampadina.getId(), lampadina);
-        
-        Fact fatto = new Fact("1","Lampadina");
-        fatto.insertAttributeValue("codice", "String", "lampadina1");
-        fatto.insertAttributeValue("accesa", "Boolean", "true");
-        fatto.insertAttributeValue("spenta", "Boolean", "true");
-        
-      //Aggiungo gli oggetti al vettore dei fatti condivisi
-        sharedFacts.add(fatto);
-        mFacts.put(fatto.getId(), fatto);
-        
-        locks.put(fatto.getId(),new Lock(fatto.getId()) );
-        
-        //DEVICE 2
-        lampadina2 = new Lampadina("2","lampadina2",true,true);
-        mDevices.put(lampadina2.getId(), lampadina2);
-        
-        Fact fatto2 = new Fact("2","Lampadina");
-        fatto2.insertAttributeValue("codice", "String", "lampadina2");
-        fatto2.insertAttributeValue("accesa", "Boolean", "true");
-        fatto2.insertAttributeValue("spenta", "Boolean", "true");
-        
-        sharedFacts.add(fatto2);
-        mFacts.put(fatto2.getId(), fatto2);
-        
-        locks.put(fatto2.getId(),new Lock(fatto2.getId()) );
-        */
-        
         //Load registered devices
         getDevice();
         
