@@ -47,14 +47,14 @@ public final class rulesSQL {
 	public static ResultSet getAttributeFromModels(int id_model)
 	{
 		String SQL = new String("");
-		SQL+="select id_template, des_template, type_attribute from templates where id_model="+id_model;
+		SQL+="select id_attribute, des_attribute, type_attribute from attributes where id_model="+id_model;
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
 	public static ResultSet getTypeOfAttributes(int id_template)
 	{
 		String SQL = new String("");
-		SQL+="select type_attribute from templates where id_template="+id_template;
+		SQL+="select type_attribute from attributes where id_attribute="+id_template;
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 }
