@@ -956,7 +956,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     							", m.des_model " +
     							"from modelsinstances mi " +
     							"join models m on m.id_model=mi.id_model " + 
-    							"where m.id_user is null ;", 0);
+    							"where m.id_user=0 ;", 0);
     	if (rs==null){
     		System.out.println("Table devices is empty");
     	} else {
