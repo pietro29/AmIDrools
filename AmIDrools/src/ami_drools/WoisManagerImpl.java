@@ -800,6 +800,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 					try {
 						cls = Class.forName("sharedFacts." + tempFactType);
 						HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
+						l.getStatus();
 						 tempVal.set(i, l.getUpdatedField(tempAttr.get(i)));
 						break;
 					} catch (ClassNotFoundException e) {

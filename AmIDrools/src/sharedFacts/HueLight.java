@@ -1,8 +1,16 @@
 package sharedFacts;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Iterator;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 
 public class HueLight implements java.io.Serializable{
 
@@ -54,6 +62,7 @@ public class HueLight implements java.io.Serializable{
      }
      
      public Boolean getisOn() {
+    	 getStatus();
          return this.isOn;
      }
 
@@ -100,7 +109,6 @@ public class HueLight implements java.io.Serializable{
      private void executeMessage(String message) {
     	 try {
     	 URL url = new URL("http://localhost:8000/api/newdeveloper/lights/"+ this.deviceNumber +"/state");
-    	 System.out.println(url + " - " + message);
          HttpURLConnection connection = (HttpURLConnection) url.openConnection();
          connection.setRequestMethod("PUT");
          connection.setDoOutput(true);
@@ -112,8 +120,60 @@ public class HueLight implements java.io.Serializable{
          osw.close();
          System.err.println(connection.getResponseCode());
     	 } catch (Exception e) {
- 			System.out.println("HUE web service error");
+ 			System.out.println("HUE web service error set");
  		}
+     }
+     public void getStatus(){
+    	 try {
+    		
+    		 String url = "http://localhost:8000/api/newdeveloper/lights/"+ this.deviceNumber;
+    		 
+ 			URL obj = new URL(url);
+ 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+ 	 
+ 			// optional default is GET
+ 			con.setRequestMethod("GET");
+ 	 
+ 			//add request header
+ 			//con.setRequestProperty("User-Agent", USER_AGENT);
+ 	 
+ 			int responseCode = con.getResponseCode();
+ 			System.out.println("\nSending 'GET' request to URL : " + url);
+ 			System.out.println("Response Code : " + responseCode);
+ 	 
+ 			BufferedReader in = new BufferedReader(
+ 			        new InputStreamReader(con.getInputStream()));
+ 			String inputLine;
+ 			StringBuffer response = new StringBuffer();
+ 	 
+ 			while ((inputLine = in.readLine()) != null) {
+ 				response.append(inputLine);
+ 			}
+ 			in.close();
+ 	 
+ 			JSONParser jsonParser = new JSONParser();
+       	 
+ 			JSONObject jsonObject = (JSONObject) jsonParser.parse(response.toString());
+	 		
+ 			// handle a structure into the json object
+ 			JSONObject structure = (JSONObject) jsonObject.get("state");
+ 			
+ 			
+ 			this.isOn = (Boolean) structure.get("on");
+ 			
+ 			long brightness = (long) structure.get("bri");
+ 			
+	       	this.brightness=(int) brightness;
+	       	
+	       	long colorTemperature= (long) structure.get("ct");
+	       	
+	       	this.colorTemperature=(int) colorTemperature;
+	       	
+ 			//print result
+ 			//System.out.println(response.toString());
+    	 } catch (Exception e) {
+			System.out.println("HUE web service error get");
+		}
      }
      /**
       * Update attribute value from Fact class vector
