@@ -8,7 +8,7 @@ import java.sql.*;
  */
 public final class SQLiteJDBC {
 	/**
-	 * empty
+	 * empty constructor
 	 */
 	private SQLiteJDBC() {
 		
