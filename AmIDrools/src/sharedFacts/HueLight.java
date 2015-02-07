@@ -59,12 +59,28 @@ public class HueLight implements java.io.Serializable{
 
      public void setBrightness(int brightness){
     	 this.brightness=brightness;
+    	 this.brightness = this.brightness < 0 ? 0 : this.brightness;
+ 		this.brightness = this.brightness > 255 ? 255 : this.brightness;
+
+ 		if (this.brightness > 0) {
+ 			this.isOn = true;
+ 			executeMessage("{\"bri\":" + this.brightness + ",\"on\":true}");
+ 		} else {
+ 			this.isOn = false;
+ 			executeMessage("{\"on\":false}");
+ 		}
      }
      public int getBrightness(){
     	 return this.brightness;
      }
      public void setColorTemperature(int colorTemperature){
     	 this.colorTemperature=colorTemperature;
+    	 this.colorTemperature = this.colorTemperature < 154 ? 154
+ 				: this.colorTemperature;
+ 		this.colorTemperature = this.colorTemperature > 500 ? 500
+ 				: this.colorTemperature;
+
+ 		executeMessage("{\"ct\":" + this.colorTemperature + "}");
      }
      public int getColorTemperature(){
     	 return this.colorTemperature;
@@ -75,23 +91,29 @@ public class HueLight implements java.io.Serializable{
       */
      public void setisOn(Boolean isOn) {
          this.isOn = isOn;
-         try {
-        	 URL url = new URL("http://localhost:8000/api/newdeveloper/lights/"+ this.deviceNumber +"/state");
-             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-             connection.setRequestMethod("PUT");
-             connection.setDoOutput(true);
-             connection.setRequestProperty("Content-Type", "application/json");
-             connection.setRequestProperty("Accept", "application/json");
-             OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream());
-             osw.write("{\"on\":" + isOn + "}");
-             osw.flush();
-             osw.close();
-             System.err.println(connection.getResponseCode());
-			
-		} catch (Exception e) {
-			System.out.println("HUE web service error");
-		}
-         
+         executeMessage("{\"on\":" + String.valueOf(isOn) + "}");
+     }
+     /**
+      * Send Hue Bridge message command
+      * @param message Json format
+      */
+     private void executeMessage(String message) {
+    	 try {
+    	 URL url = new URL("http://localhost:8000/api/newdeveloper/lights/"+ this.deviceNumber +"/state");
+    	 System.out.println(url + " - " + message);
+         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+         connection.setRequestMethod("PUT");
+         connection.setDoOutput(true);
+         connection.setRequestProperty("Content-Type", "application/json");
+         connection.setRequestProperty("Accept", "application/json");
+         OutputStreamWriter osw = new OutputStreamWriter(connection.getOutputStream());
+         osw.write(message);
+         osw.flush();
+         osw.close();
+         System.err.println(connection.getResponseCode());
+    	 } catch (Exception e) {
+ 			System.out.println("HUE web service error");
+ 		}
      }
      /**
       * Update attribute value from Fact class vector
