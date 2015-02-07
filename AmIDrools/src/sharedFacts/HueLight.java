@@ -12,6 +12,9 @@ public class HueLight implements java.io.Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	private String id;
+	/**
+	 * Hue Device Number
+	 */
 	private String deviceNumber;
     private Boolean isOn;
     private int brightness = 0; // possible values are 0 - 255
@@ -26,6 +29,10 @@ public class HueLight implements java.io.Serializable{
     	this.id=id;
     	this.deviceNumber=deviceNumber;
     }
+    /**
+     * 
+     * @param id get from db
+     */
     public HueLight(String id){
     	this.id=id;
     }
@@ -107,7 +114,7 @@ public class HueLight implements java.io.Serializable{
     	 }
      }
      /**
-      * 
+      * Method to update shared Facts vector
       * @param field name
       * @return updated value
       */

@@ -251,6 +251,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         //DBTool dbt = new DBTool();
         //String connectionMessage=dbt.dbConnected();
         
+        
         writeTextAreaLog("Creazione della rete " + name);
         writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
         //writeTextAreaLog(connectionMessage);
@@ -979,6 +980,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	int id_modelinstance = 0;
     	ResultSet rs = null;
     	ResultSet rsDevice=null;
+    	//modelsinstancesSelectextended.sql
     	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance " +
     							",mi.des_modelinstance " +
     							", m.des_model " +
@@ -991,7 +993,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     		try {
 				while (rs.next()) {
 				    id_modelinstance=rs.getInt("id_modelinstance");
-				    
+				    //modelsinstancesSelectAttributesValues.sql
 				    rsDevice = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
 				    		"mi.id_model, " +
 				    		"mi.des_modelinstance, " +
@@ -1013,7 +1015,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			        mDevices.put(lampadina.getId(), lampadina);
 			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString("des_model"));
 				    while (rsDevice.next()) {
-				    	System.out.println("---->" + rsDevice.getString("value_attribute"));
 				    	if(! rsDevice.getString("des_attribute").equals("id")){
 				    		lampadina.updateField(rsDevice.getString("des_attribute"), rsDevice.getString("value_attribute"));
 				    		fatto.insertAttributeValue(rsDevice.getString("des_attribute"), rsDevice.getString("type_attribute"), rsDevice.getString("value_attribute"));
@@ -1034,22 +1035,29 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public String getSharedTemplates(){
     	String s="";
     	StringBuilder sb = new StringBuilder();
-    	DBTool dbt = new DBTool();
+    	//DBTool dbt = new DBTool();
     	int id_model = 0;
     	ResultSet rs = null;
     	ResultSet rsTemplate=null;
-    	rs = dbt.retrieveData("select * from amidrools.models;");
+    	//modelsSelectshared.sql
+    	rs = SQLiteJDBC.retrieveData("select id_model" +
+								", des_model " + 
+								"from models " +  
+								"where id_user is null;", 0);
     	if (rs==null){
-    		System.out.println("Table users is empty");
+    		System.out.println("Table models is empty");
     	} else {
     		try {
 				while (rs.next()) {
-				    id_model=rs.getInt(1);
-				    sb.append("declare " + rs.getString(2));
+				    id_model=rs.getInt("id_model");
+				    sb.append("declare " + rs.getString("des_model"));
 			    	sb.append(System.lineSeparator());
-				    rsTemplate = dbt.retrieveData("select * from amidrools.templates t where t.id_model=" + id_model + ";");
+			    	//attributesSelectModels.sql
+				    rsTemplate = SQLiteJDBC.retrieveData("select * " +
+				    									" from attributes a " +
+				    									" where a.id_model=" + id_model + ";",0);
 				    while (rsTemplate.next()) {
-				    	sb.append(rsTemplate.getString(3) + " : " + rsTemplate.getString(4));
+				    	sb.append(rsTemplate.getString("des_attribute") + " : " + rsTemplate.getString("type_attribute"));
 				    	sb.append(System.lineSeparator());
 				    }
 				    sb.append("modificati : " + "java.util.List");
@@ -1058,12 +1066,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			    	sb.append(System.lineSeparator());
 				}
 				s = sb.toString();
+				
 			} catch (SQLException e) {
-				System.out.println("Database connection error");
-				s = getStringFromFile("shared_declare.txt");
+				System.out.println("Database connection error (shared declares query)");
+				//s = getStringFromFile("shared_declare.txt");
 			}
     	}
-    	//System.out.println(s);
     	return s;
     }
     public String getSharedFunctions(){
