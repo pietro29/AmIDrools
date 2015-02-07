@@ -99,7 +99,7 @@ public final class SQLiteJDBC {
 		try{
 			stmt = conn.createStatement();
 		    rs = stmt.executeQuery(statement);
-		    conn.close();
+		    //conn.close();
 		    return rs;
 		} catch (Exception e) {
 			System.out.println("ERROR: Could not executed query");
