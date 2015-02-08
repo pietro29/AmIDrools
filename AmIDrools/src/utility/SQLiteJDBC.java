@@ -8,7 +8,7 @@ import java.sql.*;
  */
 public final class SQLiteJDBC {
 	/**
-	 * empty
+	 * empty constructor
 	 */
 	private SQLiteJDBC() {
 		
@@ -113,6 +113,7 @@ public final class SQLiteJDBC {
 		try{
 			stmt = conn.createStatement();
 		    rs = stmt.executeQuery(statement);
+		    //conn.close();
 		    return rs;
 		} catch (Exception e) {
 			System.out.println("ERROR: Could not executed query");

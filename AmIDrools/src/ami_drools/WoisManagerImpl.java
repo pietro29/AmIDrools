@@ -173,37 +173,6 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
                 }
         }
         
-         /* Per simulatore
-        //DEVICE 1
-        lampadina = new Lampadina("1","lampadina1",true,true);
-        mDevices.put(lampadina.getId(), lampadina);
-        
-        Fact fatto = new Fact("1","Lampadina");
-        fatto.insertAttributeValue("codice", "String", "lampadina1");
-        fatto.insertAttributeValue("accesa", "Boolean", "true");
-        fatto.insertAttributeValue("spenta", "Boolean", "true");
-        
-      //Aggiungo gli oggetti al vettore dei fatti condivisi
-        sharedFacts.add(fatto);
-        mFacts.put(fatto.getId(), fatto);
-        
-        locks.put(fatto.getId(),new Lock(fatto.getId()) );
-        
-        //DEVICE 2
-        lampadina2 = new Lampadina("2","lampadina2",true,true);
-        mDevices.put(lampadina2.getId(), lampadina2);
-        
-        Fact fatto2 = new Fact("2","Lampadina");
-        fatto2.insertAttributeValue("codice", "String", "lampadina2");
-        fatto2.insertAttributeValue("accesa", "Boolean", "true");
-        fatto2.insertAttributeValue("spenta", "Boolean", "true");
-        
-        sharedFacts.add(fatto2);
-        mFacts.put(fatto2.getId(), fatto2);
-        
-        locks.put(fatto2.getId(),new Lock(fatto2.getId()) );
-        */
-        
         //Load registered devices
         getDevice();
         
@@ -248,12 +217,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         startUserInterface(name);
         
         //Connect to MySQL db
-        DBTool dbt = new DBTool();
-        String connectionMessage=dbt.dbConnected();
+        //DBTool dbt = new DBTool();
+        //String connectionMessage=dbt.dbConnected();
+        
         
         writeTextAreaLog("Creazione della rete " + name);
         writeTextAreaLog("Hostname: " + System.getProperty("java.rmi.server.hostname"));
-        writeTextAreaLog(connectionMessage);
+        //writeTextAreaLog(connectionMessage);
     }
     /**
      * Load GUI
@@ -567,6 +537,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 					System.out.println("Non ho scritto");
 					e1.getStackTrace();
 				}
+        		String sql = "insert into users (des_user,priority)" + 
+						" values(" + 
+						"'" + txtInsertUser.getText().toString() + "'" + 
+						"," +
+						txtInsertPriority.getText().toString() +
+						")";
+        		SQLiteJDBC.executeUpdate(sql, 0);
         		txtInsertPriority.setText("");
         		txtInsertUser.setText("");
         	}
@@ -830,6 +807,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 					try {
 						cls = Class.forName("sharedFacts." + tempFactType);
 						HueLight l = (HueLight) cls.cast(mDevices.get(fact.getId()));
+						l.getStatus();
 						 tempVal.set(i, l.getUpdatedField(tempAttr.get(i)));
 						break;
 					} catch (ClassNotFoundException e) {
@@ -979,17 +957,21 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	int id_modelinstance = 0;
     	ResultSet rs = null;
     	ResultSet rsDevice=null;
-    	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
+    	//modelsinstancesSelectextended.sql
+    	rs = SQLiteJDBC.retrieveData("select mi.id_modelinstance " +
+    							",mi.des_modelinstance " +
+    							", m.des_model " +
     							"from modelsinstances mi " +
     							"join models m on m.id_model=mi.id_model " + 
-    							"where m.id_user is null ;", 0);
+    							"where m.id_user=0;", 0);
+    	
     	if (rs==null){
     		System.out.println("Table devices is empty");
     	} else {
     		try {
 				while (rs.next()) {
 				    id_modelinstance=rs.getInt("id_modelinstance");
-				    
+				    //modelsinstancesSelectAttributesValues.sql
 				    rsDevice = SQLiteJDBC.retrieveData("select mi.id_modelinstance, " +
 				    		"mi.id_model, " +
 				    		"mi.des_modelinstance, " +
@@ -1007,13 +989,13 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    		"where mi.id_modelinstance=" + id_modelinstance + ";", 0);
 				    
 				    
-				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance),rs.getString(2));
+				    HueLight lampadina = new HueLight(String.valueOf(id_modelinstance));
 			        mDevices.put(lampadina.getId(), lampadina);
-			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString(5));
+			        Fact fatto = new Fact(String.valueOf(id_modelinstance),rs.getString("des_model"));
 				    while (rsDevice.next()) {
-				    	if(! rsDevice.getString(9).equals("id")){
-				    		lampadina.updateField(rsDevice.getString(9), rsDevice.getString(14));
-				    		fatto.insertAttributeValue(rsDevice.getString(9), rsDevice.getString(10), rsDevice.getString(14));
+				    	if(! rsDevice.getString("des_attribute").equals("id")){
+				    		lampadina.updateField(rsDevice.getString("des_attribute"), rsDevice.getString("value_attribute"));
+				    		fatto.insertAttributeValue(rsDevice.getString("des_attribute"), rsDevice.getString("type_attribute"), rsDevice.getString("value_attribute"));
 				    	}
 				    }
 				  //Aggiungo gli oggetti al vettore dei fatti condivisi
@@ -1031,22 +1013,29 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     public String getSharedTemplates(){
     	String s="";
     	StringBuilder sb = new StringBuilder();
-    	DBTool dbt = new DBTool();
+    	//DBTool dbt = new DBTool();
     	int id_model = 0;
     	ResultSet rs = null;
     	ResultSet rsTemplate=null;
-    	rs = dbt.retrieveData("select * from amidrools.models;");
+    	//modelsSelectshared.sql
+    	rs = SQLiteJDBC.retrieveData("select id_model" +
+								", des_model " + 
+								"from models " +  
+								"where id_user is null;", 0);
     	if (rs==null){
-    		System.out.println("Table users is empty");
+    		System.out.println("Table models is empty");
     	} else {
     		try {
 				while (rs.next()) {
-				    id_model=rs.getInt(1);
-				    sb.append("declare " + rs.getString(2));
+				    id_model=rs.getInt("id_model");
+				    sb.append("declare " + rs.getString("des_model"));
 			    	sb.append(System.lineSeparator());
-				    rsTemplate = dbt.retrieveData("select * from amidrools.templates t where t.id_model=" + id_model + ";");
+			    	//attributesSelectModels.sql
+				    rsTemplate = SQLiteJDBC.retrieveData("select * " +
+				    									" from attributes a " +
+				    									" where a.id_model=" + id_model + ";",0);
 				    while (rsTemplate.next()) {
-				    	sb.append(rsTemplate.getString(3) + " : " + rsTemplate.getString(4));
+				    	sb.append(rsTemplate.getString("des_attribute") + " : " + rsTemplate.getString("type_attribute"));
 				    	sb.append(System.lineSeparator());
 				    }
 				    sb.append("modificati : " + "java.util.List");
@@ -1055,12 +1044,12 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 			    	sb.append(System.lineSeparator());
 				}
 				s = sb.toString();
+				
 			} catch (SQLException e) {
-				System.out.println("Database connection error");
-				s = getStringFromFile("shared_declare.txt");
+				System.out.println("Database connection error (shared declares query)");
+				//s = getStringFromFile("shared_declare.txt");
 			}
     	}
-    	//System.out.println(s);
     	return s;
     }
     public String getSharedFunctions(){
