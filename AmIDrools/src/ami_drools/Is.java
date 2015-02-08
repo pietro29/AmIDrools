@@ -30,12 +30,14 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 
 import sharedFacts.HueLight;
+import utility.rulesSQL;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.ResultSet;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -713,7 +715,8 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==btCancellaRegolaPrivata)
 	    {
             try {
-            	deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
+            	//deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
+            	deleteRuleFromDB(tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -768,7 +771,7 @@ public class Is extends JFrame implements ActionListener{
             {
             	setSharedRuleTable(rows);
             }else{
-            	setPrivateRuleTable(rows);
+            	setPrivateRuleTable();
             }
             
         } catch(IOException e) {
@@ -776,16 +779,30 @@ public class Is extends JFrame implements ActionListener{
         }
 	}
     
-    private void setPrivateRuleTable(Vector<String> rows)
+    private void setPrivateRuleTable()
     {
     	DefaultTableModel model = new DefaultTableModel();  
     	// Create a column 
-    	model.addColumn("Rule"); 
-    	for(int i=0;i<rows.size();i++)
-    	{	// Append a row 
-        	model.addRow(new Object[]{rows.get(i)});
-        }
+    	model.addColumn("Rule");
+    	try {
+    		ResultSet rs;
+    		rs=rulesSQL.getRules();
+    		if (rs==null){
+    			System.out.println("Models not found");
+        	} else {
+			while(rs.next())
+	    	{	// Append a row 
+	        	model.addRow(new Object[]{rs.getString("name")});
+	        }
+        	}rs.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			
+		}
+    	model.fireTableDataChanged();
     	tbPrivateRules = new JTable(model);
+    	tbPrivateRules.repaint();
+    	
     	
     }
     
@@ -829,11 +846,17 @@ public class Is extends JFrame implements ActionListener{
 			}catch (IOException e) {
 			    //exception handling left as an exercise for the reader
 			}
-            setPrivateRuleTable(rows);
+            setPrivateRuleTable();
         } catch(IOException e) {
             
         }
 	}
+    
+    private void deleteRuleFromDB(String ruleName)
+   	{
+    	rulesSQL.deleteRules(ruleName);
+   		setPrivateRuleTable();
+   	}
     private void updateInternalState(){
     	txtBatteria.setText(Integer.valueOf(battery.getLevel()).toString());
     	if (position.getCodice().toLowerCase().equals("soggiorno"))

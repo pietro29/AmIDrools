@@ -247,7 +247,7 @@ public class IsNewRule extends JFrame implements ActionListener{
     				} catch (SQLException e) {
     					System.out.println("Database connection error");
     				}
-    	    	}
+    	    	}rs.close();
     			if(attribute.size()>0)
     			{
     				if (cbAttributo!=null)
@@ -285,7 +285,7 @@ public class IsNewRule extends JFrame implements ActionListener{
     				} catch (SQLException e) {
     					System.out.println("Database connection error");
     				}
-    	    	}
+    	    	}rs.close();
     			if(attribute.size()>0)
     			{
     				if (cbAttributoTHEN!=null)
@@ -335,7 +335,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    				} catch (SQLException e) {
 	    					System.out.println("Database connection error");
 	    				}
-	    	    	}
+	    	    	}rs.close();
 	    			if(op.size()>0)
 	    			{
 	    				if (cbOperatore!=null)
@@ -370,7 +370,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    	    	} else {
 	    	    		op.add(new ComboItem(0, "notify"));
 						op.add(new ComboItem(0, "="));
-	    	    	}
+	    	    	}rs.close();
 	    			if(op.size()>0)
 	    			{
 	    				if (cbOperatoreTHEN!=null)
@@ -409,7 +409,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 							String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
 	    	    			inserire=checkAttributeType(typeAttr,txtValore);
 	    	    		}
-					}
+					}rs.close();
 				} catch (Exception e) {
 				}
             	String value = new String(txtValore.getText());
@@ -439,7 +439,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 							String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
 	    	    			inserire=checkAttributeType(typeAttr,txtValoreTHEN);
 	    	    		}
-					}
+					}rs.close();
 				} catch (Exception e) {
 				}
             	String value = new String(txtValoreTHEN.getText());
@@ -633,7 +633,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 									ifString+="setLock("+var+".getId(),$wi,ISName) && ";
 									oldMod=new String(mod);
 								}	
-							}
+							}rs.close();
 						} catch (SQLException e) {
 						}
 	        				            			
@@ -650,7 +650,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    		String op=actions.get(i).getOp();
 	    		String value=actions.get(i).getValue();
 	    		String var = new String("$"+mod.toLowerCase());
-	    		if(op.equals("scrivi"))
+	    		if(op.equals("notify"))
 	        	{ //print some text
 	        		newRule+="\t txtArea.append(\""+ value +"\"+"+var+".get"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"()+\"\\n\");\n";
 	        	}else{//modify an attribute

@@ -1,6 +1,8 @@
 package utility;
 
 import java.sql.*;
+
+import javax.swing.JOptionPane;
 /**
  * SQLite management class
  * @author 
@@ -69,18 +71,25 @@ public final class SQLiteJDBC {
 	public static int executeUpdate_Insert(String sql, int db){
 		Statement stmt = null;
 		Connection conn = SQLiteJDBC.getConnection(db);
-		ResultSet rs=null;
+		//ResultSet rs=null;
 		int id=0;
 		try {
+			
 			stmt = conn.createStatement();
-			stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+			/*stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 			rs = stmt.getGeneratedKeys();
 		    if (rs.next()){
 		    	id=rs.getInt(1);
-		    }
+		    }*/
+			//conn.setAutoCommit(false);
+			System.err.println(sql);
+			stmt.executeUpdate(sql);
+			//conn.commit();
+			System.err.println(sql);
 		    stmt.close();
 		    conn.close();
 		    System.out.println("Query executed");
+		    JOptionPane.showMessageDialog(null, "Rule saved!");
 		    return id;
 		} catch ( Exception e ) {
 		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );

@@ -230,7 +230,9 @@ public class RuleRunner {
 	 */
 	private String getRule() throws RemoteException {
 		String s = "" ;
-		s+=getStringFromFile("resources/local_import.txt");//import the local class and the package
+		//s+=getStringFromFile("resources/local_import.txt");//import the local class and the package
+		s+=getPackageVariableforDRL();
+		s+=getModelsFromDBForDRL();//import the local class and the package
 		if (s.equals(""))
 		{
 			s="KB non caricato";
@@ -244,7 +246,8 @@ public class RuleRunner {
 		if (wois!=null) 
 			s+=wois.getSharedFactsFunctions();
 		s+="\n";
-		s+=getStringFromFile("resources/local_rules.txt");//import the rules that use local variable (no declare needed)
+		//s+=getStringFromFile("resources/local_rules.txt");//import the rules that use local variable (no declare needed)
+		s+=getRulesFromDBForDRL();//import the rules that use local variable (no declare needed)
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
 		if (wois!=null)
@@ -253,33 +256,167 @@ public class RuleRunner {
 		}
 			
 		System.out.println(s);
-		//get rule condition
-		try {
-			ResultSet rs;
-			rs=rulesSQL.getRulesConditions(0);
-			if (rs==null){
-				System.out.println("Conditions not found");
-			} else {
-				System.err.println(rs);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-		}
-		//get rule action
-		try {
-			ResultSet rs;
-			rs=rulesSQL.getRulesActions(0);
-			if (rs==null){
-				System.out.println("Actions not found");
-			} else {
-				System.err.println(rs);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-		}
 		return s;
 	}
 
+	private String getPackageVariableforDRL()
+	{
+		String s = new String("");
+		s+="package rules \n";
+		s+="import ami_drools.Wois; \n";
+		s+="global String ISName; \n";
+		s+="global java.awt.TextArea txtArea; \n";
+		return s;
+	}
+	
+	private String getModelsFromDBForDRL(){
+		String s = new String("");
+		ResultSet rs;
+		rs=rulesSQL.getModels();
+		if (rs==null){
+    		System.out.println("Models not found");
+    	} else {
+    		try {
+				while (rs.next()) {
+					s+="declare " + rs.getString("des_model") +"\n";
+					ResultSet rsAtt;
+					rsAtt=rulesSQL.getAttributeFromModels(rs.getInt("id_model"));
+					if (rsAtt==null){
+			    		System.out.println("Attribute of the model not found");
+			    	} else {
+			    		try {
+							while (rsAtt.next()) {
+								s+="\t " + rsAtt.getString("des_attribute") + ":\t "+rsAtt.getString("type_attribute")+"\n";
+							}
+							s+="\t modificati:\t java.util.List\n";
+							s+="\t _privateVisibility:\t Boolean\n";
+							s+="end\n";
+			    		}catch (Exception e) {
+							// TODO: handle exception
+							return "";
+						}
+			    	}rsAtt.close();
+				}rs.close();
+    		}
+			catch (Exception e) {
+					// TODO: handle exception
+				return "";
+			}
+		}
+		return s;
+	}
+	
+	private String getRulesFromDBForDRL(){
+		String s = new String("");
+		ResultSet rs;
+		rs=rulesSQL.getRules();
+		if (rs==null){
+    		System.out.println("Rules not found");
+    	} else {
+    		try {
+				while (rs.next()) {
+					s+="rule \"" + rs.getString("name") +"\"\n";
+					s+="when\n";//load condition
+					ResultSet rsCond;
+					rsCond=rulesSQL.getRulesConditionsFacts(rs.getInt("id_rule"));
+					if (rsCond==null){
+			    		System.out.println("Condition of the rule not found");
+			    		return "";
+			    	} else {
+			    		try {
+							while (rsCond.next()) {
+								s+="\t $" + rsCond.getString("var_name") + ":"+rsCond.getString("des_model")+"(";
+								ResultSet rsCondDetails;
+								rsCondDetails=rulesSQL.getRulesConditionsFactsDetails(rsCond.getInt("id_ruleiffact"));
+								if (rsCondDetails==null){
+						    		System.out.println("Condition of the rule not found");
+						    		return "";
+						    	} else {
+						    		try {int i=0;
+										while (rsCondDetails.next()) {
+											if (i>0) s+=",";
+											s+=rsCondDetails.getString("des_attribute") +rsCondDetails.getString("operation")+rsCondDetails.getString("value");
+											i=1;
+										}
+										s+=")";
+						    		}catch (Exception e) {
+										// TODO: handle exception
+						    			e.printStackTrace();
+										return "";
+									}
+						    	}rsCondDetails.close();
+								
+							}
+							s+="\n";
+			    		}catch (Exception e) {
+							// TODO: handle exception
+			    			e.printStackTrace();
+							return "";
+						}
+			    	}rsCond.close();
+					s+="then\n";//load action
+					ResultSet rsAct;
+					rsAct=rulesSQL.getRulesActionsFacts(rs.getInt("id_rule"));
+					if (rsAct==null){
+			    		System.out.println("Condition of the rule not found");
+			    		return "";
+			    	} else {
+			    		try {
+							while (rsAct.next()) {
+								
+								ResultSet rsActDetails;
+								rsActDetails=rulesSQL.getRulesActionsFactsDetails(rsAct.getInt("id_rulethenfact"));
+								if (rsActDetails==null){
+						    		System.out.println("Condition of the rule not found");
+						    		return "";
+						    	} else {
+						    		try {int i=0;
+										while (rsActDetails.next()) {
+											String var=new String("$"+rsAct.getString("var_name"));
+											String value=new String(rsActDetails.getString("value"));
+											String att=new String(rsActDetails.getString("des_attribute"));
+											if(rsActDetails.getString("operation").equals("notify"))
+								        	{ //print some text
+												s+="\t txtArea.append(\""+ value +"\"+"+var+".get"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"()+\"\\n\");\n";
+								        	}else{//modify an attribute
+								        		/*
+								        		 * if(setLock($f.getId(),$wi,ISName))
+													{
+														modify($f) {setAccesa(false)};
+														$f.getModificati().add(new String("accesa"));
+													}*/
+								        		s+="\t\t modify("+var+") {set"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"("+value+")};\n";
+								        		s+="\t\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
+								        	}
+										}
+										rsActDetails.close();
+						    		}catch (Exception e) {
+										// TODO: handle exception
+						    			e.printStackTrace();
+										s="";
+									}
+						    	}
+								
+							}rsAct.close();
+			    		}catch (Exception e) {
+							// TODO: handle exception
+			    			e.printStackTrace();
+							s="";
+						}
+			    	}
+					s+="end";
+					
+				}rs.close();
+				
+    		}
+			catch (Exception e) {
+					// TODO: handle exception
+				return "";
+			}
+		}
+		return s;
+	}
+	
 	/**
 	 * Returns the string that represent a the content of a specific file
 	 * 
