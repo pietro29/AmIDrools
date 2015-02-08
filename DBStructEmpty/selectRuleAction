@@ -1,0 +1,7 @@
+select R.name,M.des_model,RTF.var_name,A.des_attribute,RTFD.operation,RTFD.value
+from rules R
+left join rulesthen RT on RT.id_rule=R.id_rule
+left join rulesthenfacts RTF on RTF.id_rulethen=RT.id_rulethen
+left join rulesthenfactsdetails RTFD on RTFD.id_rulethenfact=RTF.id_rulethenfact
+left join models M on M.id_model=RTF.id_model
+left join attributes A on A.id_attribute=RTFD.id_attribute

@@ -682,6 +682,7 @@ public class Is extends JFrame implements ActionListener{
             	IsNewRule IsNR = new IsNewRule(privateFacts, true);
             	IsNR.setTitle("New Rule");
             	IsNR.setSize(700, 500);
+            	IsNR.setLocationRelativeTo(null);
             	IsNR.setVisible(true);
             	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             } catch (Exception e) {

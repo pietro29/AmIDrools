@@ -1,5 +1,6 @@
 package ami_drools;
 
+import utility.ConditionActionItem;
 import utility.rulesSQL;
 import utility.ComboItem;
 
@@ -10,24 +11,18 @@ import javax.swing.JFrame;
 
 import java.awt.GridLayout;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JComboBox;
 
 import java.awt.FlowLayout;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -39,7 +34,7 @@ import java.awt.Color;
 import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.BoxLayout;
+
 
 public class IsNewRule extends JFrame implements ActionListener{
 
@@ -47,21 +42,20 @@ public class IsNewRule extends JFrame implements ActionListener{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Vector<String> factsType;
+	//private Vector<String> factsType;
 	private Boolean privFact;
-	private Vector<Fact> privateFacts;
+	//private Vector<Fact> privateFacts;
 	private Vector<ComboItem> declareType;
 	//private Vector<String> attributeType;
-	private Vector<String> attributeTypeTHEN;
-	//set 4 vector for the storage of the condition
-	private Vector<String> typeSelected;
-	private Vector<String> attributeSelected;
-	private Vector<String> attributeTypeSelected;
-	private Vector<String> opSelected;
-	private Vector<String> valueSelected;
+	//private Vector<String> attributeTypeTHEN;
+	//set vector for the storage of the condition
+	private Vector<ConditionActionItem> conditions;
+	//-----------------------------------
+	//set vector for the storage of the action
+	private Vector<ConditionActionItem> actions;
 	//-----------------------------------
 	private JTextField txtValore;
-	private Integer counter=0;
+	//private Integer counter=0;
 	JComboBox<ComboItem> cbTipologia;
 	JComboBox<ComboItem> cbAttributo;
 	JComboBox<ComboItem> cbOperatore;
@@ -75,7 +69,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private JComboBox<ComboItem> cbAttributoTHEN;
 	private JComboBox<ComboItem> cbOperatoreTHEN;
 	private JTextField txtValoreTHEN;
-	private JButton btAggiungiTHEN;
+	private JButton btAddAction;
 	private JPanel panelTHENResult;
 	private JTextPane txtResultTHEN;
 	private JPanel panelSaveRule;
@@ -83,16 +77,14 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private JTextField txtRuleName;
 	private JLabel lbnewRule;
 	private JButton btSaveRule;
+	private JButton btRefresh;
+	private JButton btUndoAction;
+	private JButton btUndoCondition;
 	public IsNewRule(Vector<Fact> privateFacts,Boolean privFact ) {
-		this.privateFacts=privateFacts;
+		
 		this.privFact=privFact;
-		
-		typeSelected=new Vector<String>();
-		attributeSelected=new Vector<String>();
-		attributeTypeSelected=new Vector<String>();
-		opSelected=new Vector<String>();
-		valueSelected=new Vector<String>();
-		
+		conditions=new Vector<ConditionActionItem>();
+		actions=new Vector<ConditionActionItem>();
 		getContentPane().setLayout(new GridLayout(2, 0, 0, 0));
 		getDeclareFromFacts();
 		JPanel panelIF = new JPanel();
@@ -128,9 +120,9 @@ public class IsNewRule extends JFrame implements ActionListener{
 		txtValoreTHEN.setColumns(10);
 		panelTHENContructor.add(txtValoreTHEN);
 		
-		btAggiungiTHEN = new JButton("Aggiungi");
-		panelTHENContructor.add(btAggiungiTHEN);
-		btAggiungiTHEN.addActionListener((ActionListener) this);
+		btAddAction = new JButton("Aggiungi");
+		panelTHENContructor.add(btAddAction);
+		btAddAction.addActionListener((ActionListener) this);
 		
 		panelTHENResult = new JPanel();
 		panelTHEN.add(panelTHENResult);
@@ -195,8 +187,22 @@ public class IsNewRule extends JFrame implements ActionListener{
 		btAddCondition.addActionListener((ActionListener) this);
 		cbAttributo.addActionListener((ActionListener) this);
 		cbTipologia.setSelectedIndex(0);
+		
+		btUndoCondition = new JButton("Undo");
+		panel_1.add(btUndoCondition);
+		btUndoCondition.addActionListener((ActionListener) this);
+		
 		cbTipologiaTHEN.setSelectedIndex(0);
+		
+		btUndoAction = new JButton("Undo");
+		panelTHENContructor.add(btUndoAction);
+		btUndoAction.addActionListener((ActionListener) this);
+		
 		txtRuleName.setText("New Rule 1");
+		
+		btRefresh = new JButton("Ricarica");
+		panelSaveRule.add(btRefresh);
+		btRefresh.addActionListener((ActionListener) this);
 	}
 
 	private void getDeclareFromFacts() {
@@ -236,57 +242,65 @@ public class IsNewRule extends JFrame implements ActionListener{
     	    	} else {
     	    		try {
     					while (rs.next()) {
-    						attribute.add(new ComboItem(rs.getInt("id_template"), rs.getString("des_template")));
+    						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
     					}
     				} catch (SQLException e) {
     					System.out.println("Database connection error");
     				}
     	    	}
-            	DefaultComboBoxModel model = new DefaultComboBoxModel(attribute.toArray());
-            	if (cbAttributo!=null)
-            	{
-            		cbAttributo.removeAllItems();
-            		cbAttributo.setModel(model);
-            		cbAttributo.setSelectedIndex(0);
-            	}
+    			if(attribute.size()>0)
+    			{
+    				if (cbAttributo!=null)
+	            	{
+	            		cbAttributo.removeAllItems();
+	            	}
+    				for(int i=0;i<attribute.size();i++)
+    				{
+    					cbAttributo.addItem(attribute.get(i));
+    				}
+	            	if (cbAttributo!=null)
+	            	{
+	            		cbAttributo.setSelectedIndex(0);
+	            	}
+    			}
             } catch (Exception e) {
             	e.printStackTrace();
             }
     	}
 		if (event.getSource()==cbTipologiaTHEN)
 	    {
-			Vector<String> attribute;
+			Vector<ComboItem> attribute=new Vector<ComboItem>();
             try {
-            	attribute=new Vector<String>();
-            	attributeTypeTHEN=new Vector<String>();
-            	String tipologia = new String(cbTipologiaTHEN.getSelectedItem().toString());
-            	//System.err.println(tipologia);
-            	boolean inserito = false;
-            	for (int j=0;j<privateFacts.size() && !inserito;j++)
-    			{//if i found an object of that type extract the attributes
-    				if (privateFacts.get(j).getFactType().equals(tipologia)){
-    					Fact fact=privateFacts.get(j);
-    					Vector <String> tempAttr = fact.getAttributes();
-    		    		Vector <String> tempAttrType = fact.getAttributesType();
-    		    		for (int i=0;i<tempAttr.size();i++){
-    		    			if(!tempAttr.get(i).equals("_privateVisibility"))
-    		    			{
-    		    				attribute.addElement(tempAttr.get(i));
-    		    				attributeTypeTHEN.addElement(tempAttrType.get(i));
-    		    			}
-    		    		}
-    		    		inserito=false;
-    				}
-    			}
-            	//System.err.println(attribute.toString());
+            	int id=((ComboItem)cbTipologiaTHEN.getSelectedItem()).getKey();         	
             	//populate combo box
-            	DefaultComboBoxModel model = new DefaultComboBoxModel(attribute.toArray());
-            	if (cbAttributoTHEN!=null)
-            	{
-            		cbAttributoTHEN.removeAllItems();
-            		cbAttributoTHEN.setModel(model);
-            		cbAttributoTHEN.setSelectedIndex(0);
-            	}
+            	ResultSet rs;
+    			rs=rulesSQL.getAttributeFromModels(id);
+    			if (rs==null){
+    	    		System.out.println("Table of template is empty");
+    	    	} else {
+    	    		try {
+    					while (rs.next()) {
+    						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
+    					}
+    				} catch (SQLException e) {
+    					System.out.println("Database connection error");
+    				}
+    	    	}
+    			if(attribute.size()>0)
+    			{
+    				if (cbAttributoTHEN!=null)
+	            	{
+    					cbAttributoTHEN.removeAllItems();
+	            	}
+    				for(int i=0;i<attribute.size();i++)
+    				{
+    					cbAttributoTHEN.addItem(attribute.get(i));
+    				}
+	            	if (cbAttributoTHEN!=null)
+	            	{
+	            		cbAttributoTHEN.setSelectedIndex(0);
+	            	}
+    			}
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -294,156 +308,175 @@ public class IsNewRule extends JFrame implements ActionListener{
 		if (event.getSource()==cbAttributo)
 	    {
 			Vector<ComboItem> op = new Vector<ComboItem>();
-            try {
-            	int id=((ComboItem)cbAttributo.getSelectedItem()).getKey();         	
-            	//populate combo box
-            	ResultSet rs;
-    			rs=rulesSQL.getTypeOfAttributes(id);
-    			if (rs==null){
-    	    		System.out.println("Type of attribute not found");
-    	    	} else {
-    	    		try {
-    					while (rs.next()) {
-    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
-    						{
-    							op.add(new ComboItem(0, "="));
-    							op.add(new ComboItem(0, "!="));
-    						}else{
-    							op.add(new ComboItem(0, "="));
-    							op.add(new ComboItem(0, "!="));
-    							op.add(new ComboItem(0, "<"));
-    							op.add(new ComboItem(0, "<="));
-    							op.add(new ComboItem(0, ">"));
-    							op.add(new ComboItem(0, ">="));
-    						}
-    						
-    					}
-    				} catch (SQLException e) {
-    					System.out.println("Database connection error");
-    				}
-    	    	}
-            	//populate combo box
-            	DefaultComboBoxModel model = new DefaultComboBoxModel(op.toArray());
-            	cbOperatore.removeAllItems();
-            	cbOperatore.setModel(model);
-            	cbOperatore.setSelectedIndex(0);
+			try {
+				if(cbAttributo.getSelectedItem()!=null){
+	            	int id=((ComboItem)cbAttributo.getSelectedItem()).getKey();         	
+	            	//populate combo box
+	            	ResultSet rs;
+	    			rs=rulesSQL.getTypeOfAttributes(id);
+	    			if (rs==null){
+	    	    		System.out.println("Type of attribute not found");
+	    	    	} else {
+	    	    		try {
+	    					while (rs.next()) {
+	    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
+	    						{
+	    							op.add(new ComboItem(0, "="));
+	    							op.add(new ComboItem(0, "!="));
+	    						}else{
+	    							op.add(new ComboItem(0, "="));
+	    							op.add(new ComboItem(0, "!="));
+	    							op.add(new ComboItem(0, "<"));
+	    							op.add(new ComboItem(0, "<="));
+	    							op.add(new ComboItem(0, ">"));
+	    							op.add(new ComboItem(0, ">="));
+	    						}
+	    					}
+	    				} catch (SQLException e) {
+	    					System.out.println("Database connection error");
+	    				}
+	    	    	}
+	    			if(op.size()>0)
+	    			{
+	    				if (cbOperatore!=null)
+		            	{
+	    					cbOperatore.removeAllItems();
+		            	}
+	    				for(int i=0;i<op.size();i++)
+	    				{
+	    					cbOperatore.addItem(op.get(i));
+	    				}
+		            	if (cbOperatore!=null)
+		            	{
+		            		cbOperatore.setSelectedIndex(0);
+		            	}
+	    			}
+				}
             } catch (Exception e) {
             	e.printStackTrace();
             }
     	}
 		if (event.getSource()==cbAttributoTHEN)
 	    {
-			Vector<String> op = new Vector<String>();
+			Vector<ComboItem> op = new Vector<ComboItem>();
             try {
-            	op.add(new String("="));
-    			op.add(new String("scrivi"));
-    			//populate combo box
-            	DefaultComboBoxModel model = new DefaultComboBoxModel(op.toArray());
-            	cbOperatoreTHEN.removeAllItems();
-            	cbOperatoreTHEN.setModel(model);
-            	cbOperatoreTHEN.setSelectedIndex(0);
+            	if(cbAttributoTHEN.getSelectedItem()!=null){
+	            	int id=((ComboItem)cbAttributoTHEN.getSelectedItem()).getKey();         	
+	            	//populate combo box
+	            	ResultSet rs;
+	    			rs=rulesSQL.getTypeOfAttributes(id);
+	    			if (rs==null){
+	    	    		System.out.println("Type of attribute not found");
+	    	    	} else {
+	    	    		op.add(new ComboItem(0, "notify"));
+						op.add(new ComboItem(0, "="));
+	    	    	}
+	    			if(op.size()>0)
+	    			{
+	    				if (cbOperatoreTHEN!=null)
+		            	{
+	    					cbOperatoreTHEN.removeAllItems();
+		            	}
+	    				for(int i=0;i<op.size();i++)
+	    				{
+	    					cbOperatoreTHEN.addItem(op.get(i));
+	    				}
+		            	if (cbOperatoreTHEN!=null)
+		            	{
+		            		cbOperatoreTHEN.setSelectedIndex(0);
+		            	}
+	    			}
+            	}
             } catch (Exception e) {
             	e.printStackTrace();
             }
     	}
 		if (event.getSource()==btAddCondition)
 	    {
+			boolean inserire=true;
 			try {
-            	String template = new String(cbTipologia.getSelectedItem().toString());
-            	String attribute = new String(cbAttributo.getSelectedItem().toString());
+            	ComboItem model = (ComboItem)cbTipologia.getSelectedItem();
+            	ComboItem attribute = (ComboItem)cbAttributo.getSelectedItem();
             	String operator = new String(cbOperatore.getSelectedItem().toString());
             	if(operator.equals("=")) operator="==";
-             	String value = new String(txtValore.getText());
+            	try {
+					ResultSet rs;
+					rs=rulesSQL.getTypeOfAttributes(attribute.getKey());
+					if (rs==null){
+						System.out.println("Type of attribute not found");
+					} else {
+						while (rs.next()) {
+							String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
+	    	    			inserire=checkAttributeType(typeAttr,txtValore);
+	    	    		}
+					}
+				} catch (Exception e) {
+				}
+            	String value = new String(txtValore.getText());
             	//store the condition
-            	typeSelected.add(template);
-            	attributeSelected.add(attribute);
-            	opSelected.add(operator);
-            	valueSelected.add(value);
-            	//create the rule
-            	String newRule = new String("rule \""+txtRuleName.getText()+"\" \nno-loop\n");
-            	newRule+="when \n";
-            	newRule+="\t $wi: Wois() \n";
-            	/*if (!txtResult.getText().equals(""))
-            	{
-            		newRule=txtResult.getText();
-            	}*/
-            	//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value +") \n";
-            	String oldTemplate=new String("_");
-            	
-            	Collections.sort(typeSelected);
-            	for(int i=0;i<typeSelected.size();i++)
-            	{
-            		template= typeSelected.get(i);
-            		attribute=attributeSelected.get(i);
-            		operator=opSelected.get(i);
-            		value=valueSelected.get(i);
-            		if(!oldTemplate.equals(template))
-            		{
-            			if(i>0){
-            				newRule+=") \n";
-            			}
-            			newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
-            			oldTemplate=new String(template);
-            		}else
-            		{
-            			newRule+=", "+attribute + operator + value; 
-            		}
-            		
+            	if (inserire){
+            		conditions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", "")));
+            		RefreshConditionPanel();
             	}
-            	newRule+=") \n";
-            	txtResult.setText(newRule);
             } catch (Exception e) {
             	e.printStackTrace();
             }
     	}
-		if (event.getSource()==btAggiungiTHEN)
+		if (event.getSource()==btAddAction)
+	    {
+			boolean inserire=true;
+			try {
+				ComboItem model = (ComboItem)cbTipologiaTHEN.getSelectedItem();
+            	ComboItem attribute = (ComboItem)cbAttributoTHEN.getSelectedItem();
+            	String operator = new String(cbOperatoreTHEN.getSelectedItem().toString());
+            	try {
+					ResultSet rs;
+					rs=rulesSQL.getTypeOfAttributes(attribute.getKey());
+					if (rs==null){
+						System.out.println("Type of attribute not found");
+					} else {
+						while (rs.next()) {
+							String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
+	    	    			inserire=checkAttributeType(typeAttr,txtValoreTHEN);
+	    	    		}
+					}
+				} catch (Exception e) {
+				}
+            	String value = new String(txtValoreTHEN.getText());
+            	//store the condition
+            	if (inserire){
+	            	//store the action
+	            	actions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", "")));
+	            	RefreshActionPanel();
+            	}
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    	}
+		if (event.getSource()==btRefresh)
+	    {
+			RefreshConditionPanel();
+			RefreshActionPanel();
+	    }
+		if (event.getSource()==btUndoCondition)
 	    {
 			try {
-            	String template = new String(cbTipologiaTHEN.getSelectedItem().toString());
-            	String attribute = new String(cbAttributoTHEN.getSelectedItem().toString());
-            	String operator = new String(cbOperatoreTHEN.getSelectedItem().toString());
-            	String value = new String(txtValoreTHEN.getText());
-            	//if(operator.equals("scrivi")) value="";
-            	//create the rule
-            	String newRule = new String("then \n");
-            	if (!txtResultTHEN.getText().equals(""))
-            	{
-            		newRule=txtResultTHEN.getText().substring(0, txtResultTHEN.getText().indexOf(" end "));
-            	}
-            	if(operator.equals("scrivi"))
-            	{ //print some text
-            		String var = new String("$"+template.toLowerCase());
-            		newRule+="\t txtArea.append(\""+ value +"\"+"+var+".get"+attribute.substring(0,1).toUpperCase()+attribute.substring(1,attribute.length())+"()+\"\\n\");\n";
-            	}else{//modify an attribute
-            		/*
-            		 * if(setLock($f.getId(),$wi,ISName))
-						{
-							modify($f) {setAccesa(false)};
-							$f.getModificati().add(new String("accesa"));
-						}*/
-            		
-            		String var = new String("$"+template.toLowerCase());
-            		if (!privFact)
-            		{
-            			newRule+="\tif(setLock("+var+".getId(),$wi,ISName))\n";
-            			newRule+="\t{\n";
-            		}
-            		newRule+="\t modify("+var+") {set"+attribute.substring(0,1).toUpperCase()+attribute.substring(1,attribute.length())+"("+value+")};\n";
-            		newRule+="\t "+var+".getModificati().add(new String(\""+attribute+"\"));\n";
-            		if (!privFact)
-            		{
-            			newRule+="\t}\n";
-            		}
-            	}
-            	newRule+=" end ";
-            	txtResultTHEN.setText(newRule);
-            } catch (Exception e) {
-            	e.printStackTrace();
-            }
-    	}
+				conditions.remove(conditions.size()-1);
+				RefreshConditionPanel();
+			} catch (Exception e) {
+			}
+	    }
+		if (event.getSource()==btUndoAction)
+	    {
+			try {
+				actions.remove(actions.size()-1);
+				RefreshActionPanel();
+			} catch (Exception e) {
+			}
+	    }
 		if (event.getSource()==btSaveRule)
 	    {
-			try {//write into the file txt
+			/*try {//write into the file txt
 				String fileName = new String();
 				if(privFact)
 				{
@@ -463,60 +496,206 @@ public class IsNewRule extends JFrame implements ActionListener{
             } catch (Exception e) {
             	e.printStackTrace();
             }
-			
-			Integer id=-1;
+			*/
 			//insert rule header
-			System.err.println("0");
+			String SQL=new String("");
 			try {
-				rulesSQL.RulesInsert(txtRuleName.getText(), 1, 1, 50, 0);
+				SQL+=rulesSQL.RulesInsert(txtRuleName.getText(), 1, 1, 50, 0);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			String oldTemplate=new String("_");
-			String template;
-			String attribute;
-			String operator;
-			String value;
-			Collections.sort(typeSelected);
-			for(int i=0;i<typeSelected.size();i++)
+			//insert conditions
+			String oldMod=new String("_");
+			Collections.sort(conditions);
+			for(int i=0;i<conditions.size();i++)
 			{
-				template= typeSelected.get(i);
-				attribute=attributeSelected.get(i);
-				operator=opSelected.get(i);
-				value=valueSelected.get(i);
-				if(!oldTemplate.equals(template))
+				String mod= conditions.get(i).getDes_model();
+        		if(!oldMod.equals(mod))
 				{
-					//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
-					System.err.println("1");
 					try {
-						rulesSQL.RulesIfFactsInsert(1, template.toLowerCase());
+						SQL+=rulesSQL.RulesIfFactsInsert( conditions.get(i).getId_model(),  conditions.get(i).getDes_model().toLowerCase());
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					System.err.println("2");
 					try {
-						rulesSQL.RulesIfFactsDetailsInsert(1, operator.toLowerCase(), value);
+						SQL+=rulesSQL.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					oldTemplate=new String(template);
+					oldMod=new String(mod);
 				}else
 				{
-					rulesSQL.RulesIfFactsDetailsInsert(1, operator.toLowerCase(), value);
+					SQL+=rulesSQL.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
 					//newRule+=", "+attribute + operator + value; 
+				}
+			}
+			
+			//insert action
+			oldMod=new String("_");
+			Collections.sort(actions);
+			for(int i=0;i<actions.size();i++)
+			{
+				String mod= actions.get(i).getDes_model();
+				if(!oldMod.equals(mod))
+				{
+					//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
+					try {
+						SQL+=rulesSQL.RulesThenFactsInsert( actions.get(i).getId_model(),  actions.get(i).getDes_model().toLowerCase());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						SQL+=rulesSQL.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					oldMod=new String(mod);
+				}else
+				{
+					SQL+=rulesSQL.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+					//newRule+=", "+attribute + operator + value; 
+				}
+			}
+			try {
+				rulesSQL.fireSQLInsertPrivateRule(SQL);
+				conditions=new Vector<ConditionActionItem>();
+				actions=new Vector<ConditionActionItem>();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void RefreshConditionPanel(){
+		//create the rule
+    	String newRule = new String("rule \""+txtRuleName.getText()+"\" \nno-loop\n");
+    	if (conditions.size()>0){
+    		newRule+="when \n";
+        	if (!privFact)newRule+="\t $wi: Wois() \n";
+
+        	String oldMod=new String("_");
+        	
+        	Collections.sort(conditions);
+        	for(int i=0;i<conditions.size();i++)
+        	{
+        		String mod= conditions.get(i).getDes_model();
+        		String att=conditions.get(i).getDes_attribute();
+        		String op=conditions.get(i).getOp();
+        		String value=conditions.get(i).getValue();
+        		if(!oldMod.equals(mod))
+        		{
+        			if(i>0){
+        				newRule+=") \n";
+        			}
+        			newRule+="\t $"+mod.toLowerCase()+":" + mod+ "("+ att + op + value;
+        			oldMod=new String(mod);
+        		}else
+        		{
+        			newRule+=", "+att + op + value; 
+        		}
+        		
+        	}
+        	newRule+=") \n";
+    	}else{
+    		newRule="--Nessuna condizione inserita!";
+    	}
+    	txtResult.setText(newRule);
+	}
+	
+	private void RefreshActionPanel(){
+		String newRule = new String("then \n");
+		if (actions.size()>0){
+			String oldMod=new String("_");
+	    	Collections.sort(conditions);
+	    	//prima imposto tutti i setLock se non è una regola che usa solo fatti privati
+	    	if (!privFact){
+	    		String ifString=new String("\tif(");
+	    		for(int i=0;i<actions.size();i++){
+	    			String mod= actions.get(i).getDes_model();
+	        		String att=actions.get(i).getDes_attribute();
+	        		String op=actions.get(i).getOp();
+	        		String value=actions.get(i).getValue();
+	        		if(op.equals("=") && !oldMod.equals(mod)){
+	        			try {
+							ResultSet rs;
+							rs=rulesSQL.getModel(actions.get(i).getId_model());
+							if (rs==null){
+								System.out.println("Model not found");
+							} else {//set the lock only for public fact
+								if(rs.getInt("id_user")==0)
+								{
+									String var = new String("$"+mod.toLowerCase());
+									ifString+="setLock("+var+".getId(),$wi,ISName) && ";
+									oldMod=new String(mod);
+								}	
+							}
+						} catch (SQLException e) {
+						}
+	        				            			
+	        		}
+	    		}
+	    		ifString=ifString.substring(0, ifString.length()-4);
+	    		ifString+=(")\n\t{ \n");
+	    		newRule=newRule.concat(ifString);
+	    	} 
+	    	
+	    	for(int i=0;i<actions.size();i++){
+	    		String mod= actions.get(i).getDes_model();
+	    		String att=actions.get(i).getDes_attribute();
+	    		String op=actions.get(i).getOp();
+	    		String value=actions.get(i).getValue();
+	    		String var = new String("$"+mod.toLowerCase());
+	    		if(op.equals("scrivi"))
+	        	{ //print some text
+	        		newRule+="\t txtArea.append(\""+ value +"\"+"+var+".get"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"()+\"\\n\");\n";
+	        	}else{//modify an attribute
+	        		/*
+	        		 * if(setLock($f.getId(),$wi,ISName))
+						{
+							modify($f) {setAccesa(false)};
+							$f.getModificati().add(new String("accesa"));
+						}*/
+	        		newRule+="\t\t modify("+var+") {set"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"("+value+")};\n";
+	        		newRule+="\t\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
+	        	}
+	    	}
+	    	if (!privFact)newRule+="\t}\n";
+	    	newRule+=" end ";
+		}else{
+			newRule="--Nessuna azione inserita!";
+		}
+    	txtResultTHEN.setText(newRule);
+	}
+	
+	private boolean checkAttributeType(String typeAttr, JTextField txtvalue){
+		boolean inserire=true;
+		String value=txtvalue.getText();
+		if(typeAttr.equals("boolean")){
+			if(!(value.toLowerCase().equals("true") || value.toLowerCase().equals("false"))){
+				int dialogButton = JOptionPane.YES_NO_OPTION;
+				int dialogResult = JOptionPane.showConfirmDialog (null, "Il valore deve essere booleano, "
+						+ "vuoi confermare un valore True?","Warning",dialogButton);
+				if(dialogResult == JOptionPane.YES_OPTION){
+					value="True";
+				}else{
+					inserire=false;
+					//JOptionPane.showMessageDialog(null, "Error, invalid input type! " + value + "is not a boolean type");
 				}
 				
 			}
-			
-			typeSelected=new Vector<String>();
-			attributeSelected=new Vector<String>();
-			attributeTypeSelected=new Vector<String>();
-			opSelected=new Vector<String>();
-			valueSelected=new Vector<String>();
-			
-    	}
+		}else if(typeAttr.equals("string")){
+			txtvalue.setText("\""+value+"\"");
+		}else if(typeAttr.equals("int") || typeAttr.equals("integer") || typeAttr.equals("double") || typeAttr.equals("decimal") || typeAttr.equals("numeric") || typeAttr.equals("real")){
+			if(!value.matches("-?\\d+(\\.\\d+)?")){//check if the value is a numeric type looking the pattern
+				inserire=false;
+				JOptionPane.showMessageDialog(null, "Error, invalid input type! " + value + "is not a number");
+			}
+		}
+		return inserire;
 	}
 }

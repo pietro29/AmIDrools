@@ -52,7 +52,14 @@ public final class SQLiteJDBC {
 		} catch ( Exception e ) {
 		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 		      return false;
-		} 
+		} finally{
+			try {
+				stmt.close();
+				conn.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+		}
 	}
 	/**
 	 * Run a SQL command which return last inserted id; INSERT statement
@@ -78,7 +85,14 @@ public final class SQLiteJDBC {
 		} catch ( Exception e ) {
 		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 		      return id;
-		} 
+		}  finally{
+			try {
+				stmt.close();
+				conn.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+		}
 	}
 	/**
 	 * Run a SQL command which return a dataset; SELECT statement
@@ -103,6 +117,13 @@ public final class SQLiteJDBC {
 		} catch (Exception e) {
 			System.out.println("ERROR: Could not executed query");
 			e.printStackTrace();
+		} finally{
+			try {
+				//stmt.close();
+				//conn.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
 		}
 		return null;
 	}

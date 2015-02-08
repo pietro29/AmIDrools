@@ -1,0 +1,7 @@
+select R.name,M.des_model,RIF.var_name,A.des_attribute,RIFD.operation,RIFD.value
+from rules R
+left join rulesif RI on RI.id_rule=R.id_rule
+left join rulesiffacts RIF on RIF.id_ruleif=RI.id_ruleif
+left join rulesiffactsdetails RIFD on RIFD.id_ruleiffact=RIF.id_ruleiffact
+left join models M on M.id_model=RIF.id_model
+left join attributes A on A.id_attribute=RIFD.id_attribute

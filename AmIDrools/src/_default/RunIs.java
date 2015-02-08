@@ -1,5 +1,6 @@
 package _default;
 
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -26,10 +27,12 @@ public class RunIs {
     public static void main( String args[] ) throws RemoteException, IOException
     { 
         try {
+        	
         	//inf = new Is(args[0].toString());
         	inf = new Is(args[0], args[1]);
         	inf.setTitle("Is " + args[0]);
         	inf.setSize(500, 600);
+        	inf.setLocationRelativeTo(null);
         	inf.setVisible(true);
         	inf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         	inf.resizeLogoUnibs("images/Logo_unibs.gif",150,150);

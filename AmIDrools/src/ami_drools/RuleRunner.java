@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,8 @@ import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.runtime.rule.Match;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
+
+import utility.rulesSQL;
 
 public class RuleRunner {
 	KieSession kSession;
@@ -250,7 +253,30 @@ public class RuleRunner {
 		}
 			
 		System.out.println(s);
-		//txtArea.append(s);
+		//get rule condition
+		try {
+			ResultSet rs;
+			rs=rulesSQL.getRulesConditions(0);
+			if (rs==null){
+				System.out.println("Conditions not found");
+			} else {
+				System.err.println(rs);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+		}
+		//get rule action
+		try {
+			ResultSet rs;
+			rs=rulesSQL.getRulesActions(0);
+			if (rs==null){
+				System.out.println("Actions not found");
+			} else {
+				System.err.println(rs);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+		}
 		return s;
 	}
 
