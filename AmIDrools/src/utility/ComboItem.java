@@ -1,5 +1,10 @@
 package utility;
 //use only for the creation of the rules
+/**
+ * represent the structure <key,value> insiede the combo box
+ * @author 
+ *
+ */
 public class ComboItem implements Comparable<ComboItem> 
 {
     private int key;

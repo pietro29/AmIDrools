@@ -36,6 +36,10 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 
 
+/**
+ * @author Carè-Pavoni
+ *
+ */
 public class IsNewRule extends JFrame implements ActionListener{
 
 	/**
@@ -45,7 +49,8 @@ public class IsNewRule extends JFrame implements ActionListener{
 	//private Vector<String> factsType;
 	private Boolean privFact;
 	//private Vector<Fact> privateFacts;
-	private Vector<ComboItem> declareType;
+	private Vector<ComboItem> ifModels;
+	private Vector<ComboItem> thenModels;
 	//private Vector<String> attributeType;
 	//private Vector<String> attributeTypeTHEN;
 	//set vector for the storage of the condition
@@ -80,13 +85,17 @@ public class IsNewRule extends JFrame implements ActionListener{
 	private JButton btRefresh;
 	private JButton btUndoAction;
 	private JButton btUndoCondition;
-	public IsNewRule(Vector<Fact> privateFacts,Boolean privFact ) {
+	/**Constructor method
+	 * @param privFact set to true if want to use only private fact
+	 */
+	public IsNewRule(Boolean privFact ) {
 		
 		this.privFact=privFact;
 		conditions=new Vector<ConditionActionItem>();
 		actions=new Vector<ConditionActionItem>();
 		getContentPane().setLayout(new GridLayout(2, 0, 0, 0));
-		getDeclareFromFacts();
+		getIFModels();
+		getTHENModels();
 		JPanel panelIF = new JPanel();
 		panelIF.setBorder(new LineBorder(Color.DARK_GRAY, 2, true));
 		getContentPane().add(panelIF);
@@ -105,7 +114,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		lblThen = new JLabel("THEN");
 		panelTHENContructor.add(lblThen);
 		
-		cbTipologiaTHEN = new JComboBox<ComboItem>(declareType);
+		cbTipologiaTHEN = new JComboBox<ComboItem>(thenModels);
 		cbTipologiaTHEN.addActionListener((ActionListener) this);
 		panelTHENContructor.add(cbTipologiaTHEN);
 		
@@ -166,7 +175,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		JLabel lblNewLabel = new JLabel("IF");
 		panel_1.add(lblNewLabel);
 		
-		cbTipologia = new JComboBox<ComboItem>(declareType);
+		cbTipologia = new JComboBox<ComboItem>(ifModels);
 		panel_1.add(cbTipologia);
 		cbTipologia.addActionListener((ActionListener) this);
 		
@@ -205,17 +214,45 @@ public class IsNewRule extends JFrame implements ActionListener{
 		btRefresh.addActionListener((ActionListener) this);
 	}
 
-	private void getDeclareFromFacts() {
+	/**
+	 * Get the models for the creation of the condition
+	 */
+	private void getIFModels() {
 		try {
-			declareType=new Vector<ComboItem>();
+			ifModels=new Vector<ComboItem>();
 			ResultSet rs;
-			rs=rulesSQL.getModels();
+			rs=rulesSQL.getModelsIF();
 			if (rs==null){
 	    		System.out.println("Table of models is empty");
 	    	} else {
 	    		try {
 					while (rs.next()) {
-						declareType.add(new ComboItem(rs.getInt("id_model"), rs.getString("des_model")));
+						ifModels.add(new ComboItem(rs.getInt("id_model"), rs.getString("des_model")));
+					}
+				} catch (SQLException e) {
+					System.out.println("Database connection error");
+				}
+	    	}
+		} catch (Exception e) {
+			// TODO: handle exception
+			 e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Get the models for the creation of the action 
+	 */
+	private void getTHENModels() {
+		try {
+			thenModels=new Vector<ComboItem>();
+			ResultSet rs;
+			rs=rulesSQL.getModelsTHEN();
+			if (rs==null){
+	    		System.out.println("Table of models is empty");
+	    	} else {
+	    		try {
+					while (rs.next()) {
+						thenModels.add(new ComboItem(rs.getInt("id_model"), rs.getString("des_model")));
 					}
 				} catch (SQLException e) {
 					System.out.println("Database connection error");
@@ -234,7 +271,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 			Vector<ComboItem> attribute=new Vector<ComboItem>();
             try {
             	int id=((ComboItem)cbTipologia.getSelectedItem()).getKey();         	
-            	//populate combo box
+            	//populate condition attribute combo box
             	ResultSet rs;
     			rs=rulesSQL.getAttributeFromModels(id);
     			if (rs==null){
@@ -272,7 +309,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 			Vector<ComboItem> attribute=new Vector<ComboItem>();
             try {
             	int id=((ComboItem)cbTipologiaTHEN.getSelectedItem()).getKey();         	
-            	//populate combo box
+            	//populate action attribute combo box
             	ResultSet rs;
     			rs=rulesSQL.getAttributeFromModels(id);
     			if (rs==null){
@@ -311,7 +348,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 			try {
 				if(cbAttributo.getSelectedItem()!=null){
 	            	int id=((ComboItem)cbAttributo.getSelectedItem()).getKey();         	
-	            	//populate combo box
+	            	//populate condition operation combo box, differs from type to type
 	            	ResultSet rs;
 	    			rs=rulesSQL.getTypeOfAttributes(id);
 	    			if (rs==null){
@@ -362,7 +399,7 @@ public class IsNewRule extends JFrame implements ActionListener{
             try {
             	if(cbAttributoTHEN.getSelectedItem()!=null){
 	            	int id=((ComboItem)cbAttributoTHEN.getSelectedItem()).getKey();         	
-	            	//populate combo box
+	            	//populate action operation combo box, is an assignment or a notification
 	            	ResultSet rs;
 	    			rs=rulesSQL.getTypeOfAttributes(id);
 	    			if (rs==null){
@@ -392,7 +429,7 @@ public class IsNewRule extends JFrame implements ActionListener{
             }
     	}
 		if (event.getSource()==btAddCondition)
-	    {
+	    {//confirm a condition
 			boolean inserire=true;
 			try {
             	ComboItem model = (ComboItem)cbTipologia.getSelectedItem();
@@ -425,7 +462,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		if (event.getSource()==btAddAction)
 	    {
 			boolean inserire=true;
-			try {
+			try {//confirm an action
 				ComboItem model = (ComboItem)cbTipologiaTHEN.getSelectedItem();
             	ComboItem attribute = (ComboItem)cbAttributoTHEN.getSelectedItem();
             	String operator = new String(cbOperatoreTHEN.getSelectedItem().toString());
@@ -454,13 +491,13 @@ public class IsNewRule extends JFrame implements ActionListener{
             }
     	}
 		if (event.getSource()==btRefresh)
-	    {
+	    {//refresh the text area
 			RefreshConditionPanel();
 			RefreshActionPanel();
 	    }
 		if (event.getSource()==btUndoCondition)
 	    {
-			try {
+			try {//remove the last condition
 				conditions.remove(conditions.size()-1);
 				RefreshConditionPanel();
 			} catch (Exception e) {
@@ -468,7 +505,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    }
 		if (event.getSource()==btUndoAction)
 	    {
-			try {
+			try {//remove the last action
 				actions.remove(actions.size()-1);
 				RefreshActionPanel();
 			} catch (Exception e) {
@@ -660,8 +697,10 @@ public class IsNewRule extends JFrame implements ActionListener{
 							modify($f) {setAccesa(false)};
 							$f.getModificati().add(new String("accesa"));
 						}*/
-	        		newRule+="\t\t modify("+var+") {set"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"("+value+")};\n";
-	        		newRule+="\t\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
+	        		if(!privFact) newRule+="\t";
+	        		newRule+="\t modify("+var+") {set"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"("+value+")};\n";
+	        		if(!privFact) newRule+="\t";
+	        		newRule+="\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
 	        	}
 	    	}
 	    	if (!privFact)newRule+="\t}\n";
@@ -672,10 +711,15 @@ public class IsNewRule extends JFrame implements ActionListener{
     	txtResultTHEN.setText(newRule);
 	}
 	
+	/**check if the value in the text box is the same type as the value of the attribute
+	 * @param typeAttr define the attribute type
+	 * @param txtvalue define the text box where is the value is stored
+	 * @return true if the type match
+	 */
 	private boolean checkAttributeType(String typeAttr, JTextField txtvalue){
 		boolean inserire=true;
 		String value=txtvalue.getText();
-		if(typeAttr.equals("boolean")){
+		if(typeAttr.equals("boolean")){//boolean case
 			if(!(value.toLowerCase().equals("true") || value.toLowerCase().equals("false"))){
 				int dialogButton = JOptionPane.YES_NO_OPTION;
 				int dialogResult = JOptionPane.showConfirmDialog (null, "Il valore deve essere booleano, "
@@ -688,9 +732,10 @@ public class IsNewRule extends JFrame implements ActionListener{
 				}
 				
 			}
-		}else if(typeAttr.equals("string")){
+		}else if(typeAttr.equals("string") && cbOperatoreTHEN.getSelectedItem().toString().equals("=")){//string case
 			txtvalue.setText("\""+value+"\"");
 		}else if(typeAttr.equals("int") || typeAttr.equals("integer") || typeAttr.equals("double") || typeAttr.equals("decimal") || typeAttr.equals("numeric") || typeAttr.equals("real")){
+			//numeric case
 			if(!value.matches("-?\\d+(\\.\\d+)?")){//check if the value is a numeric type looking the pattern
 				inserire=false;
 				JOptionPane.showMessageDialog(null, "Error, invalid input type! " + value + "is not a number");

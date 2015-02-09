@@ -5,8 +5,22 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Class that contain SQL command to manage the rules
+ * @author 
+ *
+ */
 public final class rulesSQL {
 
+	/**
+	 * Insert new Rule header
+	 * @param name rule name
+	 * @param id_user id of the user owner
+	 * @param no_loop optional no loop attribute
+	 * @param saliance optional saliance 
+	 * @param _public public or not rule
+	 * @return String that represent the insert of the rule header
+	 */
 	public static String RulesInsert(String name, Integer id_user, Integer no_loop, Integer saliance, Integer _public){
 		String SQL=new String("");
 		SQL+="insert into rules ";
@@ -26,6 +40,12 @@ public final class rulesSQL {
 		//SQLiteJDBC.executeUpdate(SQL,1);
 		return SQL;
 	}
+	/**
+	 * insert condition fact
+	 * @param id_model id of the model associated to the condition
+	 * @param var_name name for the variable associated to the condition
+	 * @return string represented the SQL command
+	 */
 	public static String RulesIfFactsInsert(int id_model, String var_name){
 		String SQL=new String("");
 		SQL+="insert into rulesiffacts";
@@ -37,6 +57,12 @@ public final class rulesSQL {
 		return SQL;
 	}
 	
+	/**
+	 * insert action fact
+	 * @param id_model id of the model associated to the action
+	 * @param var_name name for the variable associated to the action
+	 * @return string represented the SQL command
+	 */
 	public static String RulesThenFactsInsert(int id_model, String var_name){
 		String SQL=new String("");
 		SQL+="insert into rulesthenfacts";
@@ -46,6 +72,13 @@ public final class rulesSQL {
 		//SQLiteJDBC.executeUpdate(SQL,1);
 		return SQL;
 	}
+	/**
+	 * insert condition on the attribute
+	 * @param id_attribute id of the attribute associated to the condition
+	 * @param operation operation of the condition
+	 * @param value value of the condition
+	 * @return string represented the SQL command
+	 */
 	public static String RulesIfFactsDetailsInsert(int id_attribute, String operation, String value){
 		String SQL=new String("");
 		SQL+="insert into rulesiffactsdetails";
@@ -55,7 +88,13 @@ public final class rulesSQL {
 		//SQLiteJDBC.executeUpdate(SQL,1);
 		return SQL;
 	}
-	
+	/**
+	 * insert action on the attribute
+	 * @param id_attribute id of the attribute associated to the action
+	 * @param operation operation of the action
+	 * @param value value of the action
+	 * @return string represented the SQL command
+	 */
 	public static String RulesThenFactsDetailsInsert(int id_attribute, String operation, String value){
 		String SQL=new String("");
 		SQL+="insert into rulesthenfactsdetails";
@@ -66,11 +105,18 @@ public final class rulesSQL {
 		return SQL;
 	}
 	
+	/**
+	 * fire a SQL command
+	 * @param SQL contains all the SQL command to fire
+	 */
 	public static void fireSQLInsertPrivateRule(String SQL){
 		System.err.println(SQL);
 		SQLiteJDBC.executeUpdate(SQL,1);
 	}
 	
+	/**
+	 * @return all the private models
+	 */
 	public static ResultSet getModels()
 	{
 		String SQL = new String("");
@@ -78,6 +124,30 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @return all the private models usable for the condition
+	 */
+	public static ResultSet getModelsIF()
+	{
+		String SQL = new String("");
+		SQL+="select id_model, des_model, id_user from models where if_model=1";
+		return SQLiteJDBC.retrieveData(SQL,1);
+	}
+	
+	/**
+	 * @return all the private models usable for the action
+	 */
+	public static ResultSet getModelsTHEN()
+	{
+		String SQL = new String("");
+		SQL+="select id_model, des_model, id_user from models where then_model=1";
+		return SQLiteJDBC.retrieveData(SQL,1);
+	}
+	
+	/**
+	 * @param id_model id of the model to search
+	 * @return a specific model
+	 */
 	public static ResultSet getModel(Integer id_model)
 	{
 		String SQL = new String("");
@@ -85,6 +155,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_model id of the model 
+	 * @return all the attribute associated to a specific model
+	 */
 	public static ResultSet getAttributeFromModels(int id_model)
 	{
 		String SQL = new String("");
@@ -92,13 +166,21 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
-	public static ResultSet getTypeOfAttributes(int id_template)
+	/**
+	 * @param id_attribute id of the attribute
+	 * @return type of the specific attribute
+	 */
+	public static ResultSet getTypeOfAttributes(int id_attribute)
 	{
 		String SQL = new String("");
-		SQL+="select type_attribute from attributes where id_attribute="+id_template;
+		SQL+="select type_attribute from attributes where id_attribute="+id_attribute;
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_rule id of the specific rule
+	 * @return all the conditions for a specific rule
+	 */
 	public static ResultSet getRulesConditions(Integer id_rule)
 	{
 		String SQL = new String("");
@@ -113,6 +195,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_rule id of the specific rule
+	 * @return all the actions for a specific rule
+	 */
 	public static ResultSet getRulesActions(Integer id_rule)
 	{
 		String SQL = new String("");
@@ -127,6 +213,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * delete a specific rule
+	 * @param ruleName name of the rule
+	 */
 	public static void deleteRules(String ruleName)
 	{
 		String SQL = new String("");
@@ -134,6 +224,9 @@ public final class rulesSQL {
 		SQLiteJDBC.executeUpdate(SQL,1);
 	}
 	
+	/**
+	 * @return all the private rules
+	 */
 	public static ResultSet getRules()
 	{
 		String SQL = new String("");
@@ -141,6 +234,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_rule id of a specific rule
+	 * @return all the conditions fact for a specific rule
+	 */
 	public static ResultSet getRulesConditionsFacts(Integer id_rule)
 	{
 		String SQL = new String("");
@@ -154,6 +251,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_ruleiffact id of a fact of a rule
+	 * @return all the conditions details for a specific rule fact
+	 */
 	public static ResultSet getRulesConditionsFactsDetails(Integer id_ruleiffact)
 	{
 		String SQL = new String("");
@@ -165,6 +266,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	  * @param id_rule id of a specific rule
+	 * @return all the actions fact for a specific rule
+	 */
 	public static ResultSet getRulesActionsFacts(Integer id_rule)
 	{
 		String SQL = new String("");
@@ -177,6 +282,10 @@ public final class rulesSQL {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * @param id_rulethenfact id of a fact of a rule
+	 * @return all the actions details for a specific rule fact
+	 */
 	public static ResultSet getRulesActionsFactsDetails(Integer id_rulethenfact)
 	{
 		String SQL = new String("");

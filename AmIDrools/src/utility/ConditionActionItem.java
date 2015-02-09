@@ -1,5 +1,10 @@
 package utility;
 
+/**
+ * Represent a condition or an action for a specific rule
+ * @author
+ *
+ */
 public class ConditionActionItem implements Comparable<ConditionActionItem> {
 
 	private int id_model;

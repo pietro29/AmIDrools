@@ -681,7 +681,7 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==btRegolaPrivata)
 	    {
     		try {
-            	IsNewRule IsNR = new IsNewRule(privateFacts, true);
+            	IsNewRule IsNR = new IsNewRule( true);
             	IsNR.setTitle("New Rule");
             	IsNR.setSize(700, 500);
             	IsNR.setLocationRelativeTo(null);
@@ -702,7 +702,7 @@ public class Is extends JFrame implements ActionListener{
             			generalFacts.add(privateFacts.get(i));
             		}
             		
-            		IsNewRule IsNR = new IsNewRule(generalFacts, false);
+            		IsNewRule IsNR = new IsNewRule(false);
                 	IsNR.setTitle("New Rule");
                 	IsNR.setSize(700, 500);
                 	IsNR.setVisible(true);
@@ -725,6 +725,9 @@ public class Is extends JFrame implements ActionListener{
     }
     
     
+    /** Update the class associated to the private facts inside the IS
+     * @param fact
+     */
     public void updatePrivateFact(Fact fact)
     {
     	try {
@@ -779,6 +782,9 @@ public class Is extends JFrame implements ActionListener{
         }
 	}
     
+    /**
+     * Create the list of private rules
+     */
     private void setPrivateRuleTable()
     {
     	DefaultTableModel model = new DefaultTableModel();  
@@ -806,6 +812,10 @@ public class Is extends JFrame implements ActionListener{
     	
     }
     
+    /**
+     * Create a list of shared rules
+     * @param rows
+     */
     private void setSharedRuleTable(Vector<String> rows)
     {
     	DefaultTableModel model = new DefaultTableModel();  
@@ -852,11 +862,18 @@ public class Is extends JFrame implements ActionListener{
         }
 	}
     
+    /**
+     * Delete the specific rule from the database
+     * @param ruleName name of the rule to delete
+     */
     private void deleteRuleFromDB(String ruleName)
    	{
     	rulesSQL.deleteRules(ruleName);
    		setPrivateRuleTable();
    	}
+    /**
+     * Update the environment state simulator
+     */
     private void updateInternalState(){
     	txtBatteria.setText(Integer.valueOf(battery.getLevel()).toString());
     	if (position.getCodice().toLowerCase().equals("soggiorno"))

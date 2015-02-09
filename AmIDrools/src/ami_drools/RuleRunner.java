@@ -259,6 +259,9 @@ public class RuleRunner {
 		return s;
 	}
 
+	/**
+	 * @return the default header of the Knowledge Base
+	 */
 	private String getPackageVariableforDRL()
 	{
 		String s = new String("");
@@ -269,6 +272,9 @@ public class RuleRunner {
 		return s;
 	}
 	
+	/**
+	 * @return return a string filled with the models of the client
+	 */
 	private String getModelsFromDBForDRL(){
 		String s = new String("");
 		ResultSet rs;
@@ -306,6 +312,9 @@ public class RuleRunner {
 		return s;
 	}
 	
+	/**
+	 * @return the string filled with the formatted rules of the client
+	 */
 	private String getRulesFromDBForDRL(){
 		String s = new String("");
 		ResultSet rs;
@@ -449,6 +458,11 @@ public class RuleRunner {
 	 * fact to the working memory and fire the rules and the third export the
 	 * object that represent the fact to the manager
 	 *
+	 * @param ISname name of the actual IS
+	 * @param privateFactsReceived list of the private facts
+	 * @throws RemoteException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
 	 */
 	public void matchResolveAct(String ISname, Vector<Fact> privateFactsReceived) throws RemoteException,
 			IllegalArgumentException, IllegalAccessException {
@@ -706,6 +720,9 @@ public class RuleRunner {
 		kSession.dispose();
 	}
 	
+	/**
+	 * @return facts to send to the manager
+	 */
 	public Vector<Fact> getPrivateFacts()
 	{
 		return privateFactsSend;
