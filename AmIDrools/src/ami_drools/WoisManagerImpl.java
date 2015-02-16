@@ -636,7 +636,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
      */
     private void checkIsProcess() throws InterruptedException, NotRegisteredException{
     	while(true){
-    		checkISStatus();
+    		//checkISStatus(); used to check the connection of the IS
     		checkIs.sleep(600000);
     	}
     	

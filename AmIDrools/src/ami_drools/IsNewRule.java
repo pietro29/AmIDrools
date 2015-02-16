@@ -1035,6 +1035,8 @@ public class IsNewRule extends JFrame implements ActionListener{
 				wois.newRule(SQL);
 				conditions=new Vector<ConditionActionItem>();
 				actions=new Vector<ConditionActionItem>();
+				RefreshActionPanel();
+				RefreshConditionPanel();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

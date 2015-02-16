@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -65,6 +67,8 @@ import java.awt.SystemColor;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -235,11 +239,7 @@ public class Is extends JFrame implements ActionListener{
 			textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
 			
 			panelNewRule = new JPanel();
-			panelNewRule.addFocusListener(new java.awt.event.FocusAdapter() {
-	            public void focusLost(java.awt.event.FocusEvent evt) {
-	                jPanel1FocusLost(evt);
-	            }
-	        });
+			
 			
 			//tabbedPane.addTab("New tab", null, panelNewRule, null);
 			
@@ -361,6 +361,13 @@ public class Is extends JFrame implements ActionListener{
 			
 			mDevices.put(position.getId(), position);
 			mDevices.put(battery.getId(), battery);
+			tabbedPane.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent arg0) {
+					panelNewRuleClicked();
+				}
+		    });
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -460,7 +467,6 @@ public class Is extends JFrame implements ActionListener{
 		
 		privateFacts.add(privateFactBat);
 		privateFacts.add(privateFactPos);
-		//privateFacts.add(privateFactClo);
 	}
 	
 	public IsIntf getRemoteProxy()
@@ -694,6 +700,13 @@ public class Is extends JFrame implements ActionListener{
             	IsNR.setLocationRelativeTo(null);
             	IsNR.setVisible(true);
             	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            	IsNR.addWindowListener(new WindowAdapter()
+            	{
+            	    public void windowClosing(WindowEvent e)
+            	    {
+            	       setPrivateRuleTable();
+            	    }
+            	});
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -712,8 +725,16 @@ public class Is extends JFrame implements ActionListener{
             		IsNewRule IsNR = new IsNewRule(false, runner.wois, runner.ISName);
                 	IsNR.setTitle("New Rule");
                 	IsNR.setSize(700, 500);
+                	IsNR.setLocationRelativeTo(null);
                 	IsNR.setVisible(true);
                 	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                	IsNR.addWindowListener(new WindowAdapter()
+                	{
+                	    public void windowClosing(WindowEvent e)
+                	    {
+                	       setSharedRuleTable();
+                	    }
+                	});
             	}else
             	{
             		JOptionPane.showMessageDialog(null, "You are not connected to a manager!");
@@ -726,7 +747,7 @@ public class Is extends JFrame implements ActionListener{
 	    {
             try {
             	//deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
-            	deleteRuleFromDB(tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
+            	if(modelPrivate.getRowCount()>0) deleteRuleFromDB(tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -737,7 +758,7 @@ public class Is extends JFrame implements ActionListener{
             	if(runner.wois!=null)
             	{
             		//deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
-                	deleteRuleFromManager(tbSharedRules.getValueAt(tbSharedRules.getSelectedRow(), 0).toString());
+            		if(modelShared.getRowCount()>0) deleteRuleFromManager(tbSharedRules.getValueAt(tbSharedRules.getSelectedRow(), 0).toString());
             	}else{
             		JOptionPane.showMessageDialog(null, "You are not connected to a manager!");
             	}
@@ -828,7 +849,6 @@ public class Is extends JFrame implements ActionListener{
 			while(rs.next())
 	    	{	// Append a row 
 				modelPrivate.addRow(new Object[]{rs.getString("name")});
-	        	JOptionPane.showMessageDialog(null, rs.getString("name"));
 	        }
         	}rs.close();
 		} catch (Exception e) {
@@ -850,7 +870,7 @@ public class Is extends JFrame implements ActionListener{
         	try {
         		//clean the table
         		int i=0;
-        		while(modelPrivate.getRowCount()>0)
+        		while(modelShared.getRowCount()>0)
         		{
         			modelShared.removeRow(i);
         		}
@@ -858,7 +878,6 @@ public class Is extends JFrame implements ActionListener{
         		rules=runner.wois.getRulesNames(runner.ISName);
         		for(int j=0;j<rules.size();j++){
         			modelShared.addRow(new Object[]{rules.get(j)});
-        			JOptionPane.showMessageDialog(null, rules.get(j));
     	        }
     		} catch (Exception e) {
     			// TODO: handle exception
@@ -952,10 +971,12 @@ public class Is extends JFrame implements ActionListener{
     	}
     }
     
-    public void jPanel1FocusLost(FocusEvent e) {
-    	JOptionPane.showMessageDialog(null, "dentro");
-        setSharedRuleTable();
-        setPrivateRuleTable();
+    public void panelNewRuleClicked() {
+    	if (tabbedPane.getSelectedIndex()==1)
+        {
+    		setSharedRuleTable();
+    		setPrivateRuleTable();
+        }
     }
 
 }
