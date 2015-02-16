@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.sql.ResultSet;
 import java.util.Vector;
+
+import utility.ResultSetSerializable;
+import utility.rulesSQLManager;
 
 
 
@@ -61,8 +65,8 @@ public class Wois implements Serializable {
     String getSharedFactsTemplates() throws RemoteException{
     	return woisManager.getSharedTemplates();
     }
-    String getSharedFactsRules() throws RemoteException{
-    	return woisManager.getSharedRules();
+    String getSharedFactsRules(String des_user) throws RemoteException{
+    	return woisManager.getSharedRules(des_user);
     }
     String getSharedFactsFunctions() throws RemoteException{
     	return woisManager.getSharedFunctions();
@@ -77,12 +81,65 @@ public class Wois implements Serializable {
     public Vector <Fact> getSharedFacts() throws RemoteException{
     	return woisManager.getSharedFacts();
     }
+    
+    public Vector <String> getRulesNames(String ISName) throws RemoteException, NotRegisteredException{
+    	return woisManager.getRulesNames(ISName);
+    }
+    public ResultSetSerializable getUsersModels(String des_model, Integer id_user) throws RemoteException, NotRegisteredException{
+    	return woisManager.getUsersModels(des_model, id_user);
+    }
+    public boolean newModelWithAttribute(String des_model, int id_user,
+			boolean if_model, boolean then_model, Vector<String> des_attribute,
+			Vector<String> type_attribute) throws RemoteException{
+    	return woisManager.newModelWithAttribute(des_model, id_user, if_model, then_model, des_attribute, type_attribute);
+    }
+    public boolean newRule(String SQL) throws RemoteException{
+    	return woisManager.newRule(SQL);
+    }
+    public boolean deleteRules(String ruleName, String ISName) throws RemoteException{
+    	return woisManager.deleteRules(ruleName, ISName);
+    }
+    public ResultSetSerializable getPublicModelsIf() throws RemoteException{
+    	return woisManager.getPublicModelsIf();
+    }
+    public ResultSetSerializable getPublicModelsThen() throws RemoteException{
+    	return woisManager.getPublicModelsThen();
+    }
+    public ResultSetSerializable getAttributesFromModel(int id_model) throws RemoteException{
+    	return woisManager.getAttributesFromModel(id_model);
+    }
+    public ResultSetSerializable getTypeOfAttributes(int id_attribute) throws RemoteException{
+    	return woisManager.getTypeOfAttributes(id_attribute);
+    }
+    public ResultSetSerializable getPublicModel(int id_model) throws RemoteException{
+    	return woisManager.getPublicModel(id_model);
+    }
     public void setSharedFacts(Vector <Fact> sharedFactsUpdate, String isName) throws RemoteException, ClassNotFoundException{
     	woisManager.setSharedFacts(sharedFactsUpdate, isName);
     	//System.out.println(sharedFactsUpdate.get(0).getAttributes().get(1) + " - "+ sharedFactsUpdate.get(0).getValues().get(1));
     	//System.out.println(sharedFactsUpdate.get(0).getAttributes().get(2) + " - "+ sharedFactsUpdate.get(0).getValues().get(2));
     	//System.out.println(sharedFactsUpdate.get(0).getModified().size());
     }
+    
+    public String RulesThenFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) throws RemoteException{
+		return woisManager.RulesThenFactsDetailsInsert_manager(des_attribute,des_model,operation,value);
+	}
+    
+    public String RulesIfFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) throws RemoteException{
+		return woisManager.RulesIfFactsDetailsInsert_manager(des_attribute,des_model,operation,value);
+	}
+    
+    public String RulesThenFactsInsert_manager(String des_model, String var_name) throws RemoteException{
+		return woisManager.RulesThenFactsInsert_manager(des_model,var_name);
+	}
+    
+    public String RulesIfFactsInsert_manager(String des_model, String var_name) throws RemoteException{
+		return woisManager.RulesIfFactsInsert_manager(des_model,var_name);
+	}
+    
+    public String RulesInsert_manager(String name, String des_user, boolean no_loop, Integer salience, boolean _public) {
+		return rulesSQLManager.RulesInsert_manager(name,des_user,no_loop,salience,_public);
+	}
     /**
      * Extracts the name of a resource from an RMI URL.
      * @param url a URL as in //host:port/name or just a name.

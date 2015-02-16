@@ -1,8 +1,10 @@
 package ami_drools;
 
 import utility.ConditionActionItem;
-import utility.rulesSQL;
+import utility.ResultSetSerializable;
+import utility.rulesSQLIS;
 import utility.ComboItem;
+import utility.rulesSQLManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -46,6 +49,8 @@ public class IsNewRule extends JFrame implements ActionListener{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private Wois wois;
+	private String ISName;
 	//private Vector<String> factsType;
 	private Boolean privFact;
 	//private Vector<Fact> privateFacts;
@@ -88,9 +93,10 @@ public class IsNewRule extends JFrame implements ActionListener{
 	/**Constructor method
 	 * @param privFact set to true if want to use only private fact
 	 */
-	public IsNewRule(Boolean privFact ) {
-		
+	public IsNewRule(Boolean privFact, Wois wois, String ISName) {
+		this.wois=wois;
 		this.privFact=privFact;
+		this.ISName=ISName;
 		conditions=new Vector<ConditionActionItem>();
 		actions=new Vector<ConditionActionItem>();
 		getContentPane().setLayout(new GridLayout(2, 0, 0, 0));
@@ -221,7 +227,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		try {
 			ifModels=new Vector<ComboItem>();
 			ResultSet rs;
-			rs=rulesSQL.getModelsIF();
+			rs=rulesSQLIS.getModelsIF();
 			if (rs==null){
 	    		System.out.println("Table of models is empty");
 	    	} else {
@@ -233,6 +239,25 @@ public class IsNewRule extends JFrame implements ActionListener{
 					System.out.println("Database connection error");
 				}
 	    	}
+			if(!privFact && wois!=null)
+			{
+				ResultSetSerializable rsPublic;
+				System.out.println("x1---------");
+				rsPublic=wois.getPublicModelsIf();
+				if (rsPublic==null){
+		    		System.out.println("Table of models is empty");
+		    	} else {
+		    		System.out.println("x2---------");
+		    		try {
+						while (rsPublic.next()) {
+							System.out.println("x2---------");
+							ifModels.add(new ComboItem(Integer.parseInt(rsPublic.getString("id_model")), rsPublic.getString("des_model"),true));
+						}
+					} catch (Exception e) {
+						System.out.println("Database connection error");
+					}
+		    	}
+			}
 		} catch (Exception e) {
 			// TODO: handle exception
 			 e.printStackTrace();
@@ -246,7 +271,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		try {
 			thenModels=new Vector<ComboItem>();
 			ResultSet rs;
-			rs=rulesSQL.getModelsTHEN();
+			rs=rulesSQLIS.getModelsTHEN();
 			if (rs==null){
 	    		System.out.println("Table of models is empty");
 	    	} else {
@@ -258,6 +283,22 @@ public class IsNewRule extends JFrame implements ActionListener{
 					System.out.println("Database connection error");
 				}
 	    	}
+			if(!privFact && wois!=null)
+			{
+				ResultSetSerializable rsPublic;
+				rsPublic=wois.getPublicModelsThen();
+				if (rsPublic==null){
+		    		System.out.println("Table of models is empty");
+		    	} else {
+		    		try {
+						while (rsPublic.next()) {
+							thenModels.add(new ComboItem(Integer.parseInt(rsPublic.getString("id_model")), rsPublic.getString("des_model"),true));
+						}
+					} catch (Exception e) {
+						System.out.println("Database connection error");
+					}
+		    	}
+			}
 		} catch (Exception e) {
 			// TODO: handle exception
 			 e.printStackTrace();
@@ -272,19 +313,36 @@ public class IsNewRule extends JFrame implements ActionListener{
             try {
             	int id=((ComboItem)cbTipologia.getSelectedItem()).getKey();         	
             	//populate condition attribute combo box
-            	ResultSet rs;
-    			rs=rulesSQL.getAttributeFromModels(id);
-    			if (rs==null){
-    	    		System.out.println("Table of template is empty");
-    	    	} else {
-    	    		try {
-    					while (rs.next()) {
-    						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
-    					}
-    				} catch (SQLException e) {
-    					System.out.println("Database connection error");
-    				}
-    	    	}rs.close();
+            	if(!((ComboItem)cbTipologia.getSelectedItem()).getShared()){
+            		ResultSet rs;
+        			rs=rulesSQLIS.getAttributeFromModels(id);
+        			if (rs==null){
+        	    		System.out.println("Table of template is empty");
+        	    	} else {
+        	    		try {
+        					while (rs.next()) {
+        						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
+        					}
+        				} catch (SQLException e) {
+        					System.out.println("Database connection error");
+        				}
+        	    	}rs.close();
+            	}else{
+            		ResultSetSerializable rs;
+        			rs=wois.getAttributesFromModel(id);
+        			if (rs==null){
+        	    		System.out.println("Table of template is empty");
+        	    	} else {
+        	    		try {
+        					while (rs.next()) {
+        						attribute.add(new ComboItem(Integer.parseInt(rs.getString("id_attribute")), rs.getString("des_attribute")));
+        					}
+        				} catch (Exception e) {
+        					System.out.println("Database connection error");
+        				}
+        	    	}
+            	}
+            	
     			if(attribute.size()>0)
     			{
     				if (cbAttributo!=null)
@@ -310,19 +368,35 @@ public class IsNewRule extends JFrame implements ActionListener{
             try {
             	int id=((ComboItem)cbTipologiaTHEN.getSelectedItem()).getKey();         	
             	//populate action attribute combo box
-            	ResultSet rs;
-    			rs=rulesSQL.getAttributeFromModels(id);
-    			if (rs==null){
-    	    		System.out.println("Table of template is empty");
-    	    	} else {
-    	    		try {
-    					while (rs.next()) {
-    						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
-    					}
-    				} catch (SQLException e) {
-    					System.out.println("Database connection error");
-    				}
-    	    	}rs.close();
+            	if(!((ComboItem)cbTipologiaTHEN.getSelectedItem()).getShared()){
+	            	ResultSet rs;
+	    			rs=rulesSQLIS.getAttributeFromModels(id);
+	    			if (rs==null){
+	    	    		System.out.println("Table of template is empty");
+	    	    	} else {
+	    	    		try {
+	    					while (rs.next()) {
+	    						attribute.add(new ComboItem(rs.getInt("id_attribute"), rs.getString("des_attribute")));
+	    					}
+	    				} catch (SQLException e) {
+	    					System.out.println("Database connection error");
+	    				}
+	    	    	}rs.close();
+            	}else{
+            		ResultSetSerializable rs;
+        			rs=wois.getAttributesFromModel(id);
+        			if (rs==null){
+        	    		System.out.println("Table of template is empty");
+        	    	} else {
+        	    		try {
+        					while (rs.next()) {
+        						attribute.add(new ComboItem(Integer.parseInt(rs.getString("id_attribute")), rs.getString("des_attribute")));
+        					}
+        				} catch (Exception e) {
+        					System.out.println("Database connection error");
+        				}
+        	    	}
+            	}
     			if(attribute.size()>0)
     			{
     				if (cbAttributoTHEN!=null)
@@ -349,30 +423,57 @@ public class IsNewRule extends JFrame implements ActionListener{
 				if(cbAttributo.getSelectedItem()!=null){
 	            	int id=((ComboItem)cbAttributo.getSelectedItem()).getKey();         	
 	            	//populate condition operation combo box, differs from type to type
-	            	ResultSet rs;
-	    			rs=rulesSQL.getTypeOfAttributes(id);
-	    			if (rs==null){
-	    	    		System.out.println("Type of attribute not found");
-	    	    	} else {
-	    	    		try {
-	    					while (rs.next()) {
-	    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
-	    						{
-	    							op.add(new ComboItem(0, "="));
-	    							op.add(new ComboItem(0, "!="));
-	    						}else{
-	    							op.add(new ComboItem(0, "="));
-	    							op.add(new ComboItem(0, "!="));
-	    							op.add(new ComboItem(0, "<"));
-	    							op.add(new ComboItem(0, "<="));
-	    							op.add(new ComboItem(0, ">"));
-	    							op.add(new ComboItem(0, ">="));
-	    						}
-	    					}
-	    				} catch (SQLException e) {
-	    					System.out.println("Database connection error");
-	    				}
-	    	    	}rs.close();
+	            	if(!((ComboItem)cbTipologia.getSelectedItem()).getShared()){
+		            	ResultSet rs;
+		    			rs=rulesSQLIS.getTypeOfAttributes(id);
+		    			if (rs==null){
+		    	    		System.out.println("Type of attribute not found");
+		    	    	} else {
+		    	    		try {
+		    					while (rs.next()) {
+		    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
+		    						{
+		    							op.add(new ComboItem(0, "="));
+		    							op.add(new ComboItem(0, "!="));
+		    						}else{
+		    							op.add(new ComboItem(0, "="));
+		    							op.add(new ComboItem(0, "!="));
+		    							op.add(new ComboItem(0, "<"));
+		    							op.add(new ComboItem(0, "<="));
+		    							op.add(new ComboItem(0, ">"));
+		    							op.add(new ComboItem(0, ">="));
+		    						}
+		    					}
+		    				} catch (SQLException e) {
+		    					System.out.println("Database connection error");
+		    				}
+		    	    	}rs.close();
+	            	}else{
+	            		ResultSetSerializable rs;
+		    			rs=wois.getTypeOfAttributes(id);
+		    			if (rs==null){
+		    	    		System.out.println("Type of attribute not found");
+		    	    	} else {
+		    	    		try {
+		    					while (rs.next()) {
+		    						if(rs.getString("type_attribute").equals("Boolean") || rs.getString("type_attribute").equals("String"))
+		    						{
+		    							op.add(new ComboItem(0, "="));
+		    							op.add(new ComboItem(0, "!="));
+		    						}else{
+		    							op.add(new ComboItem(0, "="));
+		    							op.add(new ComboItem(0, "!="));
+		    							op.add(new ComboItem(0, "<"));
+		    							op.add(new ComboItem(0, "<="));
+		    							op.add(new ComboItem(0, ">"));
+		    							op.add(new ComboItem(0, ">="));
+		    						}
+		    					}
+		    				} catch (Exception e) {
+		    					System.out.println("Database connection error");
+		    				}
+	            	}
+	            	}
 	    			if(op.size()>0)
 	    			{
 	    				if (cbOperatore!=null)
@@ -389,6 +490,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 		            	}
 	    			}
 				}
+				
             } catch (Exception e) {
             	e.printStackTrace();
             }
@@ -401,7 +503,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	            	int id=((ComboItem)cbAttributoTHEN.getSelectedItem()).getKey();         	
 	            	//populate action operation combo box, is an assignment or a notification
 	            	ResultSet rs;
-	    			rs=rulesSQL.getTypeOfAttributes(id);
+	    			rs=rulesSQLIS.getTypeOfAttributes(id);
 	    			if (rs==null){
 	    	    		System.out.println("Type of attribute not found");
 	    	    	} else {
@@ -438,7 +540,7 @@ public class IsNewRule extends JFrame implements ActionListener{
             	if(operator.equals("=")) operator="==";
             	try {
 					ResultSet rs;
-					rs=rulesSQL.getTypeOfAttributes(attribute.getKey());
+					rs=rulesSQLIS.getTypeOfAttributes(attribute.getKey());
 					if (rs==null){
 						System.out.println("Type of attribute not found");
 					} else {
@@ -452,7 +554,7 @@ public class IsNewRule extends JFrame implements ActionListener{
             	String value = new String(txtValore.getText());
             	//store the condition
             	if (inserire){
-            		conditions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", "")));
+            		conditions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", ""),model.getShared()));
             		RefreshConditionPanel();
             	}
             } catch (Exception e) {
@@ -466,24 +568,42 @@ public class IsNewRule extends JFrame implements ActionListener{
 				ComboItem model = (ComboItem)cbTipologiaTHEN.getSelectedItem();
             	ComboItem attribute = (ComboItem)cbAttributoTHEN.getSelectedItem();
             	String operator = new String(cbOperatoreTHEN.getSelectedItem().toString());
-            	try {
-					ResultSet rs;
-					rs=rulesSQL.getTypeOfAttributes(attribute.getKey());
-					if (rs==null){
-						System.out.println("Type of attribute not found");
-					} else {
-						while (rs.next()) {
-							String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
-	    	    			inserire=checkAttributeType(typeAttr,txtValoreTHEN);
-	    	    		}
-					}rs.close();
-				} catch (Exception e) {
-				}
+            	if(!model.getShared()){
+	            	try {
+						ResultSet rs;
+						rs=rulesSQLIS.getTypeOfAttributes(attribute.getKey());
+						if (rs==null){
+							System.out.println("Type of attribute not found");
+						} else {
+							while (rs.next()) {
+								String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
+		    	    			inserire=checkAttributeType(typeAttr,txtValoreTHEN);
+		    	    		}
+						}rs.close();
+					} catch (Exception e) {
+					}
+            	}else{
+            		try {
+						ResultSetSerializable rs;
+						rs=wois.getTypeOfAttributes(attribute.getKey());
+						if (rs==null){
+							System.out.println("Type of attribute not found");
+						} else {
+							while (rs.next()) {
+								String typeAttr=new String(rs.getString("type_attribute").toLowerCase());
+		    	    			inserire=checkAttributeType(typeAttr,txtValoreTHEN);
+		    	    		}
+						}
+					} catch (Exception e) {
+					}
+            	}
+            		
             	String value = new String(txtValoreTHEN.getText());
             	//store the condition
             	if (inserire){
 	            	//store the action
-	            	actions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", "")));
+	            	actions.add(new ConditionActionItem(model.getKey(), model.getValue(), attribute.getKey(), attribute.getValue(), operator, value.replace("\"", ""),model.getShared()));
+	            	insertExistsCondition(model.getKey(), model.getValue(),0 ,"" ,"","",model.getShared());
 	            	RefreshActionPanel();
             	}
             } catch (Exception e) {
@@ -499,17 +619,17 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    {
 			try {//remove the last condition
 				conditions.remove(conditions.size()-1);
-				RefreshConditionPanel();
 			} catch (Exception e) {
 			}
+			RefreshConditionPanel();
 	    }
 		if (event.getSource()==btUndoAction)
 	    {
 			try {//remove the last action
 				actions.remove(actions.size()-1);
-				RefreshActionPanel();
 			} catch (Exception e) {
 			}
+			RefreshActionPanel();
 	    }
 		if (event.getSource()==btSaveRule)
 	    {
@@ -535,77 +655,20 @@ public class IsNewRule extends JFrame implements ActionListener{
             }
 			*/
 			//insert rule header
-			String SQL=new String("");
-			try {
-				SQL+=rulesSQL.RulesInsert(txtRuleName.getText(), 1, 1, 50, 0);
-			} catch (Exception e) {
+			if(privFact){
+				insertPrivateRules();
+	    }else{
+	    	try {
+				insertSharedRules();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NotRegisteredException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			//insert conditions
-			String oldMod=new String("_");
-			Collections.sort(conditions);
-			for(int i=0;i<conditions.size();i++)
-			{
-				String mod= conditions.get(i).getDes_model();
-        		if(!oldMod.equals(mod))
-				{
-					try {
-						SQL+=rulesSQL.RulesIfFactsInsert( conditions.get(i).getId_model(),  conditions.get(i).getDes_model().toLowerCase());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
-						SQL+=rulesSQL.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					oldMod=new String(mod);
-				}else
-				{
-					SQL+=rulesSQL.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
-					//newRule+=", "+attribute + operator + value; 
-				}
-			}
-			
-			//insert action
-			oldMod=new String("_");
-			Collections.sort(actions);
-			for(int i=0;i<actions.size();i++)
-			{
-				String mod= actions.get(i).getDes_model();
-				if(!oldMod.equals(mod))
-				{
-					//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
-					try {
-						SQL+=rulesSQL.RulesThenFactsInsert( actions.get(i).getId_model(),  actions.get(i).getDes_model().toLowerCase());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					try {
-						SQL+=rulesSQL.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					oldMod=new String(mod);
-				}else
-				{
-					SQL+=rulesSQL.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
-					//newRule+=", "+attribute + operator + value; 
-				}
-			}
-			try {
-				rulesSQL.fireSQLInsertPrivateRule(SQL);
-				conditions=new Vector<ConditionActionItem>();
-				actions=new Vector<ConditionActionItem>();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	    }
+	    }
 	}
 	
 	private void RefreshConditionPanel(){
@@ -633,7 +696,7 @@ public class IsNewRule extends JFrame implements ActionListener{
         			oldMod=new String(mod);
         		}else
         		{
-        			newRule+=", "+att + op + value; 
+        			if(!op.toString().equals(""))newRule+=", "+att + op + value; 
         		}
         		
         	}
@@ -649,36 +712,63 @@ public class IsNewRule extends JFrame implements ActionListener{
 		if (actions.size()>0){
 			String oldMod=new String("_");
 	    	Collections.sort(conditions);
+	    	boolean atLeatOneSet=false;
 	    	//prima imposto tutti i setLock se non è una regola che usa solo fatti privati
 	    	if (!privFact){
 	    		String ifString=new String("\tif(");
 	    		for(int i=0;i<actions.size();i++){
+	    			
 	    			String mod= actions.get(i).getDes_model();
 	        		String att=actions.get(i).getDes_attribute();
 	        		String op=actions.get(i).getOp();
 	        		String value=actions.get(i).getValue();
 	        		if(op.equals("=") && !oldMod.equals(mod)){
-	        			try {
-							ResultSet rs;
-							rs=rulesSQL.getModel(actions.get(i).getId_model());
-							if (rs==null){
-								System.out.println("Model not found");
-							} else {//set the lock only for public fact
-								if(rs.getInt("id_user")==0)
-								{
-									String var = new String("$"+mod.toLowerCase());
-									ifString+="setLock("+var+".getId(),$wi,ISName) && ";
-									oldMod=new String(mod);
-								}	
-							}rs.close();
-						} catch (SQLException e) {
+	        			if(!actions.get(i).getShared()){
+		        			/*try {
+								ResultSet rs;
+								rs=rulesSQLIS.getModel(actions.get(i).getId_model());
+								if (rs==null){
+									System.out.println("Model not found");
+								} else {//set the lock only for public fact
+									if(rs.getInt("id_user")==0)
+									{
+										String var = new String("$"+mod.toLowerCase());
+										ifString+="setLock("+var+".getId(),$wi,ISName) && ";
+										oldMod=new String(mod);
+										atLeatOneSet=true;
+									}	
+								}rs.close();
+							} catch (SQLException e) {
+							}*/
+	        			}else{
+	        				try{
+		        				ResultSetSerializable rs;
+								rs=wois.getPublicModel(actions.get(i).getId_model());
+								if (rs==null){
+									System.out.println("Model not found");
+								} else {//set the lock only for public fact
+									rs.next();
+									if(Integer.parseInt(rs.getString("id_user"))==0)
+									{
+										String var = new String("$"+mod.toLowerCase());
+										ifString+="setLock("+var+".getId(),$wi,ISName) && ";
+										oldMod=new String(mod);
+										atLeatOneSet=true;
+									}	
+								}
+						} catch (Exception e) {
 						}
+	        			}
 	        				            			
 	        		}
 	    		}
-	    		ifString=ifString.substring(0, ifString.length()-4);
-	    		ifString+=(")\n\t{ \n");
-	    		newRule=newRule.concat(ifString);
+	    		if(atLeatOneSet)
+	    		{
+	    			ifString=ifString.substring(0, ifString.length()-4);
+		    		ifString+=(")\n\t{ \n");
+		    		newRule=newRule.concat(ifString);
+	    		}
+	    		
 	    	} 
 	    	
 	    	for(int i=0;i<actions.size();i++){
@@ -703,7 +793,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 	        		newRule+="\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
 	        	}
 	    	}
-	    	if (!privFact)newRule+="\t}\n";
+	    	if (!privFact && atLeatOneSet)newRule+="\t}\n";
 	    	newRule+=" end ";
 		}else{
 			newRule="--Nessuna azione inserita!";
@@ -720,12 +810,13 @@ public class IsNewRule extends JFrame implements ActionListener{
 		boolean inserire=true;
 		String value=txtvalue.getText();
 		if(typeAttr.equals("boolean")){//boolean case
-			if(!(value.toLowerCase().equals("true") || value.toLowerCase().equals("false"))){
+			if(cbOperatoreTHEN.getSelectedItem().toString().equals("=") && !(value.toLowerCase().equals("true") || value.toLowerCase().equals("false"))){
 				int dialogButton = JOptionPane.YES_NO_OPTION;
 				int dialogResult = JOptionPane.showConfirmDialog (null, "Il valore deve essere booleano, "
 						+ "vuoi confermare un valore True?","Warning",dialogButton);
 				if(dialogResult == JOptionPane.YES_OPTION){
 					value="True";
+					txtvalue.setText(value);
 				}else{
 					inserire=false;
 					//JOptionPane.showMessageDialog(null, "Error, invalid input type! " + value + "is not a boolean type");
@@ -734,7 +825,7 @@ public class IsNewRule extends JFrame implements ActionListener{
 			}
 		}else if(typeAttr.equals("string") && cbOperatoreTHEN.getSelectedItem().toString().equals("=")){//string case
 			txtvalue.setText("\""+value+"\"");
-		}else if(typeAttr.equals("int") || typeAttr.equals("integer") || typeAttr.equals("double") || typeAttr.equals("decimal") || typeAttr.equals("numeric") || typeAttr.equals("real")){
+		}else if(cbOperatoreTHEN.getSelectedItem().toString().equals("=") && (typeAttr.equals("int") || typeAttr.equals("integer") || typeAttr.equals("double") || typeAttr.equals("decimal") || typeAttr.equals("numeric") || typeAttr.equals("real"))){
 			//numeric case
 			if(!value.matches("-?\\d+(\\.\\d+)?")){//check if the value is a numeric type looking the pattern
 				inserire=false;
@@ -742,5 +833,228 @@ public class IsNewRule extends JFrame implements ActionListener{
 			}
 		}
 		return inserire;
+	}
+	
+	private void insertPrivateRules(){
+		String SQL=new String("");
+		try {
+			SQL+=rulesSQLIS.RulesInsert(txtRuleName.getText(), 1, true, 50, false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//insert conditions
+		String oldMod=new String("_");
+		Collections.sort(conditions);
+		for(int i=0;i<conditions.size();i++)
+		{
+			String mod= conditions.get(i).getDes_model();
+    		if(!oldMod.equals(mod))
+			{
+				try {
+					SQL+=rulesSQLIS.RulesIfFactsInsert( conditions.get(i).getId_model(),  conditions.get(i).getDes_model().toLowerCase());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					SQL+=rulesSQLIS.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				oldMod=new String(mod);
+			}else
+			{
+				SQL+=rulesSQLIS.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
+				//newRule+=", "+attribute + operator + value; 
+			}
+		}
+		
+		//insert action
+		oldMod=new String("_");
+		Collections.sort(actions);
+		for(int i=0;i<actions.size();i++)
+		{
+			String mod= actions.get(i).getDes_model();
+			if(!oldMod.equals(mod))
+			{
+				//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
+				try {
+					SQL+=rulesSQLIS.RulesThenFactsInsert( actions.get(i).getId_model(),  actions.get(i).getDes_model().toLowerCase());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					SQL+=rulesSQLIS.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				oldMod=new String(mod);
+			}else
+			{
+				SQL+=rulesSQLIS.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+				//newRule+=", "+attribute + operator + value; 
+			}
+		}
+		try {
+			rulesSQLIS.fireSQLInsertPrivateRule(SQL);
+			conditions=new Vector<ConditionActionItem>();
+			actions=new Vector<ConditionActionItem>();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void insertSharedRules() throws RemoteException, NotRegisteredException
+	{
+		if(wois!=null){
+			//insert private model if not exists
+			Integer id_user=1;
+			Vector<ConditionActionItem> condAct=new Vector<ConditionActionItem>();
+			condAct.addAll(conditions);
+			condAct.addAll(actions);
+			for(int i=0;i<condAct.size();i++){
+				try {
+				ResultSetSerializable rs;
+				rs=wois.getUsersModels(condAct.get(i).getDes_model(), id_user);
+				if (rs==null){
+					System.out.println("Model not found");
+				} else {
+					if(!rs.next() && !condAct.get(i).getShared())//no rows and no shared fact, insert the model
+					{
+						ResultSet rsLocalModel;
+						rsLocalModel=rulesSQLIS.getModel(condAct.get(i).getId_model());
+						if(rsLocalModel==null)
+						{System.out.println("Model not found");}else{
+							if(rsLocalModel.next())
+							{
+								ResultSet rsLocalModelAttributes;
+								rsLocalModelAttributes=rulesSQLIS.getAttributeFromModels(condAct.get(i).getId_model());
+								Vector<String> des_attribute=new Vector<String>();
+								Vector<String> type_attribute=new Vector<String>();
+								if(rsLocalModelAttributes==null)
+								{System.out.println("Model not found");}else{
+									while(rsLocalModelAttributes.next())
+									{
+										des_attribute.add(rsLocalModelAttributes.getString("des_attribute"));
+										type_attribute.add(rsLocalModelAttributes.getString("type_attribute"));
+									}
+								}
+								try {
+									boolean inserito=true;
+									boolean if_model=rsLocalModel.getBoolean("if_model");
+									boolean then_model=rsLocalModel.getBoolean("then_model");
+									inserito=wois.newModelWithAttribute(rsLocalModel.getString("des_model"), id_user,if_model ,
+											then_model, des_attribute, type_attribute);
+									if (!inserito)
+									{
+										System.out.println("Error, model not insert");
+									}
+								} catch (RemoteException e) {
+									e.printStackTrace();
+								}
+							}
+							
+						}rsLocalModel.close();
+					}	
+				}
+				} catch (SQLException e) {
+				}
+			}
+			//insert rule, the id is not the same, so pass the description
+			String SQL=new String("");
+			try {
+				SQL+=wois.RulesInsert_manager(txtRuleName.getText(),ISName, true, 50, false);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//insert conditions
+			String oldMod=new String("_");
+			Collections.sort(conditions);
+			for(int i=0;i<conditions.size();i++)
+			{
+				String mod= conditions.get(i).getDes_model();
+	    		if(!oldMod.equals(mod))
+				{
+					try {
+						//SQL+=rulesSQLIS.RulesIfFactsInsert( conditions.get(i).getId_model(),  conditions.get(i).getDes_model().toLowerCase());
+						SQL+=wois.RulesIfFactsInsert_manager( conditions.get(i).getDes_model(),  conditions.get(i).getDes_model().toLowerCase());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						//SQL+=rulesSQLIS.RulesIfFactsDetailsInsert(conditions.get(i).getId_attribute(), conditions.get(i).getOp(), conditions.get(i).getValue());
+						SQL+=wois.RulesIfFactsDetailsInsert_manager(conditions.get(i).getDes_attribute(),mod, conditions.get(i).getOp(), conditions.get(i).getValue());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					oldMod=new String(mod);
+				}else
+				{
+					SQL+=wois.RulesIfFactsDetailsInsert_manager(conditions.get(i).getDes_attribute(),mod, conditions.get(i).getOp(), conditions.get(i).getValue()); 
+				}
+			}
+			
+			//insert action
+			oldMod=new String("_");
+			Collections.sort(actions);
+			for(int i=0;i<actions.size();i++)
+			{
+				String mod= actions.get(i).getDes_model();
+				if(!oldMod.equals(mod))
+				{
+					//newRule+="\t $"+template.toLowerCase()+":" + template + "("+ attribute + operator + value;
+					try {
+						//SQL+=rulesSQLIS.RulesThenFactsInsert( actions.get(i).getId_model(),  actions.get(i).getDes_model().toLowerCase());
+						SQL+=wois.RulesThenFactsInsert_manager( actions.get(i).getDes_model(),  actions.get(i).getDes_model().toLowerCase());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						//SQL+=rulesSQLIS.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+						SQL+=wois.RulesThenFactsDetailsInsert_manager(actions.get(i).getDes_attribute(),mod, actions.get(i).getOp(), actions.get(i).getValue());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					oldMod=new String(mod);
+				}else
+				{
+					//SQL+=rulesSQLIS.RulesThenFactsDetailsInsert(actions.get(i).getId_attribute(), actions.get(i).getOp(), actions.get(i).getValue());
+					SQL+=wois.RulesThenFactsDetailsInsert_manager(actions.get(i).getDes_attribute(),mod, actions.get(i).getOp(), actions.get(i).getValue());
+				}
+			}
+			try {
+				wois.newRule(SQL);
+				conditions=new Vector<ConditionActionItem>();
+				actions=new Vector<ConditionActionItem>();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+			
+	}
+	private void insertExistsCondition(Integer id_model,String des_model, Integer id_attribute,String des_attribute, String operator, String value, boolean shared){
+		//if not exists the variable in the condition insert it
+		boolean trovato=false;
+		int i=0;
+		for(i=0;i<conditions.size() && !trovato;i++)
+		{
+			if(des_model.toLowerCase().equals(conditions.get(i)))
+			{
+				trovato=true;
+			}
+		}
+		if(!trovato){
+			conditions.add(new ConditionActionItem(id_model, des_model, id_attribute, des_attribute, operator, value.replace("\"", ""),shared));
+    		RefreshConditionPanel();
+		}
 	}
 }

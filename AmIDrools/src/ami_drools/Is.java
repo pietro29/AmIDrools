@@ -4,6 +4,8 @@ package ami_drools;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,7 +32,8 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 
 import sharedFacts.HueLight;
-import utility.rulesSQL;
+import utility.rulesSQLIS;
+import utility.rulesSQLManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -63,6 +66,7 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 
 class IsRemote extends UnicastRemoteObject implements IsIntf 
@@ -101,7 +105,6 @@ public class Is extends JFrame implements ActionListener{
     /** Private fact */
     private Position position;
     private Battery battery;
-    private Clock clock;
     boolean Cucina;
     boolean Soggiorno;
     boolean CameraLetto;
@@ -122,6 +125,9 @@ public class Is extends JFrame implements ActionListener{
 	KieSession kSession ;
 	
 	RuleRunner runner;
+	
+	DefaultTableModel modelPrivate = new DefaultTableModel(); 
+	DefaultTableModel modelShared = new DefaultTableModel(); 
 	private TextArea textArea;
 	private JPanel panel;
 	private JLabel label;
@@ -156,6 +162,7 @@ public class Is extends JFrame implements ActionListener{
 	private JPanel panelSharedTableButton;
 	private JPanel panelPrivateTableButton;
 	private JButton btCancellaRegolaPrivata;
+	private JButton btCancellaRegolaPubblica;
 
     //
     
@@ -173,7 +180,6 @@ public class Is extends JFrame implements ActionListener{
 			this.name=name;
 			position = new Position("idp1",1,"Soggiorno");
 			battery = new Battery("idb1",100);
-			clock=new Clock("idc1");
 			
 			getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 			
@@ -229,6 +235,12 @@ public class Is extends JFrame implements ActionListener{
 			textArea.setBackground(UIManager.getColor("InternalFrame.activeTitleBackground"));
 			
 			panelNewRule = new JPanel();
+			panelNewRule.addFocusListener(new java.awt.event.FocusAdapter() {
+	            public void focusLost(java.awt.event.FocusEvent evt) {
+	                jPanel1FocusLost(evt);
+	            }
+	        });
+			
 			//tabbedPane.addTab("New tab", null, panelNewRule, null);
 			
 			this.setIconImage(new ImageIcon(ClassLoader.getSystemResource("images/drools.png")).getImage());
@@ -249,7 +261,7 @@ public class Is extends JFrame implements ActionListener{
 			lblNewLabel = new JLabel("");
 			panelPosizione.add(lblNewLabel);
 			
-			lblNewLabel_3 = new JLabel("POSIZIONE");
+			lblNewLabel_3 = new JLabel("POSITION");
 			lblNewLabel_3.setFont(new Font("Trebuchet MS", Font.PLAIN, 20));
 			lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 			panelPosizione.add(lblNewLabel_3);
@@ -273,29 +285,21 @@ public class Is extends JFrame implements ActionListener{
 			tabbedPane.addTab("New", iconPanel2, panelNewRule, "New Rules");
 			panelNewRule.setLayout(new GridLayout(0, 2, 0, 0));
 			
-			btRegolaCondivisa = new JButton("Regola con fatti condivisi");
+			btRegolaCondivisa = new JButton("New rule with shared facts");
 			panelNewRule.add(btRegolaCondivisa);
 			btRegolaCondivisa.addActionListener((ActionListener) this);
 			
-			btRegolaPrivata = new JButton("Regola con fatti privati");
+			btRegolaPrivata = new JButton("New rule with private facts");
 			panelNewRule.add(btRegolaPrivata);
 			tbPrivateRules = new JTable();
-			tbPrivateRules.setModel(new DefaultTableModel(
-				new Object[][] {
-				},
-				new String[] {
-				}
-			));
+			tbPrivateRules.setModel(modelPrivate);
+			modelPrivate.addColumn("Rule");
 			extractRuleFromFile("resources/local_rules.txt");
 			
 			tbSharedRules = new JTable();
-			tbSharedRules.setModel(new DefaultTableModel(
-				new Object[][] {
-				},
-				new String[] {
-				}
-			));
-			extractRuleFromFile("resources/shared_rules.txt");
+			tbSharedRules.setModel(modelShared);
+			modelShared.addColumn("Rule");
+			//extractRuleFromFile("resources/shared_rules.txt");
 			tbSharedRules.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
 			panelNewRule.add(tbSharedRules);
 			tbPrivateRules.setBorder(new LineBorder(new Color(0, 0, 0), 2, true));
@@ -303,12 +307,17 @@ public class Is extends JFrame implements ActionListener{
 			
 			panelSharedTableButton = new JPanel();
 			panelNewRule.add(panelSharedTableButton);
+			panelSharedTableButton.setLayout(new GridLayout(0, 1, 0, 0));
+			
+			btCancellaRegolaPubblica = new JButton("Delete");
+			panelSharedTableButton.add(btCancellaRegolaPubblica);
+			btCancellaRegolaPubblica.addActionListener((ActionListener) this);
 			
 			panelPrivateTableButton = new JPanel();
 			panelNewRule.add(panelPrivateTableButton);
 			panelPrivateTableButton.setLayout(new GridLayout(1, 0, 0, 0));
 			
-			btCancellaRegolaPrivata = new JButton("Cancella");
+			btCancellaRegolaPrivata = new JButton("Delete");
 			panelPrivateTableButton.add(btCancellaRegolaPrivata);
 			btCancellaRegolaPrivata.addActionListener((ActionListener) this);
 			
@@ -324,7 +333,7 @@ public class Is extends JFrame implements ActionListener{
 			label_4 = new JLabel("");
 			panelBatteria.add(label_4);
 			
-			lblBattetr = new JLabel("BATTERIA");
+			lblBattetr = new JLabel("BATTERY");
 			lblBattetr.setHorizontalAlignment(SwingConstants.CENTER);
 			lblBattetr.setFont(new Font("Trebuchet MS", Font.PLAIN, 20));
 			panelBatteria.add(lblBattetr);
@@ -352,7 +361,6 @@ public class Is extends JFrame implements ActionListener{
 			
 			mDevices.put(position.getId(), position);
 			mDevices.put(battery.getId(), battery);
-			mDevices.put(clock.getId(), clock);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -434,7 +442,7 @@ public class Is extends JFrame implements ActionListener{
 	{
 		runner = new RuleRunner(name, textArea);
 		insertPrivateFacts();
-    	runner.runRules(privateFacts);
+    	runner.CreateKnowlegdeBase(privateFacts);
     	return runner;
 	}
 	
@@ -449,10 +457,7 @@ public class Is extends JFrame implements ActionListener{
 		Fact privateFactBat = new Fact(battery.getId(),"Battery");
 		privateFactBat.insertAttributeValue("level", "int", new Integer(battery.getLevel()).toString());
 		privateFactBat.insertAttributeValue("_privateVisibility", "Boolean", "true");
-		//insert clock fact
-		Fact privateFactClo = new Fact(clock.getId(),"Clock");
-		privateFactClo.insertAttributeValue("dateTime", "java.util.Date",dateFormat.format(clock.getDateUpdated()));
-		privateFactClo.insertAttributeValue("_privateVisibility", "Boolean", "true");
+		
 		privateFacts.add(privateFactBat);
 		privateFacts.add(privateFactPos);
 		//privateFacts.add(privateFactClo);
@@ -581,17 +586,19 @@ public class Is extends JFrame implements ActionListener{
             	{
             		unregister(runner.wois);
             		runner.wois=null;
-            		runner.runRules(privateFacts);
+            		runner.CreateKnowlegdeBase(privateFacts);
             		this.setImageButton(bManager, "images/connect.png");
             		textArea.append("Non connesso\n");
             	}else{
             	
             		try {
+            			
             			textArea.append("Inizio Connessione\n");
             			nomeServer=txtServerIP.getText();
 						Wois wois = new Wois(nomeServer);
 						register(wois, name);
-						runner.runRules(privateFacts);
+						runner.CreateKnowlegdeBase(privateFacts);
+						setSharedRuleTable();
 						textArea.append("Connesso\n");
 						this.setImageButton(bManager, "images/disconnect.png");
 					} catch (Exception e) {
@@ -681,7 +688,7 @@ public class Is extends JFrame implements ActionListener{
     	if (event.getSource()==btRegolaPrivata)
 	    {
     		try {
-            	IsNewRule IsNR = new IsNewRule( true);
+            	IsNewRule IsNR = new IsNewRule(true, null, runner.ISName);
             	IsNR.setTitle("New Rule");
             	IsNR.setSize(700, 500);
             	IsNR.setLocationRelativeTo(null);
@@ -702,11 +709,14 @@ public class Is extends JFrame implements ActionListener{
             			generalFacts.add(privateFacts.get(i));
             		}
             		
-            		IsNewRule IsNR = new IsNewRule(false);
+            		IsNewRule IsNR = new IsNewRule(false, runner.wois, runner.ISName);
                 	IsNR.setTitle("New Rule");
                 	IsNR.setSize(700, 500);
                 	IsNR.setVisible(true);
                 	IsNR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            	}else
+            	{
+            		JOptionPane.showMessageDialog(null, "You are not connected to a manager!");
             	}
             } catch (Exception e) {
             	e.printStackTrace();
@@ -721,6 +731,22 @@ public class Is extends JFrame implements ActionListener{
             	e.printStackTrace();
             }
     	}
+    	if (event.getSource()==btCancellaRegolaPubblica)
+	    {
+            try {
+            	if(runner.wois!=null)
+            	{
+            		//deleteRuleFromFile("resources/local_rules.txt",tbPrivateRules.getValueAt(tbPrivateRules.getSelectedRow(), 0).toString());
+                	deleteRuleFromManager(tbSharedRules.getValueAt(tbSharedRules.getSelectedRow(), 0).toString());
+            	}else{
+            		JOptionPane.showMessageDialog(null, "You are not connected to a manager!");
+            	}
+            	
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    	}
+    	
     	
     }
     
@@ -772,7 +798,7 @@ public class Is extends JFrame implements ActionListener{
             br.close();
             if (fileName.contains("shared"))
             {
-            	setSharedRuleTable(rows);
+            	setSharedRuleTable();
             }else{
             	setPrivateRuleTable();
             }
@@ -787,26 +813,29 @@ public class Is extends JFrame implements ActionListener{
      */
     private void setPrivateRuleTable()
     {
-    	DefaultTableModel model = new DefaultTableModel();  
-    	// Create a column 
-    	model.addColumn("Rule");
     	try {
+    		//clean the table
+    		int i=0;
+    		while(modelPrivate.getRowCount()>0)
+    		{
+    			modelPrivate.removeRow(i);
+    		}
     		ResultSet rs;
-    		rs=rulesSQL.getRules();
+    		rs=rulesSQLIS.getRules();
     		if (rs==null){
     			System.out.println("Models not found");
         	} else {
 			while(rs.next())
 	    	{	// Append a row 
-	        	model.addRow(new Object[]{rs.getString("name")});
+				modelPrivate.addRow(new Object[]{rs.getString("name")});
+	        	JOptionPane.showMessageDialog(null, rs.getString("name"));
 	        }
         	}rs.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			
 		}
-    	model.fireTableDataChanged();
-    	tbPrivateRules = new JTable(model);
+    	modelPrivate.fireTableDataChanged();
     	tbPrivateRules.repaint();
     	
     	
@@ -814,19 +843,30 @@ public class Is extends JFrame implements ActionListener{
     
     /**
      * Create a list of shared rules
-     * @param rows
      */
-    private void setSharedRuleTable(Vector<String> rows)
+    private void setSharedRuleTable()
     {
-    	DefaultTableModel model = new DefaultTableModel();  
-    	// Create a column 
-    	model.addColumn("Rule"); 
-    	for(int i=0;i<rows.size();i++)
-    	{	// Append a row 
-        	model.addRow(new Object[]{rows.get(i)});
-        }
-    	tbSharedRules = new JTable(model);
-    	
+    	if (runner.wois!=null){
+        	try {
+        		//clean the table
+        		int i=0;
+        		while(modelPrivate.getRowCount()>0)
+        		{
+        			modelShared.removeRow(i);
+        		}
+        		Vector<String> rules;
+        		rules=runner.wois.getRulesNames(runner.ISName);
+        		for(int j=0;j<rules.size();j++){
+        			modelShared.addRow(new Object[]{rules.get(j)});
+        			JOptionPane.showMessageDialog(null, rules.get(j));
+    	        }
+    		} catch (Exception e) {
+    			// TODO: handle exception
+    			
+    		}
+        	modelShared.fireTableDataChanged();
+        	tbSharedRules.repaint();
+    	}
     }
     
     private void deleteRuleFromFile(String fileName, String ruleName) throws FileNotFoundException
@@ -868,8 +908,19 @@ public class Is extends JFrame implements ActionListener{
      */
     private void deleteRuleFromDB(String ruleName)
    	{
-    	rulesSQL.deleteRules(ruleName);
+    	rulesSQLIS.deleteRules(ruleName);
    		setPrivateRuleTable();
+   	}
+    
+    /**
+     * Delete the specific rule from the database of the manager
+     * @param ruleName name of the rule to delete
+     * @throws RemoteException 
+     */
+    private void deleteRuleFromManager(String ruleName) throws RemoteException
+   	{
+    	runner.wois.deleteRules(ruleName, runner.ISName);
+   		setSharedRuleTable();
    	}
     /**
      * Update the environment state simulator
@@ -900,4 +951,11 @@ public class Is extends JFrame implements ActionListener{
     		this.setImageButton(btCucina, "images/cucinaBN.png",50,50);
     	}
     }
+    
+    public void jPanel1FocusLost(FocusEvent e) {
+    	JOptionPane.showMessageDialog(null, "dentro");
+        setSharedRuleTable();
+        setPrivateRuleTable();
+    }
+
 }

@@ -2,7 +2,10 @@ package ami_drools;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.sql.ResultSet;
 import java.util.Vector;
+
+import utility.ResultSetSerializable;
 
 
 public interface WoisManager extends Remote {
@@ -63,7 +66,7 @@ public interface WoisManager extends Remote {
     
     String getSharedFunctions() throws RemoteException;
     
-    String getSharedRules() throws RemoteException;
+    String getSharedRules(String des_user) throws RemoteException;
     /**
      * 
      * @param inf
@@ -72,5 +75,26 @@ public interface WoisManager extends Remote {
      */
     void removeMember( IsIntf inf ) throws RemoteException, NotRegisteredException;
     
+    boolean newModelWithAttribute(String des_model, int id_user, boolean if_model, boolean then_model, Vector<String> des_attribute, Vector<String> type_attribute) throws RemoteException;
+    String RulesThenFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) throws RemoteException;
+    String RulesIfFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) throws RemoteException;
+    String RulesThenFactsInsert_manager(String des_model, String var_name) throws RemoteException;
+    String RulesIfFactsInsert_manager(String des_model, String var_name) throws RemoteException;
+    String RulesInsert_manager(String name, String des_user, boolean no_loop, Integer salience, boolean _public) throws RemoteException;
+    
+    Vector<String> getRulesNames(String ISName) throws RemoteException, NotRegisteredException;
+    
+    boolean newRule(String SQL) throws RemoteException;
+    boolean deleteRules(String ruleName, String ISName) throws RemoteException;
+    
     String say() throws RemoteException;
+    
+    ResultSetSerializable getUsersModels(String des_model, Integer id_user) throws RemoteException;
+    ResultSetSerializable getPublicModelsIf() throws RemoteException;
+    ResultSetSerializable getPublicModelsThen() throws RemoteException;
+    ResultSetSerializable getPublicModel(int id_model) throws RemoteException;
+    ResultSetSerializable getAttributesFromModel(int id_model) throws RemoteException;
+    ResultSetSerializable getTypeOfAttributes(int id_attribute) throws RemoteException;
+    
+    
 }

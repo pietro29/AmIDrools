@@ -9,11 +9,20 @@ public class ComboItem implements Comparable<ComboItem>
 {
     private int key;
     private String value;
+    private boolean shared; 
 
     public ComboItem(int key, String value)
     {
         this.key = key;
         this.value = value;
+        shared=false;
+    }
+    
+    public ComboItem(int key, String value, boolean shared)
+    {
+        this.key = key;
+        this.value = value;
+        this.shared=shared;
     }
 
     @Override
@@ -30,6 +39,11 @@ public class ComboItem implements Comparable<ComboItem>
     public String getValue()
     {
         return value;
+    }
+    
+    public boolean getShared()
+    {
+        return shared;
     }
     
     @Override

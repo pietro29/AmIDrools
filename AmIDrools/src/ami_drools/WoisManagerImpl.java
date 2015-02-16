@@ -29,7 +29,10 @@ import java.util.Vector;
 
 import sharedFacts.HueLight;
 import utility.DBTool;
+import utility.ResultSetSerializable;
 import utility.SQLiteJDBC;
+import utility.rulesSQLIS;
+import utility.rulesSQLManager;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -1011,6 +1014,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     }
    
     public String getSharedTemplates(){
+    	System.err.println("1------------");
     	String s="";
     	StringBuilder sb = new StringBuilder();
     	//DBTool dbt = new DBTool();
@@ -1018,15 +1022,15 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	ResultSet rs = null;
     	ResultSet rsTemplate=null;
     	//modelsSelectshared.sql
-    	rs = SQLiteJDBC.retrieveData("select id_model" +
+       	rs = SQLiteJDBC.retrieveData("select id_model" +
 								", des_model " + 
 								"from models " +  
-								"where id_user is null;", 0);
+								"where ifnull(id_user,0)=0;", 0);
     	if (rs==null){
     		System.out.println("Table models is empty");
     	} else {
     		try {
-				while (rs.next()) {
+			while (rs.next()) {
 				    id_model=rs.getInt("id_model");
 				    sb.append("declare " + rs.getString("des_model"));
 			    	sb.append(System.lineSeparator());
@@ -1034,29 +1038,171 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
 				    rsTemplate = SQLiteJDBC.retrieveData("select * " +
 				    									" from attributes a " +
 				    									" where a.id_model=" + id_model + ";",0);
+				    System.err.println(sb);
 				    while (rsTemplate.next()) {
-				    	sb.append(rsTemplate.getString("des_attribute") + " : " + rsTemplate.getString("type_attribute"));
+				    	sb.append("\t"+rsTemplate.getString("des_attribute") + " :\t " + rsTemplate.getString("type_attribute"));
 				    	sb.append(System.lineSeparator());
 				    }
-				    sb.append("modificati : " + "java.util.List");
+				    sb.append("\tmodificati :\t " + "java.util.List");
 			    	sb.append(System.lineSeparator());
 			    	sb.append("end");
 			    	sb.append(System.lineSeparator());
 				}
 				s = sb.toString();
-				
+				rs.close();
+				rsTemplate.close();
 			} catch (SQLException e) {
 				System.out.println("Database connection error (shared declares query)");
 				//s = getStringFromFile("shared_declare.txt");
 			}
     	}
+    	System.err.println(s);
     	return s;
     }
+    
     public String getSharedFunctions(){
     	return getStringFromFile("shared_function.txt");
     }
+    /*
     public String getSharedRules(){
     	return getStringFromFile("shared_rules.txt");
+    }*/
+    
+    public String getSharedRules(String des_user){
+    	String s = new String("");
+		ResultSet rs;
+		System.err.println(des_user);
+		rs=rulesSQLManager.getRules(des_user);
+		if (rs==null){
+    		System.out.println("Rules not found");
+    	} else {
+    		try {
+				while (rs.next()) {
+					s+="rule \"" + rs.getString("name") +"\"\n";
+					System.err.println(rs.getBoolean("no_loop"));
+					if(rs.getBoolean("no_loop")) s+="no-loop\n";
+					if(rs.getInt("salience")>0) s+="salience "+ rs.getInt("salience") +"\n";
+					s+="when\n";//load condition
+					ResultSet rsCond;
+					rsCond=rulesSQLManager.getRulesConditionsFacts(rs.getInt("id_rule"));
+					if (rsCond==null){
+			    		System.out.println("Condition of the rule not found");
+			    		return "";
+			    	} else {
+			    		try {
+			    			s+="\t $wi: Wois() \n";
+							while (rsCond.next()) {
+								s+="\t $" + rsCond.getString("var_name") + ":"+rsCond.getString("des_model")+"(";
+								ResultSet rsCondDetails;
+								rsCondDetails=rulesSQLManager.getRulesConditionsFactsDetails(rsCond.getInt("id_ruleiffact"));
+								if (rsCondDetails==null){
+						    		System.out.println("Condition of the rule not found");
+						    		return "";
+						    	} else {
+						    		try {int i=0;
+										while (rsCondDetails.next()) {
+											if (i>0 && !rsCondDetails.getString("operation").equals("")) s+=",";
+											s+=rsCondDetails.getString("des_attribute") +rsCondDetails.getString("operation")+rsCondDetails.getString("value");
+											i=1;
+										}
+										s+=")\n";
+						    		}catch (Exception e) {
+										// TODO: handle exception
+						    			e.printStackTrace();
+										return "";
+									}
+						    	}rsCondDetails.close();
+								
+							}
+							s+="\n";
+			    		}catch (Exception e) {
+							// TODO: handle exception
+			    			e.printStackTrace();
+							return "";
+						}
+			    	}rsCond.close();
+			    	
+					s+="then\n";//load action
+					boolean atLeatOneSet=false;
+					ResultSet rsAct;
+					rsAct=rulesSQLManager.getRulesActionsFacts(rs.getInt("id_rule"));
+					if (rsAct==null){
+			    		System.out.println("Condition of the rule not found");
+			    		return "";
+			    	} else {
+			    		try {
+			    			//prima imposto tutti i setLock
+			    	    		String ifString=new String("\tif(");
+			    	    		ResultSet rsActions;
+			    	    		rsActions=rulesSQLManager.getRulesActions(rs.getInt("id_rule"));
+			    	    		while (rsActions.next()) {
+			    	    			String op= rsActions.getString("operation");
+			    	        		if(op.equals("=")){
+    									String var = new String("$"+rsActions.getString("var_name"));
+    									ifString+="setLock("+var+".getId(),$wi,ISName) && ";
+    									atLeatOneSet=true;
+			    	        		}	
+			    	    		}rsActions.close();
+			    	    		if(atLeatOneSet)
+			    	    		{
+			    	    			ifString=ifString.substring(0, ifString.length()-4);
+			    	    			ifString+=(")\n\t{ \n");
+			    	    			s=s.concat(ifString);
+			    	    		}
+							while (rsAct.next()) {
+								
+								ResultSet rsActDetails;
+								rsActDetails=rulesSQLManager.getRulesActionsFactsDetails(rsAct.getInt("id_rulethenfact"));
+								if (rsActDetails==null){
+						    		System.out.println("Condition of the rule not found");
+						    		return "";
+						    	} else {
+						    		try {int i=0;
+										while (rsActDetails.next()) {
+											String var=new String("$"+rsAct.getString("var_name"));
+											String value=new String(rsActDetails.getString("value"));
+											String att=new String(rsActDetails.getString("des_attribute"));
+											if(rsActDetails.getString("operation").equals("notify"))
+								        	{ //print some text
+												s+="\t\t txtArea.append(\""+ value +"\"+"+var+".get"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"()+\"\\n\");\n";
+								        	}else{//modify an attribute
+								        		/*
+								        		 * if(setLock($f.getId(),$wi,ISName))
+													{
+														modify($f) {setAccesa(false)};
+														$f.getModificati().add(new String("accesa"));
+													}*/
+								        		s+="\t\t modify("+var+") {set"+att.substring(0,1).toUpperCase()+att.substring(1,att.length())+"("+value+")};\n";
+								        		s+="\t\t "+var+".getModificati().add(new String(\""+att+"\"));\n";
+								        	}
+										}
+										rsActDetails.close();
+						    		}catch (Exception e) {
+										// TODO: handle exception
+						    			e.printStackTrace();
+										s="";
+									}
+						    	}
+								
+							}rsAct.close();
+			    		}catch (Exception e) {
+							// TODO: handle exception
+			    			e.printStackTrace();
+							s="";
+						}
+			    	}
+					if (atLeatOneSet) s+="\t}\n";
+					s+="end";
+					
+				}rs.close();
+				
+    		}
+			catch (Exception e) {
+					// TODO: handle exception
+				return "";
+			}
+		}
+		return s;
     }
     /**
      * Parse a file in a string
@@ -1116,7 +1262,7 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
     	//Create RMI registry
     	LocateRegistry.createRegistry(1099);
     	//Set IP server hostname
-    	System.setProperty("java.rmi.server.hostname", "192.168.153.130");
+    	System.setProperty("java.rmi.server.hostname", "192.168.194.131");
         BufferedReader bf = new BufferedReader( new InputStreamReader( System.in ) );
         WoisManagerImpl mw = new WoisManagerImpl( args[0] );
         
@@ -1136,4 +1282,161 @@ public class WoisManagerImpl extends UnicastRemoteObject implements WoisManager 
         }
         // nothing else to do
     }
+	
+	public boolean newModelWithAttribute(String des_model, int id_user,
+			boolean if_model, boolean then_model, Vector<String> des_attribute,
+			Vector<String> type_attribute) throws RemoteException {
+		String SQL=new String("");
+		try {
+			SQL+=rulesSQLManager.ModelInsert( des_model, id_user, if_model,then_model);
+			for(int i=0;i<des_attribute.size();i++){
+				SQL+=rulesSQLManager.AttributeInsert(des_attribute.get(i), type_attribute.get(i));
+			}
+			rulesSQLManager.fireSQLInsertCommand(SQL);
+		} catch (Exception e) {
+			// TODO: handle exception
+			return false;
+		}
+		
+		return true;
+	}
+
+	public Vector<String> getRulesNames(String ISName) throws RemoteException,NotRegisteredException {
+		try {
+			Vector<String> rulesName=new Vector<String>();
+    		ResultSet rs;
+    		rs=rulesSQLManager.getRules(ISName);
+    		if (rs==null){
+    			System.out.println("Models not found");
+        	} else {
+			while(rs.next())
+	    	{	// Append a row 
+				rulesName.add(new String(rs.getString("name")));
+	        }
+        	}rs.close();
+        	return rulesName;
+		} catch (Exception e) {
+			// TODO: handle exception	
+		}
+		return null;
+	}
+	
+	public boolean newRule(String SQL) throws RemoteException {
+		try {
+			rulesSQLManager.fireSQLInsertCommand(SQL);
+		} catch (Exception e) {
+			// TODO: handle exception
+			return false;
+		}
+		return true;
+	}
+	
+	public ResultSetSerializable getUsersModels(String des_model, Integer id_user) {
+		try {
+			ResultSet rs=rulesSQLManager.getUsersModels(des_model, id_user);
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSetSerializable getPublicModelsIf() {
+		try {
+			ResultSet rs=rulesSQLManager.getModelsIF();
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSetSerializable getPublicModelsThen() {
+		try {
+			ResultSet rs=rulesSQLManager.getModelsTHEN();
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSetSerializable getAttributesFromModel(int id_model) {
+		try {
+			ResultSet rs=rulesSQLManager.getAttributeFromModels(id_model);
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSetSerializable getTypeOfAttributes(int id_attribute) {
+		try {
+			ResultSet rs=rulesSQLManager.getTypeOfAttributes(id_attribute);
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public ResultSetSerializable getPublicModel(int id_model) {
+		try {
+			ResultSet rs=rulesSQLManager.getModel(id_model);
+			ResultSetSerializable rss=new ResultSetSerializable(rs);
+			rs.close();
+			return rss;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public String RulesThenFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) {
+		return rulesSQLManager.RulesThenFactsDetailsInsert_manager(des_attribute, des_model,operation,value);
+	}
+	
+	public String RulesIfFactsDetailsInsert_manager(String des_attribute,String des_model, String operation, String value) {
+		return rulesSQLManager.RulesIfFactsDetailsInsert_manager(des_attribute,des_model,operation,value);
+	}
+	
+	public String RulesThenFactsInsert_manager(String des_model, String var_name) {
+		return rulesSQLManager.RulesThenFactsInsert_manager(des_model,var_name);
+	}
+	
+	public String RulesIfFactsInsert_manager(String des_model, String var_name) {
+		return rulesSQLManager.RulesIfFactsInsert_manager(des_model,var_name);
+	}
+
+	public String RulesInsert_manager(String name, String des_user, boolean no_loop, Integer salience, boolean _public) {
+		return rulesSQLManager.RulesInsert_manager(name,des_user,no_loop,salience,_public);
+	}
+	
+	public boolean deleteRules(String ruleName, String ISName) throws RemoteException {
+		try {
+			rulesSQLManager.deleteRules(ruleName);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
 }

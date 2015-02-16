@@ -45,7 +45,7 @@ import org.kie.api.runtime.rule.Match;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 
-import utility.rulesSQL;
+import utility.rulesSQLIS;
 
 public class RuleRunner {
 	KieSession kSession;
@@ -89,7 +89,7 @@ public class RuleRunner {
 	 * @param rules the string that create the knowledge base
 	 * @param facts the facts that are already inside the client
 	 */
-	public void runRules(Vector<Fact> facts) {
+	public void CreateKnowlegdeBase(Vector<Fact> facts) {
 		try {
 			privateFacts=new Vector<Fact>();
 			kieServices = KieServices.Factory.get();
@@ -239,8 +239,10 @@ public class RuleRunner {
 		}else{
 			s+="\n";
 		//s+=getStringFromFile("/resources/shared_declare.txt");
-		if (wois!=null)
+		if (wois!=null){
 			s+=wois.getSharedFactsTemplates();//import the template/declare of the shared fact
+			
+		}
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_function.txt");//import the shared function
 		if (wois!=null) 
@@ -251,8 +253,8 @@ public class RuleRunner {
 		s+="\n";
 		//s+=getStringFromFile("/resources/shared_rules.txt");//import the rules that use shared variable (declare needed)
 		if (wois!=null)
-			//s+=wois.getSharedFactsRules();
-			s+=getStringFromFile("resources/shared_rules.txt");
+			s+=wois.getSharedFactsRules(ISName);
+			//s+=getStringFromFile("resources/shared_rules.txt");
 		}
 			
 		System.out.println(s);
@@ -278,7 +280,7 @@ public class RuleRunner {
 	private String getModelsFromDBForDRL(){
 		String s = new String("");
 		ResultSet rs;
-		rs=rulesSQL.getModels();
+		rs=rulesSQLIS.getModels();
 		if (rs==null){
     		System.out.println("Models not found");
     	} else {
@@ -286,7 +288,7 @@ public class RuleRunner {
 				while (rs.next()) {
 					s+="declare " + rs.getString("des_model") +"\n";
 					ResultSet rsAtt;
-					rsAtt=rulesSQL.getAttributeFromModels(rs.getInt("id_model"));
+					rsAtt=rulesSQLIS.getAttributeFromModels(rs.getInt("id_model"));
 					if (rsAtt==null){
 			    		System.out.println("Attribute of the model not found");
 			    	} else {
@@ -318,16 +320,23 @@ public class RuleRunner {
 	private String getRulesFromDBForDRL(){
 		String s = new String("");
 		ResultSet rs;
-		rs=rulesSQL.getRules();
+		rs=rulesSQLIS.getRules();
 		if (rs==null){
     		System.out.println("Rules not found");
     	} else {
     		try {
 				while (rs.next()) {
 					s+="rule \"" + rs.getString("name") +"\"\n";
+					try {
+						if(rs.getBoolean("no_loop")) s+="no-loop\n";
+						if(rs.getInt("salience")>0) s+="salience "+ rs.getInt("salience") +"\n";
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					s+="when\n";//load condition
 					ResultSet rsCond;
-					rsCond=rulesSQL.getRulesConditionsFacts(rs.getInt("id_rule"));
+					rsCond=rulesSQLIS.getRulesConditionsFacts(rs.getInt("id_rule"));
 					if (rsCond==null){
 			    		System.out.println("Condition of the rule not found");
 			    		return "";
@@ -336,18 +345,25 @@ public class RuleRunner {
 							while (rsCond.next()) {
 								s+="\t $" + rsCond.getString("var_name") + ":"+rsCond.getString("des_model")+"(";
 								ResultSet rsCondDetails;
-								rsCondDetails=rulesSQL.getRulesConditionsFactsDetails(rsCond.getInt("id_ruleiffact"));
+								rsCondDetails=rulesSQLIS.getRulesConditionsFactsDetails(rsCond.getInt("id_ruleiffact"));
 								if (rsCondDetails==null){
 						    		System.out.println("Condition of the rule not found");
 						    		return "";
 						    	} else {
 						    		try {int i=0;
 										while (rsCondDetails.next()) {
+											String des_attribute = new String();
+											try {
+												des_attribute=rsCondDetails.getString("des_attribute");
+											} catch (Exception e) {
+												des_attribute="";
+											}
 											if (i>0) s+=",";
-											s+=rsCondDetails.getString("des_attribute") +rsCondDetails.getString("operation")+rsCondDetails.getString("value");
+											if(des_attribute==null) des_attribute="";
+											s+=des_attribute +rsCondDetails.getString("operation")+rsCondDetails.getString("value");
 											i=1;
 										}
-										s+=")";
+										s+=")\n";
 						    		}catch (Exception e) {
 										// TODO: handle exception
 						    			e.printStackTrace();
@@ -365,7 +381,7 @@ public class RuleRunner {
 			    	}rsCond.close();
 					s+="then\n";//load action
 					ResultSet rsAct;
-					rsAct=rulesSQL.getRulesActionsFacts(rs.getInt("id_rule"));
+					rsAct=rulesSQLIS.getRulesActionsFacts(rs.getInt("id_rule"));
 					if (rsAct==null){
 			    		System.out.println("Condition of the rule not found");
 			    		return "";
@@ -374,7 +390,7 @@ public class RuleRunner {
 							while (rsAct.next()) {
 								
 								ResultSet rsActDetails;
-								rsActDetails=rulesSQL.getRulesActionsFactsDetails(rsAct.getInt("id_rulethenfact"));
+								rsActDetails=rulesSQLIS.getRulesActionsFactsDetails(rsAct.getInt("id_rulethenfact"));
 								if (rsActDetails==null){
 						    		System.out.println("Condition of the rule not found");
 						    		return "";
@@ -413,7 +429,7 @@ public class RuleRunner {
 							s="";
 						}
 			    	}
-					s+="end";
+					s+="end\n";
 					
 				}rs.close();
 				
@@ -468,6 +484,7 @@ public class RuleRunner {
 			IllegalArgumentException, IllegalAccessException {
 		//recreate the KB in case of changes
 		//is important that the path begins with src/main/resources
+		
 		kieFileSystem.write("src/main/resources/rules/tempKB.drl", getRule());
 
 		kb = kieServices.newKieBuilder(kieFileSystem);
@@ -717,7 +734,13 @@ public class RuleRunner {
 	 * dispose the session, all the facts inside the working memory are deleted
 	 */
 	public void cleanSession() {
-		kSession.dispose();
+		try {
+			if (kSession!=null)
+				kSession.dispose();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**

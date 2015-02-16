@@ -13,8 +13,9 @@ public class ConditionActionItem implements Comparable<ConditionActionItem> {
     private String des_attribute;
     private String op;
     private String value;
+    private boolean shared;
 
-    public ConditionActionItem(int id_model, String des_model,int id_attribute, String des_attribute,String op, String value)
+    public ConditionActionItem(int id_model, String des_model,int id_attribute, String des_attribute,String op, String value,boolean shared)
     {
         this.id_model = id_model;
         this.des_model=des_model;
@@ -22,6 +23,7 @@ public class ConditionActionItem implements Comparable<ConditionActionItem> {
         this.des_attribute=des_attribute;
         this.op=op;
         this.value = value;
+        this.shared=shared;
     }
 
     @Override
@@ -58,6 +60,11 @@ public class ConditionActionItem implements Comparable<ConditionActionItem> {
     public String getValue()
     {
         return value;
+    }
+    
+    public boolean getShared()
+    {
+        return shared;
     }
     
     @Override
