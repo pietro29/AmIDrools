@@ -301,4 +301,36 @@ public final class rulesSQLIS {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	public static ResultSet getModelsInsatnces()
+	{
+		String SQL = new String("");
+		SQL+="select mi.id_modelinstance " +
+				",mi.des_modelinstance " +
+				", m.des_model " +
+				"from modelsinstances mi " +
+				"join models m on m.id_model=mi.id_model;";
+		return SQLiteJDBC.retrieveData(SQL,1);
+	}
+	
+	public static ResultSet getModelsAttributesInsatnces(Integer id_modelinstance)
+	{
+		String SQL = new String("");
+		SQL+="select mi.id_modelinstance, " +
+	    		"mi.id_model, " +
+	    		"mi.des_modelinstance, " +
+	    		"mi.ip_model, " +
+	    		"m.des_model, " +
+	    		"a.id_attribute, " +
+	    		"a.des_attribute, " +
+	    		"a.type_attribute, " +
+	    		"ai.id_attributeinstance, " +
+	    		"ai.value_attribute " +
+	    		"from modelsinstances as mi " +
+	    		"join models as m on m.id_model=mi.id_model " +
+	    		"join attributes as a on a.id_model=mi.id_model " +
+	    		"join attributesinstances ai on ai.id_modelinstance=mi.id_modelinstance and ai.id_attribute=a.id_attribute " +
+	    		"where mi.id_modelinstance=" + id_modelinstance + ";";
+		return SQLiteJDBC.retrieveData(SQL,1);
+	}
+	
 }

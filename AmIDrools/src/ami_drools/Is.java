@@ -34,6 +34,7 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
 
 import sharedFacts.HueLight;
+import utility.SQLiteJDBC;
 import utility.rulesSQLIS;
 import utility.rulesSQLManager;
 
@@ -43,6 +44,7 @@ import javax.swing.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -182,8 +184,6 @@ public class Is extends JFrame implements ActionListener{
 			setGraphics();
 			remoteObject = new IsRemote( this );
 			this.name=name;
-			position = new Position("idp1",1,"Soggiorno");
-			battery = new Battery("idb1",100);
 			
 			getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
 			
@@ -350,7 +350,7 @@ public class Is extends JFrame implements ActionListener{
 			panelBatteria.add(txtBatteria);
 			txtBatteria.setColumns(10);
 			
-			txtBatteria.setText(new Integer(battery.getLevel()).toString());
+			
 			
 			lbBatteryError = new JTextPane();
 			lbBatteryError.setBackground(SystemColor.control);
@@ -359,6 +359,14 @@ public class Is extends JFrame implements ActionListener{
 			
 			lbBatteryError.setEditable(false);
 			
+			
+			//position = new Position("idp1",1,"Soggiorno");
+			//battery = new Battery("idb1",100);
+			 //Load registered private facts
+	        getPrivateFactsFromDB();
+			
+	        updateInternalState();
+	        
 			mDevices.put(position.getId(), position);
 			mDevices.put(battery.getId(), battery);
 			tabbedPane.addChangeListener(new ChangeListener() {
@@ -979,4 +987,53 @@ public class Is extends JFrame implements ActionListener{
         }
     }
 
+    
+    /**
+     * Load private facts from db
+     */
+    public void getPrivateFactsFromDB(){
+    	int id_modelinstance = 0;
+    	ResultSet rs = null;
+    	ResultSet rsDevice=null;
+    	rs = rulesSQLIS.getModelsInsatnces();
+    	if (rs==null){
+    		System.out.println("Table Models is empty");
+    	} else {
+    		try {
+				while (rs.next()) {
+				    id_modelinstance=rs.getInt("id_modelinstance");
+				    
+				    rsDevice = rulesSQLIS.getModelsAttributesInsatnces(id_modelinstance);
+				    //separe if it's a battery or the position
+				    if (rsDevice.getString("des_model").toLowerCase().equals("battery")){
+				    	battery = new Battery("",0);
+				    	 while (rsDevice.next()) {
+						    	if(! rsDevice.getString("des_attribute").equals("id")){
+						    		battery.updateField(rsDevice.getString("des_attribute"), rsDevice.getString("value_attribute"));
+						    	}else{
+						    		battery.setId(rsDevice.getString("value_attribute"));
+						    	}
+						    }
+				    	 rsDevice.close();
+				    	 //JOptionPane.showMessageDialog(null, battery.toString());
+				    }else if(rsDevice.getString("des_model").toLowerCase().equals("position")){
+				    	position = new Position("",0,"");
+				    	 while (rsDevice.next()) {
+						    	if(! rsDevice.getString("des_attribute").equals("id")){
+						    		position.updateField(rsDevice.getString("des_attribute"), rsDevice.getString("value_attribute"));
+						    	}else{
+						    		position.setId(rsDevice.getString("value_attribute"));
+						    	}
+						    }
+				    	 rsDevice.close();
+				    	 //JOptionPane.showMessageDialog(null, position.toString());
+				    }
+				   
+				}
+				rs.close();
+			} catch (SQLException e) {
+				System.out.println("Database connection error");
+			}
+    	}
+    }
 }
