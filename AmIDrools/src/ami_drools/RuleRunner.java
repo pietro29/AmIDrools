@@ -76,6 +76,10 @@ public class RuleRunner {
 		this.txtArea=txtArea;
 	}
 	
+	/**
+	 * set the local wois associated to the ruleRunner
+	 * @param wois object that represent the wois
+	 */
 	public void setWois(Wois wois)
 	{
 		this.wois = wois;

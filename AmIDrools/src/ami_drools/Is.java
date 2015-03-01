@@ -384,6 +384,9 @@ public class Is extends JFrame implements ActionListener{
     	
 	}
 	
+	/**
+	 * Set the graphic template for the window
+	 */
 	public void setGraphics(){
 		try {
 		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -397,10 +400,17 @@ public class Is extends JFrame implements ActionListener{
 		}
 	}
 	
+	/**
+	 * send the IS name
+	 * @return name of the current IS
+	 */
 	public String getIsName(){
 		return this.name;
 	}
 	
+	/**
+	 * Resize the button based on the window's dimensions 
+	 */
 	public void resizeButton()
 	{
 		this.setImageButton(bManager, "images/connect.png");
@@ -411,6 +421,11 @@ public class Is extends JFrame implements ActionListener{
 		this.setImageButton(btAggiornaBatteria, "images/exchange32.png",50,50);
 	}
 	
+	/**
+	 * set the image of a button
+	 * @param bt button where the image has to be loaded
+	 * @param pathImage path and name of the image that has to be loaded
+	 */
 	public void setImageButton(JButton bt, String pathImage){
 		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
         Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
@@ -426,6 +441,13 @@ public class Is extends JFrame implements ActionListener{
         bt.setContentAreaFilled(false);
 	}
 	
+	/**
+	 * set the image of a button with defined dimension
+	 * @param bt button where the image has to be loaded
+	 * @param pathImage pathImage path and name of the image that has to be loaded
+	 * @param dimensioX width of the image
+	 * @param dimensionY height of the image
+	 */
 	public void setImageButton(JButton bt, String pathImage, int dimensioX, int dimensionY){
 		bt.setIcon(new ImageIcon(ClassLoader.getSystemResource(pathImage)));
         Image img = new ImageIcon(ClassLoader.getSystemResource(pathImage)).getImage();
@@ -437,6 +459,12 @@ public class Is extends JFrame implements ActionListener{
         bt.setContentAreaFilled(false);
 	}
 	
+	/**
+	 * insert the logo in the window
+	 * @param pathImage path and name of the logo image
+	 * @param width width of the image
+	 * @param height height of the image
+	 */
 	public void resizeLogoUnibs(String pathImage, int width, int height){
 		BufferedImage img =  new BufferedImage(100, 100,BufferedImage.TYPE_INT_RGB);
     	try {
@@ -461,6 +489,9 @@ public class Is extends JFrame implements ActionListener{
     	return runner;
 	}
 	
+	/**
+	 * create the standard fact type based on the private fact
+	 */
 	private void insertPrivateFacts(){
 		privateFacts=new Vector<Fact>();
 		//insert position fact
@@ -477,6 +508,9 @@ public class Is extends JFrame implements ActionListener{
 		privateFacts.add(privateFactPos);
 	}
 	
+	/**
+	 * @return the remote object for the comunication
+	 */
 	public IsIntf getRemoteProxy()
     {
         return remoteObject;
@@ -508,6 +542,12 @@ public class Is extends JFrame implements ActionListener{
         runner.setWois(wois);
 	}
 	
+	/**
+	 * disconnect the current IS
+	 * @param wois object that represent the wois where the IS is associated
+	 * @throws RemoteException
+	 * @throws NotRegisteredException
+	 */
 	public void unregister( Wois wois) throws RemoteException, NotRegisteredException
     {
        
@@ -627,7 +667,7 @@ public class Is extends JFrame implements ActionListener{
                 e.printStackTrace();
                 textArea.append("Errore Server\n");}
 	    	
-    	}//manage the change of the position
+    	}//manage the change of the position (private fact)
     	if (event.getSource()==btSoggiorno)
 	    {
             try {//if i choose living room then disable the other position
@@ -809,6 +849,10 @@ public class Is extends JFrame implements ActionListener{
     	
     }
     
+    /** get rule name from a txt file
+     * @param fileName path and name of the file that contains the rules
+     * @throws FileNotFoundException
+     */
     private void extractRuleFromFile(String fileName) throws FileNotFoundException
 	{
     	Vector<String> rows=new Vector<String>();
@@ -896,6 +940,12 @@ public class Is extends JFrame implements ActionListener{
     	}
     }
     
+    /**
+     * delete the rule from a file
+     * @param fileName path and name of a file
+     * @param ruleName name of the rule to delete
+     * @throws FileNotFoundException
+     */
     private void deleteRuleFromFile(String fileName, String ruleName) throws FileNotFoundException
 	{
     	Vector<String> rows=new Vector<String>();
@@ -1003,7 +1053,7 @@ public class Is extends JFrame implements ActionListener{
 				while (rs.next()) {
 				    id_modelinstance=rs.getInt("id_modelinstance");
 				    
-				    rsDevice = rulesSQLIS.getModelsAttributesInsatnces(id_modelinstance);
+				    rsDevice = rulesSQLIS.getModelsAttributesInstances(id_modelinstance);
 				    //separe if it's a battery or the position
 				    if (rsDevice.getString("des_model").toLowerCase().equals("battery")){
 				    	battery = new Battery("",0);

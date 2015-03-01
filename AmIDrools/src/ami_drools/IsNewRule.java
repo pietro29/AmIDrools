@@ -671,6 +671,9 @@ public class IsNewRule extends JFrame implements ActionListener{
 	    }
 	}
 	
+	/**
+	 * refresh the panel of the condition with the actual choices
+	 */
 	private void RefreshConditionPanel(){
 		//create the rule
     	String newRule = new String("rule \""+txtRuleName.getText()+"\" \nno-loop\n");
@@ -707,6 +710,9 @@ public class IsNewRule extends JFrame implements ActionListener{
     	txtResult.setText(newRule);
 	}
 	
+	/**
+	 * refresh the panel of the action with the actual choices
+	 */
 	private void RefreshActionPanel(){
 		String newRule = new String("then \n");
 		if (actions.size()>0){
@@ -835,6 +841,9 @@ public class IsNewRule extends JFrame implements ActionListener{
 		return inserire;
 	}
 	
+	/**
+	 * insert a new rule inside the local db (private rule)
+	 */
 	private void insertPrivateRules(){
 		String SQL=new String("");
 		try {
@@ -908,6 +917,11 @@ public class IsNewRule extends JFrame implements ActionListener{
 		}
 	}
 	
+	/**
+	 * insert a new rule inside the manager db (shared rule)
+	 * @throws RemoteException
+	 * @throws NotRegisteredException
+	 */
 	private void insertSharedRules() throws RemoteException, NotRegisteredException
 	{
 		if(wois!=null){
@@ -1043,6 +1057,16 @@ public class IsNewRule extends JFrame implements ActionListener{
 		}
 			
 	}
+	/**
+	 * insert a new condition if the action exists and the condition don't exists
+	 * @param id_model id of the model to insert
+	 * @param des_model description of the model to insert
+	 * @param id_attribute id of the attribute to insert
+	 * @param des_attribute description of the attribute to insert
+	 * @param operator operator to insert in the condition
+	 * @param value value to insert in the condition
+	 * @param shared define if the condition fact is shared or local
+	 */
 	private void insertExistsCondition(Integer id_model,String des_model, Integer id_attribute,String des_attribute, String operator, String value, boolean shared){
 		//if not exists the variable in the condition insert it
 		boolean trovato=false;

@@ -10,6 +10,10 @@ import java.util.Date;
  * @author 
  *
  */
+/**
+ * @author MattiaEvent
+ *
+ */
 public final class rulesSQLManager {
 
 	/**
@@ -223,6 +227,14 @@ public final class rulesSQLManager {
 		SQLiteJDBC.executeUpdate(SQL,0);
 	}
 	
+	/**
+	 * Insert a new model in the manager db
+	 * @param des_model description of the model to insert
+	 * @param id_user id of the user that want to insert the model
+	 * @param if_model true if the model can be choose in the condition
+	 * @param then_model true if the model can be choose in the action
+	 * @return the string with the SQL command for the insert
+	 */
 	public static String ModelInsert(String des_model, int id_user, boolean if_model, boolean then_model){
 		Integer if_modelInt = 0;
 		Integer then_modelInt = 0;
@@ -237,6 +249,12 @@ public final class rulesSQLManager {
 		return SQL;
 	}
 	
+	/**
+	 * insert the attribute of a model in the manager db
+	 * @param des_attribute description of the attribute to insert
+	 * @param type_attribute type of the attribute to insert
+	 * @return the string with the SQL command for the insert
+	 */
 	public static String AttributeInsert(String des_attribute, String type_attribute){
 		String SQL=new String("");
 		SQL+="insert into attributes";
@@ -382,6 +400,7 @@ public final class rulesSQLManager {
 	}
 	
 	/**
+	 * get the rules of a specific user
 	 * @return the shared rules of the user
 	 */
 	public static ResultSet getRules(String des_user)
@@ -395,6 +414,7 @@ public final class rulesSQLManager {
 	}
 	
 	/**
+	 * get the fact of a rule's condition
 	 * @param id_rule id of a specific rule
 	 * @return all the conditions fact for a specific rule
 	 */
@@ -411,6 +431,7 @@ public final class rulesSQLManager {
 	}
 	
 	/**
+	 * get the fact details of a rule's condition
 	 * @param id_ruleiffact id of a fact of a rule
 	 * @return all the conditions details for a specific rule fact
 	 */
@@ -426,6 +447,7 @@ public final class rulesSQLManager {
 	}
 	
 	/**
+	 * get the fact of a rule's action
 	  * @param id_rule id of a specific rule
 	 * @return all the actions fact for a specific rule
 	 */
@@ -442,6 +464,7 @@ public final class rulesSQLManager {
 	}
 	
 	/**
+	 * get the fact details of a rule's action
 	 * @param id_rulethenfact id of a fact of a rule
 	 * @return all the actions details for a specific rule fact
 	 */

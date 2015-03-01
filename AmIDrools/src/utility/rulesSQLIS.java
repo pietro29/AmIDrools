@@ -301,6 +301,10 @@ public final class rulesSQLIS {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
+	/**
+	 * get all the instances of private fact
+	 * @return the ruleSet that contains the models
+	 */
 	public static ResultSet getModelsInsatnces()
 	{
 		String SQL = new String("");
@@ -312,7 +316,12 @@ public final class rulesSQLIS {
 		return SQLiteJDBC.retrieveData(SQL,1);
 	}
 	
-	public static ResultSet getModelsAttributesInsatnces(Integer id_modelinstance)
+	/**
+	 * get all the attribute instances of private fact
+	 * @param id_modelinstance id of the model instances
+	 * @return the ruleSet that contains the attribute's model
+	 */
+	public static ResultSet getModelsAttributesInstances(Integer id_modelinstance)
 	{
 		String SQL = new String("");
 		SQL+="select mi.id_modelinstance, " +
